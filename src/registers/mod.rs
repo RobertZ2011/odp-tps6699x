@@ -2,6 +2,8 @@ use device_driver;
 use embedded_usb_pd::type_c::ConnectionState;
 use embedded_usb_pd::{type_c, PdError};
 
+use crate::Mode;
+
 pub mod boot_flags;
 
 device_driver::create_device!(
@@ -74,6 +76,18 @@ impl From<PlugMode> for Option<ConnectionState> {
             PlugMode::Audio => Some(ConnectionState::AudioAccessory),
             PlugMode::Connected | PlugMode::ConnectedNoRa => Some(ConnectionState::Attached),
             _ => None,
+        }
+    }
+}
+
+impl From<Mode> for &str {
+    fn from(value: Mode) -> Self {
+        match value {
+            Mode::Boot => "BOOT",
+            Mode::F211 => "F211",
+            Mode::App0 => "APP0",
+            Mode::App1 => "APP1",
+            Mode::Wtpr => "WTPR",
         }
     }
 }
