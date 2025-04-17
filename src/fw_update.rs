@@ -10,6 +10,8 @@ pub const IMAGE_ID_LEN: usize = 4;
 
 /// App image size offset
 pub const APP_IMAGE_SIZE_OFFSET: usize = 0x4F8;
+/// App image size length
+pub const APP_IMAGE_SIZE_LEN: usize = 4;
 
 /// Header metadata offset
 pub const HEADER_METADATA_OFFSET: usize = IMAGE_ID_LEN;

@@ -207,29 +207,29 @@ async fn fw_update_init<T: UpdateTarget, I: Image>(
 }
 
 /// Computes the offset of a data block's metadata
-const fn data_block_metadata_offset(block: usize) -> usize {
+pub const fn data_block_metadata_offset(block: usize) -> usize {
     HEADER_BLOCK_OFFSET + HEADER_BLOCK_LEN + (block * (DATA_BLOCK_LEN + DATA_BLOCK_METADATA_LEN))
 }
 
 /// Computes the offset of a data block's data
-const fn block_offset(metadata_offset: usize) -> usize {
+pub const fn block_offset(metadata_offset: usize) -> usize {
     metadata_offset + DATA_BLOCK_METADATA_LEN
 }
 
 /// Computes the offset of the app config block's metadata
-const fn app_config_block_metadata_offset(num_data_blocks: usize, app_size: usize) -> usize {
+pub const fn app_config_block_metadata_offset(num_data_blocks: usize, app_size: usize) -> usize {
     app_size + IMAGE_ID_LEN + HEADER_METADATA_LEN + HEADER_BLOCK_LEN + num_data_blocks * DATA_BLOCK_METADATA_LEN
 }
 
 /// Get the size of the image
 async fn get_image_size<I: Image>(image: &mut I) -> Result<usize, ReadExactError<I::Error>> {
-    let mut image_size_data = [0; 4];
+    let mut image_size_data = [0; APP_IMAGE_SIZE_LEN];
     read_from_exact(image, APP_IMAGE_SIZE_OFFSET, &mut image_size_data).await?;
     Ok(u32::from_le_bytes(image_size_data) as usize)
 }
 
 /// Converts a data block into a block index
-fn data_block_index_to_block_index(block_index: usize) -> usize {
+pub const fn data_block_index_to_block_index(block_index: usize) -> usize {
     block_index + DATA_BLOCK_START_INDEX
 }
 
