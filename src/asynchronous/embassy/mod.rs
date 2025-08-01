@@ -10,18 +10,19 @@ use embassy_time::{with_timeout, Duration};
 use embedded_hal::digital::InputPin;
 use embedded_hal_async::delay::DelayNs;
 use embedded_hal_async::i2c::I2c;
-use embedded_usb_pd::ado::Ado;
+use embedded_usb_pd::ado::{self, Ado};
 use embedded_usb_pd::pdinfo::AltMode;
-use embedded_usb_pd::{Error, PdError, PortId};
+use embedded_usb_pd::{pdo, Error, PdError, PortId};
 
 use super::interrupt::{self, InterruptController};
 use crate::asynchronous::internal;
 use crate::command::{muxr, trig, Command, ReturnValue, SrdySwitch};
 use crate::registers::autonegotiate_sink::AutoComputeSinkMaxVoltage;
 use crate::registers::field_sets::IntEventBus1;
-use crate::{error, registers, trace, Mode, MAX_SUPPORTED_PORTS};
+use crate::{error, registers, trace, DeviceError, Mode, MAX_SUPPORTED_PORTS};
 
 pub mod fw_update;
+pub mod rx_src_caps;
 pub mod task;
 
 pub mod controller {
@@ -418,6 +419,11 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
         Ok(())
     }
 
+    /// Execute the [`Command::Dbfg`] command.
+    pub async fn execute_dbfg(&mut self, port: PortId) -> Result<ReturnValue, Error<B::Error>> {
+        self.execute_command(port, Command::Dbfg, None, None).await
+    }
+
     /// Execute the [`Command::Muxr`] command.
     pub async fn execute_muxr(&mut self, port: PortId, input: muxr::Input) -> Result<ReturnValue, Error<B::Error>> {
         let indata = input.0.to_le_bytes();
@@ -499,15 +505,15 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
     }
 
     /// Get Rx ADO
-    pub async fn get_rx_ado(&mut self, port: PortId) -> Result<Option<Ado>, Error<B::Error>> {
+    pub async fn get_rx_ado(&mut self, port: PortId) -> Result<Option<Ado>, DeviceError<B::Error, ado::InvalidType>> {
         let mut inner = self.lock_inner().await;
-        let ado_raw = inner.get_rx_ado(port).await?;
+        let ado_raw = inner.get_rx_ado(port).await.map_err(DeviceError::from)?;
 
         if ado_raw == registers::field_sets::RxAdo::new_zero() {
             // No ADO available
             Ok(None)
         } else {
-            Ok(Some(ado_raw.ado().try_into().map_err(Error::Pd)?))
+            Ok(Some(ado_raw.ado().try_into().map_err(DeviceError::Other)?))
         }
     }
 
@@ -545,6 +551,25 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
         })
         .await?;
         self.autonegotiate_sink(port).await
+    }
+
+    /// Get Rx Source Caps
+    ///
+    /// Returns (num_standard_pdos, num_epr_pdos).
+    pub async fn get_rx_src_caps(&mut self, port: PortId) -> Result<rx_src_caps::RxSrcCaps, Error<B::Error>> {
+        let mut inner = self.lock_inner().await;
+        let mut out_spr_pdos = [pdo::source::Pdo::default(); crate::registers::rx_src_caps::NUM_SPR_PDOS];
+        let mut out_epr_pdos = [pdo::source::Pdo::default(); crate::registers::rx_src_caps::NUM_EPR_PDOS];
+
+        let (num_valid_spr, num_valid_epr) = inner
+            .get_rx_src_caps(port, &mut out_spr_pdos, &mut out_epr_pdos)
+            .await?;
+
+        // These unwraps are safe because we know the sizes of the arrays
+        Ok(rx_src_caps::RxSrcCaps {
+            spr: heapless::Vec::from_slice(&out_spr_pdos[..num_valid_spr]).unwrap(),
+            epr: heapless::Vec::from_slice(&out_epr_pdos[..num_valid_epr]).unwrap(),
+        })
     }
 }
 
