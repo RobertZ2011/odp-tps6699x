@@ -100,6 +100,15 @@ pub enum Command {
     /// # Output
     /// None
     VDMs = u32_from_str("VDMs"),
+
+    /// Execute a UCSI command
+    ///
+    /// # Input
+    /// [`embedded_usb_pd::ucsi::lpm::Command`]
+    ///
+    /// # Output
+    /// [`embedded_usb_pd::ucsi::lpm::ResponseData`]
+    Ucsi = u32_from_str("UCSI"),
 }
 
 impl TryFrom<u32> for Command {
