@@ -149,6 +149,8 @@ impl TryFrom<u32> for Command {
             Ok(Command::Drst)
         } else if Command::VDMs == value {
             Ok(Command::VDMs)
+        } else if Command::Ucsi == value {
+            Ok(Command::Ucsi)
         } else {
             Err(PdError::InvalidParams)
         }
