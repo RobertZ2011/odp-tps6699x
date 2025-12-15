@@ -124,6 +124,14 @@ impl<T: Common> RxCaps<T> {
     }
 }
 
+/// Struct for [`RxCapsError::ExpectedPdo`]
+#[derive(Copy, Clone, Debug)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub struct InvalidPdoIndex {
+    pub requested: usize,
+    pub max: usize,
+}
+
 /// Error type for functions that deal with received capabilities
 #[derive(Copy, Clone, Debug)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
@@ -131,7 +139,7 @@ pub enum RxCapsError {
     /// PDO conversion error
     ExpectedPdo(ExpectedPdo),
     /// Invalid PDO index accessed, contains (requested, max)
-    InvalidPdoIndex(usize, usize),
+    InvalidPdoIndex(InvalidPdoIndex),
 }
 
 impl<T: RoleCommon> TryFrom<[u8; LEN]> for RxCaps<T> {
@@ -154,7 +162,12 @@ impl<T: RoleCommon> TryFrom<[u8; LEN]> for RxCaps<T> {
                 4 => raw.pdo4(),
                 5 => raw.pdo5(),
                 6 => raw.pdo6(),
-                _ => return Err(RxCapsError::InvalidPdoIndex(i, NUM_SPR_PDOS)),
+                _ => {
+                    return Err(RxCapsError::InvalidPdoIndex(InvalidPdoIndex {
+                        requested: i,
+                        max: NUM_SPR_PDOS,
+                    }))
+                }
             })
             .map_err(RxCapsError::ExpectedPdo)?;
         }
@@ -171,7 +184,12 @@ impl<T: RoleCommon> TryFrom<[u8; LEN]> for RxCaps<T> {
                 1 => raw.epr_pdo1(),
                 2 => raw.epr_pdo2(),
                 3 => raw.epr_pdo3(),
-                _ => return Err(RxCapsError::InvalidPdoIndex(i, NUM_EPR_PDOS)),
+                _ => {
+                    return Err(RxCapsError::InvalidPdoIndex(InvalidPdoIndex {
+                        requested: i,
+                        max: NUM_EPR_PDOS,
+                    }))
+                }
             })
             .map_err(RxCapsError::ExpectedPdo)?;
         }
