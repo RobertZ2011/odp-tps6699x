@@ -4144,8 +4144,21 @@ pub mod field_sets {
         pub const fn new() -> Self {
             Self {
                 bits: [
-                    5u8, 137u8, 51u8, 140u8, 25u8, 16u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8,
-                    0u8, 0u8, 0u8,
+                    5u8,
+                    137u8,
+                    51u8,
+                    140u8,
+                    25u8,
+                    16u8,
+                    0u8,
+                    0u8,
+                    0u8,
+                    0u8,
+                    0u8,
+                    0u8,
+                    0u8,
+                    0u8,
+                    0u8,
                 ],
             }
         }
@@ -5959,8 +5972,22 @@ pub mod field_sets {
         pub const fn new() -> Self {
             Self {
                 bits: [
-                    0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8,
-                    0u8, 0u8,
+                    0u8,
+                    0u8,
+                    0u8,
+                    0u8,
+                    0u8,
+                    0u8,
+                    0u8,
+                    0u8,
+                    0u8,
+                    0u8,
+                    0u8,
+                    0u8,
+                    0u8,
+                    0u8,
+                    0u8,
+                    0u8,
                 ],
             }
         }
