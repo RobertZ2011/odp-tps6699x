@@ -34,8 +34,17 @@ pub mod controller {
     use crate::asynchronous::embassy::interrupt::InterruptProcessor;
     use crate::{TPS66993_NUM_PORTS, TPS66994_NUM_PORTS};
 
+    /// Configuration for [`Controller`]
+    #[derive(Default)]
+    #[non_exhaustive]
+    pub struct Config {
+        pub interrupt_processor_config: crate::asynchronous::embassy::interrupt::Config,
+    }
+
     /// Controller struct. This struct is meant to be created and then immediately broken into its parts
     pub struct Controller<M: RawMutex, B: I2c> {
+        /// Config
+        pub(super) config: Config,
         /// Low-level TPS6699x driver
         pub(super) inner: Mutex<M, internal::Tps6699x<B>>,
         /// Signal for awaiting an interrupt
@@ -48,8 +57,14 @@ pub mod controller {
 
     impl<M: RawMutex, B: I2c> Controller<M, B> {
         /// Private constructor
-        pub fn new(bus: B, addr: [u8; MAX_SUPPORTED_PORTS], num_ports: usize) -> Result<Self, Error<B::Error>> {
+        fn new(
+            bus: B,
+            config: Config,
+            addr: [u8; MAX_SUPPORTED_PORTS],
+            num_ports: usize,
+        ) -> Result<Self, Error<B::Error>> {
             Ok(Self {
+                config,
                 inner: Mutex::new(internal::Tps6699x::new(bus, addr, num_ports)),
                 interrupt_waker: Signal::new(),
                 interrupts_enabled: [const { AtomicBool::new(true) }; MAX_SUPPORTED_PORTS],
@@ -58,13 +73,13 @@ pub mod controller {
         }
 
         /// Create a new controller for the TPS66993
-        pub fn new_tps66993(bus: B, addr: u8) -> Result<Self, Error<B::Error>> {
-            Self::new(bus, [addr, 0], TPS66993_NUM_PORTS)
+        pub fn new_tps66993(bus: B, config: Config, addr: u8) -> Result<Self, Error<B::Error>> {
+            Self::new(bus, config, [addr, 0], TPS66993_NUM_PORTS)
         }
 
         /// Create a new controller for the TPS66994
-        pub fn new_tps66994(bus: B, addr: [u8; TPS66994_NUM_PORTS]) -> Result<Self, Error<B::Error>> {
-            Self::new(bus, addr, TPS66994_NUM_PORTS)
+        pub fn new_tps66994(bus: B, config: Config, addr: [u8; TPS66994_NUM_PORTS]) -> Result<Self, Error<B::Error>> {
+            Self::new(bus, config, addr, TPS66994_NUM_PORTS)
         }
 
         /// Breaks the controller into its parts

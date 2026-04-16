@@ -47,7 +47,7 @@ async fn main(spawner: Spawner) {
     let device = I2cDevice::new(bus);
 
     static CONTROLLER: StaticCell<Controller<'static>> = StaticCell::new();
-    let controller = CONTROLLER.init(Controller::new_tps66994(device, ADDR0).unwrap());
+    let controller = CONTROLLER.init(Controller::new_tps66994(device, Default::default(), ADDR0).unwrap());
     let (mut pd, interrupt_processor, _interrupt_receiver) = controller.make_parts();
 
     let mut delay = Delay;

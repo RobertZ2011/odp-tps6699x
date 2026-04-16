@@ -16,6 +16,20 @@ use crate::asynchronous::internal;
 use crate::registers::field_sets::IntEventBus1;
 use crate::{error, trace, warn, MAX_SUPPORTED_PORTS};
 
+/// Configuration for [`InterruptProcessor`]
+#[non_exhaustive]
+pub struct Config {
+    pub interrupt_timeout: Duration,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            interrupt_timeout: Duration::from_millis(100),
+        }
+    }
+}
+
 /// Struct for processing interrupts from the TPS6699x.
 pub struct InterruptProcessor<'a, M: RawMutex, B: I2c> {
     pub(super) controller: &'a Controller<M, B>,
@@ -31,6 +45,7 @@ impl<'a, M: RawMutex, B: I2c> InterruptProcessor<'a, M, B> {
         &mut self,
         int: &mut impl InputPin,
     ) -> Result<[IntEventBus1; MAX_SUPPORTED_PORTS], Error<B::Error>> {
+        let timeout = self.controller.config.interrupt_processor_config.interrupt_timeout;
         let mut flags = self
             .controller
             .interrupt_waker
@@ -70,7 +85,7 @@ impl<'a, M: RawMutex, B: I2c> InterruptProcessor<'a, M, B> {
                     _ => {}
                 }
 
-                match with_timeout(Duration::from_millis(100), inner.clear_interrupt(port_id)).await {
+                match with_timeout(timeout, inner.clear_interrupt(port_id)).await {
                     Ok(res) => match res {
                         Ok(event) => *flag |= event,
                         Err(_e) => {
@@ -246,7 +261,7 @@ mod test {
     #[tokio::test]
     async fn test_wait_any_masked_both() {
         static CONTROLLER: StaticCell<Controller<NoopRawMutex, Mock>> = StaticCell::new();
-        let controller = CONTROLLER.init(Controller::new_tps66994(Mock::new(&[]), ADDR0).unwrap());
+        let controller = CONTROLLER.init(Controller::new_tps66994(Mock::new(&[]), Default::default(), ADDR0).unwrap());
         let (pd, _processor, mut receiver) = controller.make_parts();
 
         let mut port0 = IntEventBus1::new_zero();
@@ -287,7 +302,7 @@ mod test {
     #[tokio::test]
     async fn test_wait_any_masked_single() {
         static CONTROLLER: StaticCell<Controller<NoopRawMutex, Mock>> = StaticCell::new();
-        let controller = CONTROLLER.init(Controller::new_tps66994(Mock::new(&[]), ADDR0).unwrap());
+        let controller = CONTROLLER.init(Controller::new_tps66994(Mock::new(&[]), Default::default(), ADDR0).unwrap());
         let (pd, _processor, mut receiver) = controller.make_parts();
 
         let mut port0 = IntEventBus1::new_zero();
@@ -326,7 +341,7 @@ mod test {
     #[tokio::test]
     async fn test_wait_any_masked_zero_masks() {
         static CONTROLLER: StaticCell<Controller<NoopRawMutex, Mock>> = StaticCell::new();
-        let controller = CONTROLLER.init(Controller::new_tps66994(Mock::new(&[]), ADDR0).unwrap());
+        let controller = CONTROLLER.init(Controller::new_tps66994(Mock::new(&[]), Default::default(), ADDR0).unwrap());
         let (pd, _processor, mut receiver) = controller.make_parts();
 
         let mut port0 = IntEventBus1::new_zero();
@@ -360,7 +375,7 @@ mod test {
         port1.set_plug_event(true);
 
         static CONTROLLER: StaticCell<Controller<NoopRawMutex, Mock>> = StaticCell::new();
-        let controller = CONTROLLER.init(Controller::new_tps66994(Mock::new(&[]), ADDR0).unwrap());
+        let controller = CONTROLLER.init(Controller::new_tps66994(Mock::new(&[]), Default::default(), ADDR0).unwrap());
         let (pd, _processor, mut receiver) = controller.make_parts();
 
         pd.controller.interrupt_waker.signal([port0, port1]);
@@ -402,7 +417,7 @@ mod test {
     #[tokio::test]
     async fn test_wait_any() {
         static CONTROLLER: StaticCell<Controller<NoopRawMutex, Mock>> = StaticCell::new();
-        let controller = CONTROLLER.init(Controller::new_tps66994(Mock::new(&[]), ADDR0).unwrap());
+        let controller = CONTROLLER.init(Controller::new_tps66994(Mock::new(&[]), Default::default(), ADDR0).unwrap());
         let (pd, _processor, mut receiver) = controller.make_parts();
 
         let mut port0 = IntEventBus1::new_zero();
