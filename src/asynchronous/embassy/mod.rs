@@ -276,6 +276,9 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
         indata: Option<&[u8]>,
         outdata: Option<&mut [u8]>,
     ) -> Result<ReturnValue, Error<B::Error>> {
+        // Size of the command_complete array is MAX_SUPPORTED_PORTS so the `get`` call below doesn't guarentee
+        // that the port is valid because it wouldn't catch trying to access a second port on a controller with
+        // only one port.
         if port.0 as usize >= self.controller.num_ports {
             return Err(Error::Pd(PdError::InvalidPort));
         }
