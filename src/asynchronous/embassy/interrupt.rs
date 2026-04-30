@@ -61,7 +61,7 @@ impl<'a, M: RawMutex, B: I2c> InterruptProcessor<'a, M, B> {
             let port_id = LocalPortId(port as u8);
 
             if !interrupt_enabled {
-                trace!("{:?}: Interrupt for disabled", port_id);
+                trace!("{:?}: Interrupts disabled", port_id);
                 continue;
             }
 
