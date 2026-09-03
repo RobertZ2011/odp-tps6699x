@@ -114,6 +114,21 @@ pub mod controller {
 
             interrupts_enabled
         }
+
+        pub(super) fn publish_interrupt(&self, port: LocalPortId, event: IntEventBus1) {
+            if event == IntEventBus1::new_zero() {
+                return;
+            }
+
+            let mut flags = self
+                .interrupt_waker
+                .try_take()
+                .unwrap_or([IntEventBus1::new_zero(); MAX_SUPPORTED_PORTS]);
+            if let Some(port_flags) = flags.get_mut(port.0 as usize) {
+                *port_flags |= event;
+                self.interrupt_waker.signal(flags);
+            }
+        }
     }
 }
 
@@ -309,19 +324,34 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
         indata: Option<&[u8]>,
         outdata: Option<&mut [u8]>,
     ) -> Result<ReturnValue, Error<B::Error>> {
-        let timeout = cmd.timeout();
-        let result = with_timeout(timeout, self.execute_command_no_timeout(port, cmd, indata, outdata)).await;
+        self.execute_command_with_timeout(cmd.timeout(), port, cmd, indata, outdata)
+            .await
+    }
+
+    async fn execute_command_with_timeout(
+        &mut self,
+        timeout: Duration,
+        port: LocalPortId,
+        cmd: Command,
+        indata: Option<&[u8]>,
+        mut outdata: Option<&mut [u8]>,
+    ) -> Result<ReturnValue, Error<B::Error>> {
+        let result = with_timeout(
+            timeout,
+            self.execute_command_no_timeout(port, cmd, indata, outdata.as_deref_mut()),
+        )
+        .await;
         if let Ok(result) = result {
             result
         } else {
             error!("Command {:#?} timed out", cmd);
-            // See if there's a definite error we can read
+            // Reconcile a completion that raced the software timeout.
             let mut inner = self.lock_inner().await;
-            match inner.read_command_result(port, None, cmd.has_return_value()).await? {
-                ReturnValue::Rejected => PdError::Rejected,
-                _ => PdError::Timeout,
+            match inner.read_command_result(port, outdata, cmd.has_return_value()).await? {
+                ReturnValue::Success => Ok(ReturnValue::Success),
+                ReturnValue::Rejected => PdError::Rejected.into(),
+                _ => PdError::Timeout.into(),
             }
-            .into()
         }
     }
 
@@ -826,5 +856,155 @@ impl<'a, M: RawMutex, B: I2c> InterruptController for Tps6699x<'a, M, B> {
         enabled: [bool; MAX_SUPPORTED_PORTS],
     ) -> Result<Self::Guard, Error<Self::BusError>> {
         Ok(interrupt::InterruptGuard::new(self.controller, enabled))
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use embassy_sync::blocking_mutex::raw::NoopRawMutex;
+    use embassy_time::Duration;
+    use embedded_hal::i2c::ErrorKind;
+    use embedded_hal_mock::eh1::i2c::Mock;
+
+    use super::*;
+    use crate::asynchronous::embassy::controller::Controller;
+    use crate::registers::REG_DATA1_LEN;
+    use crate::test::{PORT0_ADDR0, create_register_read, create_register_write};
+    use crate::PORT0;
+
+    fn command_result_data(return_value: u8, output: &[u8]) -> [u8; REG_DATA1_LEN] {
+        let mut data = [0; REG_DATA1_LEN];
+        if let Some(return_byte) = data.first_mut() {
+            *return_byte = return_value;
+        }
+        if let Some(output_data) = data.get_mut(1..=output.len()) {
+            output_data.copy_from_slice(output);
+        }
+        data
+    }
+
+    #[tokio::test]
+    async fn test_command_timeout_reconciles_success_and_output() {
+        let expected_output = [0x12, 0x34, 0x56, 0x78];
+        let transactions = [
+            create_register_write(PORT0_ADDR0, 0x08, (Command::Tfuq as u32).to_le_bytes()),
+            create_register_read(PORT0_ADDR0, 0x08, (Command::Success as u32).to_le_bytes()),
+            create_register_read(
+                PORT0_ADDR0,
+                registers::REG_DATA1,
+                command_result_data(ReturnValue::Success as u8, &expected_output),
+            ),
+        ];
+        let mut controller: Controller<NoopRawMutex, _> =
+            Controller::new_tps66993(Mock::new(&transactions), Default::default(), PORT0_ADDR0).unwrap();
+        let (mut pd, _interrupt, _receiver) = controller.make_parts();
+        let mut output = [0; 4];
+
+        assert_eq!(
+            pd.execute_command_with_timeout(
+                Duration::from_millis(1),
+                PORT0,
+                Command::Tfuq,
+                None,
+                Some(&mut output),
+            )
+            .await,
+            Ok(ReturnValue::Success)
+        );
+        assert_eq!(output, expected_output);
+        pd.lock_inner().await.bus.done();
+    }
+
+    #[tokio::test]
+    async fn test_command_timeout_preserves_rejected_return_value() {
+        let transactions = [
+            create_register_write(PORT0_ADDR0, 0x08, (Command::Tfuq as u32).to_le_bytes()),
+            create_register_read(PORT0_ADDR0, 0x08, (Command::Success as u32).to_le_bytes()),
+            create_register_read(
+                PORT0_ADDR0,
+                registers::REG_DATA1,
+                command_result_data(ReturnValue::Rejected as u8, &[]),
+            ),
+        ];
+        let mut controller: Controller<NoopRawMutex, _> =
+            Controller::new_tps66993(Mock::new(&transactions), Default::default(), PORT0_ADDR0).unwrap();
+        let (mut pd, _interrupt, _receiver) = controller.make_parts();
+
+        assert_eq!(
+            pd.execute_command_with_timeout(Duration::from_millis(1), PORT0, Command::Tfuq, None, None)
+                .await,
+            Ok(ReturnValue::Rejected)
+        );
+        pd.lock_inner().await.bus.done();
+    }
+
+    #[tokio::test]
+    async fn test_command_timeout_preserves_abort_and_reports_busy_malformed_and_bus_errors() {
+        let transactions = [
+            create_register_write(PORT0_ADDR0, 0x08, (Command::Tfuq as u32).to_le_bytes()),
+            create_register_read(PORT0_ADDR0, 0x08, (Command::Success as u32).to_le_bytes()),
+            create_register_read(
+                PORT0_ADDR0,
+                registers::REG_DATA1,
+                command_result_data(ReturnValue::Abort as u8, &[]),
+            ),
+        ];
+        let mut controller: Controller<NoopRawMutex, _> =
+            Controller::new_tps66993(Mock::new(&transactions), Default::default(), PORT0_ADDR0).unwrap();
+        let (mut pd, _interrupt, _receiver) = controller.make_parts();
+
+        assert_eq!(
+            pd.execute_command_with_timeout(Duration::from_millis(1), PORT0, Command::Tfuq, None, None)
+                .await,
+            Ok(ReturnValue::Abort)
+        );
+        pd.lock_inner().await.bus.done();
+
+        let transactions = [
+            create_register_write(PORT0_ADDR0, 0x08, (Command::Tfuq as u32).to_le_bytes()),
+            create_register_read(PORT0_ADDR0, 0x08, (Command::Tfuq as u32).to_le_bytes()),
+        ];
+        let mut controller: Controller<NoopRawMutex, _> =
+            Controller::new_tps66993(Mock::new(&transactions), Default::default(), PORT0_ADDR0).unwrap();
+        let (mut pd, _interrupt, _receiver) = controller.make_parts();
+
+        assert_eq!(
+            pd.execute_command_with_timeout(Duration::from_millis(1), PORT0, Command::Tfuq, None, None)
+                .await,
+            Err(Error::Pd(PdError::Busy))
+        );
+        pd.lock_inner().await.bus.done();
+
+        let transactions = [
+            create_register_write(PORT0_ADDR0, 0x08, (Command::Tfuq as u32).to_le_bytes()),
+            create_register_read(PORT0_ADDR0, 0x08, (Command::Success as u32).to_le_bytes()),
+            create_register_read(PORT0_ADDR0, registers::REG_DATA1, command_result_data(0x02, &[])),
+        ];
+        let mut controller: Controller<NoopRawMutex, _> =
+            Controller::new_tps66993(Mock::new(&transactions), Default::default(), PORT0_ADDR0).unwrap();
+        let (mut pd, _interrupt, _receiver) = controller.make_parts();
+
+        assert_eq!(
+            pd.execute_command_with_timeout(Duration::from_millis(1), PORT0, Command::Tfuq, None, None)
+                .await,
+            Err(Error::Pd(PdError::InvalidParams))
+        );
+        pd.lock_inner().await.bus.done();
+
+        let transactions = [
+            create_register_write(PORT0_ADDR0, 0x08, (Command::Tfuq as u32).to_le_bytes()),
+            create_register_read(PORT0_ADDR0, 0x08, (Command::Success as u32).to_le_bytes())
+                .with_error(ErrorKind::Other),
+        ];
+        let mut controller: Controller<NoopRawMutex, _> =
+            Controller::new_tps66993(Mock::new(&transactions), Default::default(), PORT0_ADDR0).unwrap();
+        let (mut pd, _interrupt, _receiver) = controller.make_parts();
+
+        assert_eq!(
+            pd.execute_command_with_timeout(Duration::from_millis(1), PORT0, Command::Tfuq, None, None)
+                .await,
+            Err(Error::Bus(ErrorKind::Other))
+        );
+        pd.lock_inner().await.bus.done();
     }
 }
