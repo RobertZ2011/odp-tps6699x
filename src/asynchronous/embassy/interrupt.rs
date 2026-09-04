@@ -37,7 +37,7 @@ impl<'a, M: RawMutex, B: I2c> InterruptProcessor<'a, M, B> {
         &mut self,
         int: &mut impl InputPin,
     ) -> Result<[IntEventBus1; MAX_SUPPORTED_PORTS], Error<B::Error>> {
-        let timeout = self.controller.config.interrupt_processor_config.interrupt_timeout;
+        let i2c_timeout = self.controller.config.interrupt_processor_config.interrupt_timeout;
         let mut flags = [IntEventBus1::new_zero(); MAX_SUPPORTED_PORTS];
 
         let interrupts_enabled = self.controller.interrupts_enabled();
@@ -74,7 +74,7 @@ impl<'a, M: RawMutex, B: I2c> InterruptProcessor<'a, M, B> {
             };
 
             if interrupt_asserted {
-                match with_timeout(timeout, inner.read_interrupt(port_id)).await {
+                match with_timeout(i2c_timeout, inner.read_interrupt(port_id)).await {
                     Ok(Ok(event)) => {
                         *flag |= event;
                         if event.cmd_1_completed() {
@@ -98,7 +98,7 @@ impl<'a, M: RawMutex, B: I2c> InterruptProcessor<'a, M, B> {
                 continue;
             }
 
-            match with_timeout(timeout, inner.clear_pending_interrupts(port_id)).await {
+            match with_timeout(i2c_timeout, inner.clear_pending_interrupts(port_id)).await {
                 Ok(res) => match res {
                     Ok(()) => {}
                     Err(_) => {
