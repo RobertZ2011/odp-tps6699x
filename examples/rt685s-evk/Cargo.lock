@@ -666,6 +666,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "embedded-usb-pd"
+version = "0.1.0"
+source = "git+https://github.com/OpenDevicePartnership/embedded-usb-pd#071f163395e3eaea3094b817e3d943ab7265be3d"
+dependencies = [
+ "bincode",
+ "bitfield 0.19.4",
+ "defmt 0.3.100",
+ "embedded-hal-async",
+]
+
+[[package]]
 name = "espi-device"
 version = "0.1.0"
 source = "git+https://github.com/OpenDevicePartnership/haf-ec-service#29af461a6eed94ae3f6a599bf235e49b8e8100aa"
@@ -1379,7 +1390,7 @@ dependencies = [
  "embedded-hal-async",
  "embedded-io-async 0.6.1",
  "embedded-services",
- "embedded-usb-pd",
+ "embedded-usb-pd 0.1.0 (git+https://github.com/OpenDevicePartnership/embedded-usb-pd)",
  "fw-update-interface",
  "heapless 0.9.3",
  "itertools 0.14.0",
@@ -1401,7 +1412,7 @@ dependencies = [
  "embedded-hal 1.0.0",
  "embedded-hal-async",
  "embedded-io-async 0.6.1",
- "embedded-usb-pd",
+ "embedded-usb-pd 0.1.0 (git+https://github.com/OpenDevicePartnership/embedded-usb-pd?tag=v0.1.0)",
  "heapless 0.8.0",
  "itertools 0.14.0",
 ]
@@ -1422,7 +1433,7 @@ dependencies = [
  "embassy-time",
  "embedded-hal-async",
  "embedded-io-async 0.6.1",
- "embedded-usb-pd",
+ "embedded-usb-pd 0.1.0 (git+https://github.com/OpenDevicePartnership/embedded-usb-pd)",
  "futures",
  "mimxrt600-fcb 0.1.0",
  "panic-probe",
@@ -1500,7 +1511,7 @@ dependencies = [
  "bitfield 0.17.0",
  "defmt 0.3.100",
  "embedded-services",
- "embedded-usb-pd",
+ "embedded-usb-pd 0.1.0 (git+https://github.com/OpenDevicePartnership/embedded-usb-pd?tag=v0.1.0)",
  "heapless 0.9.3",
  "power-policy-interface",
 ]
@@ -1518,7 +1529,7 @@ dependencies = [
  "embassy-time",
  "embedded-hal-async",
  "embedded-services",
- "embedded-usb-pd",
+ "embedded-usb-pd 0.1.0 (git+https://github.com/OpenDevicePartnership/embedded-usb-pd?tag=v0.1.0)",
  "fw-update-interface",
  "heapless 0.9.3",
  "power-policy-interface",

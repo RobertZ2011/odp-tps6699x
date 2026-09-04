@@ -3,20 +3,6 @@
 version = 4
 
 [[package]]
-name = "aquamarine"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f50776554130342de4836ba542aa85a4ddb361690d7e8df13774d7284c3d5c2"
-dependencies = [
- "include_dir",
- "itertools 0.10.5",
- "proc-macro-error2",
- "proc-macro2",
- "quote",
- "syn 2.0.117",
-]
-
-[[package]]
 name = "autocfg"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -242,7 +228,7 @@ dependencies = [
  "embedded-io-async 0.7.0",
  "futures-core",
  "futures-sink",
- "heapless 0.9.3",
+ "heapless",
 ]
 
 [[package]]
@@ -279,7 +265,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "168297bf80aaf114b3c9ad589bf38b01b3009b9af7f97cd18086c5bbf96f5693"
 dependencies = [
  "embassy-executor-timer-queue",
- "heapless 0.9.3",
+ "heapless",
 ]
 
 [[package]]
@@ -398,7 +384,7 @@ dependencies = [
 [[package]]
 name = "embedded-services"
 version = "0.1.0"
-source = "git+https://github.com/OpenDevicePartnership/embedded-services#ff66417672ff443c401e68ffd2e90a2de92e98de"
+source = "git+https://github.com/OpenDevicePartnership/embedded-services#3c5741370d3aac8a4e7ac57fbbca138f4bfafdd5"
 dependencies = [
  "bitfield 0.17.0",
  "cortex-m",
@@ -406,10 +392,14 @@ dependencies = [
  "defmt 0.3.100",
  "embassy-futures",
  "embassy-sync",
+ "generic-array",
+ "heapless",
  "mctp-rs",
+ "num_enum",
  "paste",
  "portable-atomic",
  "serde",
+ "typenum",
 ]
 
 [[package]]
@@ -424,9 +414,8 @@ dependencies = [
 [[package]]
 name = "embedded-usb-pd"
 version = "0.1.0"
-source = "git+https://github.com/OpenDevicePartnership/embedded-usb-pd?tag=v0.1.0#0061a1e94a25c8db33ac1e8a0bb5a6b638fe2cd7"
+source = "git+https://github.com/OpenDevicePartnership/embedded-usb-pd#071f163395e3eaea3094b817e3d943ab7265be3d"
 dependencies = [
- "aquamarine",
  "bincode",
  "bitfield 0.19.4",
  "defmt 0.3.100",
@@ -436,7 +425,7 @@ dependencies = [
 [[package]]
 name = "espi-device"
 version = "0.1.0"
-source = "git+https://github.com/OpenDevicePartnership/haf-ec-service#eb20213dd5b6476cbedadc2cb25be513a7665076"
+source = "git+https://github.com/OpenDevicePartnership/haf-ec-service#0c865f19005d8fda5902725c5d12890ac932fcf5"
 dependencies = [
  "bit-register 0.1.0 (git+https://github.com/OpenDevicePartnership/odp-utilities?tag=v0.1.0)",
  "bitflags 2.9.4",
@@ -461,10 +450,20 @@ checksum = "c39754e157331b013978ec91992bde1ac089843443c49cbc7f46150b0fad0893"
 [[package]]
 name = "fw-update-interface"
 version = "0.1.0"
-source = "git+https://github.com/OpenDevicePartnership/embedded-services#ff66417672ff443c401e68ffd2e90a2de92e98de"
+source = "git+https://github.com/OpenDevicePartnership/embedded-services#3c5741370d3aac8a4e7ac57fbbca138f4bfafdd5"
 dependencies = [
  "defmt 0.3.100",
  "embedded-services",
+]
+
+[[package]]
+name = "generic-array"
+version = "1.4.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "337d46834ee672ab3e48caca2cb0c78cc174fb12b3a68d0d88f99a0519a5e36e"
+dependencies = [
+ "rustversion",
+ "typenum",
 ]
 
 [[package]]
@@ -474,16 +473,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "47d60b12902ba28e2730cd37e95b8c9223af2808df9e902d4df49588d1470606"
 dependencies = [
  "byteorder",
-]
-
-[[package]]
-name = "heapless"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0bfb9eb618601c89945a70e254898da93b13be0388091d42117462b265bb3fad"
-dependencies = [
- "hash32",
- "stable_deref_trait",
 ]
 
 [[package]]
@@ -501,34 +490,6 @@ name = "heck"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
-
-[[package]]
-name = "include_dir"
-version = "0.7.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "923d117408f1e49d914f1a379a309cffe4f18c05cf4e3d12e613a15fc81bd0dd"
-dependencies = [
- "include_dir_macros",
-]
-
-[[package]]
-name = "include_dir_macros"
-version = "0.7.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7cab85a7ed0bd5f0e76d93846e0147172bed2e2d3f859bcc33a8d9699cad1a75"
-dependencies = [
- "proc-macro2",
- "quote",
-]
-
-[[package]]
-name = "itertools"
-version = "0.10.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
-dependencies = [
- "either",
-]
 
 [[package]]
 name = "itertools"
@@ -554,7 +515,7 @@ checksum = "34080505efa8e45a4b816c349525ebe327ceaa8559756f0356cba97ef3bf7432"
 [[package]]
 name = "mctp-rs"
 version = "0.1.0"
-source = "git+https://github.com/OpenDevicePartnership/embedded-services#ff66417672ff443c401e68ffd2e90a2de92e98de"
+source = "git+https://github.com/OpenDevicePartnership/embedded-services#3c5741370d3aac8a4e7ac57fbbca138f4bfafdd5"
 dependencies = [
  "bit-register 0.1.0 (git+https://github.com/OpenDevicePartnership/odp-utilities)",
  "defmt 0.3.100",
@@ -684,14 +645,12 @@ checksum = "c33a9471896f1c69cecef8d20cbe2f7accd12527ce60845ff44c153bb2a21b49"
 [[package]]
 name = "power-policy-interface"
 version = "0.1.0"
-source = "git+https://github.com/OpenDevicePartnership/embedded-services#ff66417672ff443c401e68ffd2e90a2de92e98de"
+source = "git+https://github.com/OpenDevicePartnership/embedded-services#3c5741370d3aac8a4e7ac57fbbca138f4bfafdd5"
 dependencies = [
- "bitfield 0.17.0",
  "defmt 0.3.100",
  "embassy-sync",
  "embedded-batteries-async",
  "embedded-services",
- "num_enum",
 ]
 
 [[package]]
@@ -918,8 +877,8 @@ dependencies = [
  "embedded-services",
  "embedded-usb-pd",
  "fw-update-interface",
- "heapless 0.9.3",
- "itertools 0.14.0",
+ "heapless",
+ "itertools",
  "log",
  "power-policy-interface",
  "static_cell",
@@ -929,57 +888,40 @@ dependencies = [
 ]
 
 [[package]]
-name = "tps6699x"
-version = "0.1.0"
-source = "git+https://github.com/OpenDevicePartnership/tps6699x#dbc2c5e215349e094abe7cc78ff85a2a9fa531c9"
-dependencies = [
- "bincode",
- "bitfield 0.19.4",
- "defmt 0.3.100",
- "device-driver",
- "embassy-sync",
- "embassy-time",
- "embedded-hal 1.0.0",
- "embedded-hal-async",
- "embedded-io-async 0.6.1",
- "embedded-usb-pd",
- "heapless 0.8.0",
- "itertools 0.14.0",
-]
-
-[[package]]
 name = "type-c-interface"
 version = "0.1.0"
-source = "git+https://github.com/OpenDevicePartnership/embedded-services#ff66417672ff443c401e68ffd2e90a2de92e98de"
+source = "git+https://github.com/OpenDevicePartnership/embedded-services#3c5741370d3aac8a4e7ac57fbbca138f4bfafdd5"
 dependencies = [
  "bitfield 0.17.0",
  "defmt 0.3.100",
  "embedded-services",
  "embedded-usb-pd",
- "heapless 0.9.3",
+ "heapless",
  "power-policy-interface",
 ]
 
 [[package]]
 name = "type-c-service"
 version = "0.1.0"
-source = "git+https://github.com/OpenDevicePartnership/embedded-services#ff66417672ff443c401e68ffd2e90a2de92e98de"
+source = "git+https://github.com/OpenDevicePartnership/embedded-services#3c5741370d3aac8a4e7ac57fbbca138f4bfafdd5"
 dependencies = [
- "bitfield 0.17.0",
- "bitflags 2.9.4",
  "defmt 0.3.100",
  "embassy-futures",
  "embassy-sync",
  "embassy-time",
- "embedded-hal-async",
  "embedded-services",
  "embedded-usb-pd",
  "fw-update-interface",
- "heapless 0.9.3",
+ "heapless",
  "power-policy-interface",
- "tps6699x 0.1.0 (git+https://github.com/OpenDevicePartnership/tps6699x)",
  "type-c-interface",
 ]
+
+[[package]]
+name = "typenum"
+version = "1.20.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b6f5e870be6c3b371b77fe0ee0bafb859fa4964b4404c27de1d380043c4dda20"
 
 [[package]]
 name = "unicode-ident"
