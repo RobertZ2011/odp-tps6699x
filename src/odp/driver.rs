@@ -11,7 +11,7 @@ use embedded_usb_pd::ado::Ado;
 use embedded_usb_pd::pdinfo::PowerPathStatus;
 use embedded_usb_pd::pdo::{Common, Contract, Rdo, sink, source};
 use embedded_usb_pd::type_c::Current as TypecCurrent;
-use embedded_usb_pd::ucsi::lpm;
+use embedded_usb_pd::ucsi::v1_2::lpm;
 use embedded_usb_pd::{DataRole, Error, LocalPortId, PdError, PlugOrientation, PowerRole};
 use heapless::Vec;
 use type_c_interface::control::dp::{DpConfig, DpPinConfig, DpStatus};
