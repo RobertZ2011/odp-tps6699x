@@ -347,11 +347,7 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
             error!("Command {:#?} timed out", cmd);
             // Reconcile a completion that raced the software timeout.
             let mut inner = self.lock_inner().await;
-            match inner.read_command_result(port, outdata, cmd.has_return_value()).await? {
-                ReturnValue::Success => Ok(ReturnValue::Success),
-                ReturnValue::Rejected => PdError::Rejected.into(),
-                _ => PdError::Timeout.into(),
-            }
+            inner.read_command_result(port, outdata, cmd.has_return_value()).await
         }
     }
 
