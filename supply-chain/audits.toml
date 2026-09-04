@@ -1902,6 +1902,12 @@ delta = "0.8.7 -> 0.8.8"
 notes = "Delta audit: replaces heavy windows crate with lighter windows-link/windows-result + auto-generated bindings (windows-bindgen 0.65.0). Fixes fn-ptr-to-int casts for strict provenance. Improves TLS optimization bug workaround on macOS/Windows (compiler_fence + black_box replacing double thread::current hack). No new unsafe patterns; all changes consistent with stackful coroutine purpose. Assisted-by: GitHub Copilot:claude-opus-4.6"
 aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/embedded-services/refs/heads/main/supply-chain/audits.toml"
 
+[[audits.generic-array]]
+who = "Billy Price <williamp@microsoft.com>"
+criteria = "safe-to-deploy"
+version = "1.4.2"
+aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/embedded-services/refs/heads/main/supply-chain/audits.toml"
+
 [[audits.getrandom]]
 who = "Jerry Xie <jerryxie@microsoft.com>"
 criteria = "safe-to-run"
@@ -4520,6 +4526,13 @@ delta = "1.18.0 -> 1.20.0"
 notes = "Delta audit. build.rs removed (improvement). Adds tuple indexing, Binary fmt, ToInt for isize/i128/u128, 2^N-1 constants. No unsafe code (forbid). No build script, no proc macros, no powerful imports. Assisted-by: GitHub Copilot:claude-opus-4.6"
 aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/embedded-services/refs/heads/main/supply-chain/audits.toml"
 
+[[audits.typenum]]
+who = "Felipe Balbi <febalbi@microsoft.com>"
+criteria = "safe-to-deploy"
+delta = "1.20.0 -> 1.20.1"
+notes = "Macro hygiene fix: the recursive expansion of `tarr!` now uses `$crate::tarr![...]` instead of a naked `tarr![...]`, so the caller no longer needs `tarr` in scope. Plus a doc_root URL bump for the new version. No runtime behaviour changes."
+aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/embassy-imxrt/refs/heads/main/supply-chain/audits.toml"
+
 [[audits.ufmt-write]]
 who = "Jerry Xie <jerryxie@microsoft.com>"
 criteria = "safe-to-deploy"
@@ -5358,7 +5371,7 @@ aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/tmp10
 
 [[trusted.autocfg]]
 criteria = "safe-to-deploy"
-user-id = 539
+user-id = 539 # Josh Stone (cuviper)
 start = "2019-05-22"
 end = "2026-10-06"
 aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/patina/refs/heads/main/supply-chain/audits.toml"
@@ -5526,7 +5539,7 @@ aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/bq257
 
 [[trusted.find-msvc-tools]]
 criteria = "safe-to-run"
-user-id = 539
+user-id = 539 # Josh Stone (cuviper)
 start = "2025-08-29"
 end = "2027-05-16"
 aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/tmp108/refs/heads/main/supply-chain/audits.toml"
@@ -5540,7 +5553,7 @@ aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/patin
 
 [[trusted.indexmap]]
 criteria = "safe-to-deploy"
-user-id = 539
+user-id = 539 # Josh Stone (cuviper)
 start = "2020-01-15"
 end = "2027-05-16"
 aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/tmp108/refs/heads/main/supply-chain/audits.toml"
@@ -5743,28 +5756,28 @@ aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/embas
 
 [[trusted.num]]
 criteria = "safe-to-deploy"
-user-id = 539
+user-id = 539 # Josh Stone (cuviper)
 start = "2020-01-10"
 end = "2027-05-16"
 aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/tmp108/refs/heads/main/supply-chain/audits.toml"
 
 [[trusted.num-bigint]]
 criteria = "safe-to-deploy"
-user-id = 539
+user-id = 539 # Josh Stone (cuviper)
 start = "2019-09-04"
 end = "2026-10-06"
 aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/patina/refs/heads/main/supply-chain/audits.toml"
 
 [[trusted.num-complex]]
 criteria = "safe-to-deploy"
-user-id = 539
+user-id = 539 # Josh Stone (cuviper)
 start = "2019-06-10"
 end = "2027-05-16"
 aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/tmp108/refs/heads/main/supply-chain/audits.toml"
 
 [[trusted.num-rational]]
 criteria = "safe-to-deploy"
-user-id = 539
+user-id = 539 # Josh Stone (cuviper)
 start = "2019-06-11"
 end = "2027-05-16"
 aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/tmp108/refs/heads/main/supply-chain/audits.toml"
@@ -5925,14 +5938,14 @@ aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/tmp10
 
 [[trusted.rayon]]
 criteria = "safe-to-deploy"
-user-id = 539
+user-id = 539 # Josh Stone (cuviper)
 start = "2019-06-13"
 end = "2026-03-24"
 aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/patina/refs/heads/main/supply-chain/audits.toml"
 
 [[trusted.rayon-core]]
 criteria = "safe-to-deploy"
-user-id = 539
+user-id = 539 # Josh Stone (cuviper)
 start = "2019-06-13"
 end = "2026-03-24"
 aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/patina/refs/heads/main/supply-chain/audits.toml"
