@@ -273,10 +273,9 @@ mod test {
     use static_cell::StaticCell;
 
     use super::*;
-    use crate::ADDR0;
     use crate::asynchronous::embassy::controller::Controller;
     use crate::test::PORT0_ADDR0;
-    use crate::PORT0;
+    use crate::{ADDR0, PORT0};
 
     const INTERRUPT_BYTES: usize = 11;
 

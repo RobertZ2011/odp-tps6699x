@@ -7,7 +7,7 @@ use bincode::config;
 use embassy_sync::blocking_mutex::raw::RawMutex;
 use embassy_sync::mutex::{Mutex, MutexGuard};
 use embassy_sync::signal::Signal;
-use embassy_time::{Timer, with_timeout};
+use embassy_time::{Duration, Timer, with_timeout};
 use embedded_hal_async::delay::DelayNs;
 use embedded_hal_async::i2c::I2c;
 use embedded_usb_pd::ado::{self, Ado};
@@ -865,10 +865,10 @@ mod test {
     use embedded_hal_mock::eh1::i2c::Mock;
 
     use super::*;
+    use crate::PORT0;
     use crate::asynchronous::embassy::controller::Controller;
     use crate::registers::REG_DATA1_LEN;
     use crate::test::{PORT0_ADDR0, create_register_read, create_register_write};
-    use crate::PORT0;
 
     fn command_result_data(return_value: u8, output: &[u8]) -> [u8; REG_DATA1_LEN] {
         let mut data = [0; REG_DATA1_LEN];
@@ -899,14 +899,8 @@ mod test {
         let mut output = [0; 4];
 
         assert_eq!(
-            pd.execute_command_with_timeout(
-                Duration::from_millis(1),
-                PORT0,
-                Command::Tfuq,
-                None,
-                Some(&mut output),
-            )
-            .await,
+            pd.execute_command_with_timeout(Duration::from_millis(1), PORT0, Command::Tfuq, None, Some(&mut output),)
+                .await,
             Ok(ReturnValue::Success)
         );
         assert_eq!(output, expected_output);
