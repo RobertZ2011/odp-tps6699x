@@ -88,7 +88,7 @@ impl<'a, M: RawMutex, B: I2c> InterruptProcessor<'a, M, B> {
                         error!("{:?}: read_interrupt failed", port_id);
                     }
                     Err(_) => {
-                        error!("{:?}: read_interrupt timeout", port_id);
+                        warn!("{:?}: read_interrupt timeout", port_id);
                     }
                 }
             }
