@@ -3,16 +3,18 @@ use core::future::Future;
 use core::iter::zip;
 use core::marker::PhantomData;
 
-use bincode::config;
 use embedded_hal_async::delay::DelayNs;
 use embedded_usb_pd::{Error, PdError};
 
 use super::interrupt::InterruptController;
-use crate::command::{ReturnValue, TfudArgs, TfuiArgs, TfuqBlockStatus};
+use crate::command::{
+    ReturnValue, TFUD_ARGS_LEN, TFUI_ARGS_LEN, TfudArgs, TfudArgsRaw, TfuiArgs, TfuiArgsRaw, TfuqBlockStatus,
+};
 use crate::fw_update::{
-    APP_CONFIG_BLOCK_INDEX, DATA_BLOCK_LEN, DATA_BLOCK_METADATA_LEN, DATA_BLOCK_START_INDEX, HEADER_BLOCK_INDEX,
-    HEADER_BLOCK_LEN, HEADER_BLOCK_OFFSET, HEADER_METADATA_LEN, HEADER_METADATA_OFFSET, IMAGE_ID_LEN, MAX_METADATA_LEN,
-    State, TFUD_BURST_WRITE_DELAY_MS, TFUI_BURST_WRITE_DELAY_MS, UPDATE_CHUNK_LENGTH, UpdateConfig,
+    APP_CONFIG_BLOCK_INDEX, APP_IMAGE_SIZE_LEN, DATA_BLOCK_LEN, DATA_BLOCK_METADATA_LEN, DATA_BLOCK_START_INDEX,
+    HEADER_BLOCK_INDEX, HEADER_BLOCK_LEN, HEADER_BLOCK_OFFSET, HEADER_METADATA_LEN, HEADER_METADATA_OFFSET,
+    IMAGE_ID_LEN, MAX_METADATA_LEN, State, TFUD_BURST_WRITE_DELAY_MS, TFUI_BURST_WRITE_DELAY_MS, UPDATE_CHUNK_LENGTH,
+    UpdateConfig,
 };
 use crate::stream::*;
 use crate::{PORT0, debug, error, info, trace, warn};
@@ -439,9 +441,13 @@ impl<T: UpdateTarget> BorrowedUpdaterInProgress<T> {
 
         if read_result.is_complete() {
             // We have the full header metadata
-            let (mut args, _): (TfuiArgs, _) =
-                bincode::decode_from_slice(&self.args_buffer, config::standard().with_fixed_int_encoding())
-                    .map_err(|_| PdError::Serialize)?;
+            let raw: TfuiArgsRaw = bytemuck::try_pod_read_unaligned(
+                self.args_buffer
+                    .get(..TFUI_ARGS_LEN)
+                    .ok_or(Error::Pd(PdError::Serialize))?,
+            )
+            .map_err(|_| Error::Pd(PdError::Serialize))?;
+            let mut args = TfuiArgs::from(raw);
 
             // Override broadcast address if specified
             args.broadcast_u16_address = self.config.broadcast_addr.unwrap_or(args.broadcast_u16_address);
@@ -506,9 +512,13 @@ impl<T: UpdateTarget> BorrowedUpdaterInProgress<T> {
 
         if read_result.is_complete() {
             // We have the full header metadata
-            let (mut args, _): (TfudArgs, _) =
-                bincode::decode_from_slice(&self.args_buffer, config::standard().with_fixed_int_encoding())
-                    .map_err(|_| PdError::Serialize)?;
+            let raw: TfudArgsRaw = bytemuck::try_pod_read_unaligned(
+                self.args_buffer
+                    .get(..TFUD_ARGS_LEN)
+                    .ok_or(Error::Pd(PdError::Serialize))?,
+            )
+            .map_err(|_| Error::Pd(PdError::Serialize))?;
+            let mut args = TfudArgs::from(raw);
 
             // Override broadcast address if specified
             args.broadcast_u16_address = self.config.broadcast_addr.unwrap_or(args.broadcast_u16_address);
@@ -584,11 +594,14 @@ impl<T: UpdateTarget> BorrowedUpdaterInProgress<T> {
         self.fw_update_burst_write(controllers, read_result.read_data).await?;
         if read_result.is_complete() {
             // We have the full image size
-            let (image_size, _): (u32, _) =
-                bincode::decode_from_slice(&self.args_buffer, config::standard().with_fixed_int_encoding())
-                    .map_err(|_| PdError::Serialize)?;
+            let raw: pack1::U32LE = bytemuck::try_pod_read_unaligned(
+                self.args_buffer
+                    .get(..APP_IMAGE_SIZE_LEN)
+                    .ok_or(Error::Pd(PdError::Serialize))?,
+            )
+            .map_err(|_| Error::Pd(PdError::Serialize))?;
 
-            self.image_size = image_size as usize;
+            self.image_size = raw.get() as usize;
             Ok(Some(self.state.next_seek_nop(read_result.position).map_err(Error::Pd)?))
         } else {
             Ok(None)

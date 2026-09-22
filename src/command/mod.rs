@@ -1,8 +1,6 @@
-use bincode::de::Decoder;
-use bincode::enc::Encoder;
-use bincode::error::{DecodeError, EncodeError};
-use bincode::{Decode, Encode};
+use bytemuck::{Pod, Zeroable};
 use embedded_usb_pd::PdError;
+use pack1::{U16LE, U32LE};
 
 use crate::u32_from_str;
 
@@ -346,13 +344,32 @@ pub struct ResetArgs {
     /// True to copy the backup bank to the active bank
     pub copy_bank: bool,
 }
-impl Encode for ResetArgs {
-    fn encode<E: Encoder>(&self, encoder: &mut E) -> Result<(), EncodeError> {
-        let switch_banks = if self.switch_banks { RESET_FEATURE_ENABLE } else { 0 };
-        Encode::encode(&switch_banks, encoder)?;
-        let copy_bank = if self.copy_bank { RESET_FEATURE_ENABLE } else { 0 };
-        Encode::encode(&copy_bank, encoder)
+impl From<ResetArgs> for ResetArgsRaw {
+    fn from(value: ResetArgs) -> Self {
+        Self {
+            switch_banks: if value.switch_banks { RESET_FEATURE_ENABLE } else { 0 },
+            copy_bank: if value.copy_bank { RESET_FEATURE_ENABLE } else { 0 },
+        }
     }
+}
+
+impl From<ResetArgsRaw> for ResetArgs {
+    fn from(value: ResetArgsRaw) -> Self {
+        Self {
+            switch_banks: value.switch_banks == RESET_FEATURE_ENABLE,
+            copy_bank: value.copy_bank == RESET_FEATURE_ENABLE,
+        }
+    }
+}
+
+/// Raw wire format of [`ResetArgs`]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Pod, Zeroable)]
+#[repr(C)]
+pub struct ResetArgsRaw {
+    /// [`RESET_FEATURE_ENABLE`] to swap banks on reset
+    pub switch_banks: u8,
+    /// [`RESET_FEATURE_ENABLE`] to copy the backup bank to the active bank
+    pub copy_bank: u8,
 }
 
 /// Delay for completion of TFUs command
@@ -362,13 +379,45 @@ pub(crate) const TFUS_DELAY_MS: u32 = 500;
 pub(crate) const TFUI_ARGS_LEN: usize = 8;
 
 /// Arguments for TFUi command
-#[derive(Debug, Clone, Copy, Decode, Encode, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct TfuiArgs {
     pub num_data_blocks_tx: u16,
     pub data_len: u16,
     pub timeout_secs: u16,
     pub broadcast_u16_address: u16,
+}
+
+/// Raw wire format of [`TfuiArgs`]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Pod, Zeroable)]
+#[repr(C)]
+pub struct TfuiArgsRaw {
+    pub num_data_blocks_tx: U16LE,
+    pub data_len: U16LE,
+    pub timeout_secs: U16LE,
+    pub broadcast_u16_address: U16LE,
+}
+
+impl From<TfuiArgs> for TfuiArgsRaw {
+    fn from(value: TfuiArgs) -> Self {
+        Self {
+            num_data_blocks_tx: value.num_data_blocks_tx.into(),
+            data_len: value.data_len.into(),
+            timeout_secs: value.timeout_secs.into(),
+            broadcast_u16_address: value.broadcast_u16_address.into(),
+        }
+    }
+}
+
+impl From<TfuiArgsRaw> for TfuiArgs {
+    fn from(value: TfuiArgsRaw) -> Self {
+        Self {
+            num_data_blocks_tx: value.num_data_blocks_tx.get(),
+            data_len: value.data_len.get(),
+            timeout_secs: value.timeout_secs.get(),
+            broadcast_u16_address: value.broadcast_u16_address.get(),
+        }
+    }
 }
 
 /// Command type for TFUq command
@@ -379,10 +428,20 @@ pub enum TfuqCommandType {
     QueryTfuStatus = 0x00,
 }
 
-impl Encode for TfuqCommandType {
-    fn encode<E: Encoder>(&self, encoder: &mut E) -> Result<(), EncodeError> {
-        let val = *self as u8;
-        Encode::encode(&val, encoder)
+impl From<TfuqCommandType> for u8 {
+    fn from(value: TfuqCommandType) -> Self {
+        value as u8
+    }
+}
+
+impl TryFrom<u8> for TfuqCommandType {
+    type Error = PdError;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
+            0x00 => Ok(TfuqCommandType::QueryTfuStatus),
+            _ => Err(PdError::InvalidParams),
+        }
     }
 }
 
@@ -397,10 +456,23 @@ pub enum TfuqStatusQuery {
     StatusBank1,
 }
 
-impl Encode for TfuqStatusQuery {
-    fn encode<E: Encoder>(&self, encoder: &mut E) -> Result<(), EncodeError> {
-        let val = *self as u8;
-        Encode::encode(&val, encoder)
+impl From<TfuqStatusQuery> for u8 {
+    fn from(value: TfuqStatusQuery) -> Self {
+        value as u8
+    }
+}
+
+impl TryFrom<u8> for TfuqStatusQuery {
+    type Error = PdError;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
+            0x00 => Ok(TfuqStatusQuery::StatusDefault),
+            0x01 => Ok(TfuqStatusQuery::StatusInProgress),
+            0x02 => Ok(TfuqStatusQuery::StatusBank0),
+            0x03 => Ok(TfuqStatusQuery::StatusBank1),
+            _ => Err(PdError::InvalidParams),
+        }
     }
 }
 
@@ -475,10 +547,9 @@ impl TryFrom<u8> for TfuqBlockStatus {
     }
 }
 
-impl<Context> Decode<Context> for TfuqBlockStatus {
-    fn decode<D: Decoder>(decoder: &mut D) -> Result<Self, DecodeError> {
-        let val: u8 = Decode::decode(decoder)?;
-        TfuqBlockStatus::try_from(val).map_err(|_| DecodeError::Other("Invalid TfuqBlockStatus"))
+impl From<TfuqBlockStatus> for u8 {
+    fn from(value: TfuqBlockStatus) -> Self {
+        value as u8
     }
 }
 
@@ -487,16 +558,47 @@ impl<Context> Decode<Context> for TfuqBlockStatus {
 pub(crate) const TFUQ_ARGS_LEN: usize = 2;
 
 /// Arguments for TFUq command
-#[derive(Debug, Encode, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct TfuqArgs {
     pub status_query: TfuqStatusQuery,
     pub command: TfuqCommandType,
 }
 
+/// Raw wire format of [`TfuqArgs`]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Pod, Zeroable)]
+#[repr(C)]
+pub struct TfuqArgsRaw {
+    pub status_query: u8,
+    pub command: u8,
+}
+
+impl From<TfuqArgs> for TfuqArgsRaw {
+    fn from(value: TfuqArgs) -> Self {
+        Self {
+            status_query: value.status_query.into(),
+            command: value.command.into(),
+        }
+    }
+}
+
+impl TryFrom<TfuqArgsRaw> for TfuqArgs {
+    type Error = PdError;
+
+    fn try_from(value: TfuqArgsRaw) -> Result<Self, Self::Error> {
+        Ok(Self {
+            status_query: value.status_query.try_into()?,
+            command: value.command.try_into()?,
+        })
+    }
+}
+
 /// Length of return data from TFUq command
 #[allow(dead_code)]
 pub(crate) const TFUQ_RETURN_LEN: usize = 40;
+/// Length of the meaningful portion of the TFUq return data
+#[allow(dead_code)]
+pub(crate) const TFUQ_RETURN_VALUE_LEN: usize = 34;
 /// Number of block statuses present in TFUq return data
 #[allow(dead_code)]
 pub(crate) const TFUQ_RETURN_BLOCK_STATUS_LEN: usize = 13;
@@ -515,32 +617,64 @@ pub struct TfuqReturnValue {
     pub num_of_app_config_updates: u16,
 }
 
-impl<Context> Decode<Context> for TfuqReturnValue {
-    fn decode<D: Decoder>(decoder: &mut D) -> Result<Self, DecodeError> {
-        let active_host = Decode::decode(decoder)?;
-        let current_state = Decode::decode(decoder)?;
-        let _reserved: u16 = Decode::decode(decoder)?;
-        let image_write_status = Decode::decode(decoder)?;
-        let blocks_written_bitfield = Decode::decode(decoder)?;
-        let mut block_status = [TfuqBlockStatus::Success; TFUQ_RETURN_BLOCK_STATUS_LEN];
-        for status in block_status.iter_mut() {
-            *status = Decode::decode(decoder)?;
-        }
-        let num_of_header_bytes_received = Decode::decode(decoder)?;
-        let _reserved: u16 = Decode::decode(decoder)?;
-        let num_of_data_bytes_received = Decode::decode(decoder)?;
-        let _reserved: u16 = Decode::decode(decoder)?;
-        let num_of_app_config_updates = Decode::decode(decoder)?;
+/// Raw wire format of [`TfuqReturnValue`]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Pod, Zeroable)]
+#[repr(C)]
+pub struct TfuqReturnValueRaw {
+    pub active_host: u8,
+    pub current_state: u8,
+    _reserved0: U16LE,
+    pub image_write_status: u8,
+    pub blocks_written_bitfield: U16LE,
+    pub block_status: [u8; TFUQ_RETURN_BLOCK_STATUS_LEN],
+    pub num_of_header_bytes_received: U32LE,
+    _reserved1: U16LE,
+    pub num_of_data_bytes_received: U32LE,
+    _reserved2: U16LE,
+    pub num_of_app_config_updates: U16LE,
+}
 
-        Ok(TfuqReturnValue {
-            active_host,
-            current_state,
-            image_write_status,
-            blocks_written_bitfield,
+impl From<TfuqReturnValue> for TfuqReturnValueRaw {
+    fn from(value: TfuqReturnValue) -> Self {
+        let mut block_status = [0u8; TFUQ_RETURN_BLOCK_STATUS_LEN];
+        for (raw, status) in block_status.iter_mut().zip(value.block_status.iter()) {
+            *raw = (*status).into();
+        }
+
+        Self {
+            active_host: value.active_host,
+            current_state: value.current_state,
+            _reserved0: U16LE::default(),
+            image_write_status: value.image_write_status,
+            blocks_written_bitfield: value.blocks_written_bitfield.into(),
             block_status,
-            num_of_header_bytes_received,
-            num_of_data_bytes_received,
-            num_of_app_config_updates,
+            num_of_header_bytes_received: value.num_of_header_bytes_received.into(),
+            _reserved1: U16LE::default(),
+            num_of_data_bytes_received: value.num_of_data_bytes_received.into(),
+            _reserved2: U16LE::default(),
+            num_of_app_config_updates: value.num_of_app_config_updates.into(),
+        }
+    }
+}
+
+impl TryFrom<TfuqReturnValueRaw> for TfuqReturnValue {
+    type Error = PdError;
+
+    fn try_from(value: TfuqReturnValueRaw) -> Result<Self, Self::Error> {
+        let mut block_status = [TfuqBlockStatus::Success; TFUQ_RETURN_BLOCK_STATUS_LEN];
+        for (status, raw) in block_status.iter_mut().zip(value.block_status.iter()) {
+            *status = TfuqBlockStatus::try_from(*raw)?;
+        }
+
+        Ok(Self {
+            active_host: value.active_host,
+            current_state: value.current_state,
+            image_write_status: value.image_write_status,
+            blocks_written_bitfield: value.blocks_written_bitfield.get(),
+            block_status,
+            num_of_header_bytes_received: value.num_of_header_bytes_received.get(),
+            num_of_data_bytes_received: value.num_of_data_bytes_received.get(),
+            num_of_app_config_updates: value.num_of_app_config_updates.get(),
         })
     }
 }
@@ -579,7 +713,7 @@ impl From<SrdySwitch> for u8 {
 /// Arguments for TFUd command
 #[allow(dead_code)]
 pub(crate) const TFUD_ARGS_LEN: usize = 8;
-#[derive(Debug, Decode, Encode, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct TfudArgs {
     pub block_number: u16,
@@ -587,16 +721,58 @@ pub struct TfudArgs {
     pub timeout_secs: u16,
     pub broadcast_u16_address: u16,
 }
+
+/// Raw wire format of [`TfudArgs`]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Pod, Zeroable)]
+#[repr(C)]
+pub struct TfudArgsRaw {
+    pub block_number: U16LE,
+    pub data_len: U16LE,
+    pub timeout_secs: U16LE,
+    pub broadcast_u16_address: U16LE,
+}
+
+impl From<TfudArgs> for TfudArgsRaw {
+    fn from(value: TfudArgs) -> Self {
+        Self {
+            block_number: value.block_number.into(),
+            data_len: value.data_len.into(),
+            timeout_secs: value.timeout_secs.into(),
+            broadcast_u16_address: value.broadcast_u16_address.into(),
+        }
+    }
+}
+
+impl From<TfudArgsRaw> for TfudArgs {
+    fn from(value: TfudArgsRaw) -> Self {
+        Self {
+            block_number: value.block_number.get(),
+            data_len: value.data_len.get(),
+            timeout_secs: value.timeout_secs.get(),
+            broadcast_u16_address: value.broadcast_u16_address.get(),
+        }
+    }
+}
 #[cfg(test)]
 mod test {
-    use bincode::config;
-
     use super::*;
 
     fn test_encode_reset_args(args: ResetArgs, expected: [u8; RESET_ARGS_LEN]) {
-        let mut buf = [0; RESET_ARGS_LEN];
-        bincode::encode_into_slice(args, &mut buf, config::standard().with_fixed_int_encoding()).unwrap();
-        assert_eq!(buf, expected);
+        let raw = ResetArgsRaw::from(args);
+        assert_eq!(bytemuck::bytes_of(&raw), &expected);
+
+        // Round trip back to the native type
+        let decoded: ResetArgsRaw = bytemuck::pod_read_unaligned(&expected);
+        assert_eq!(ResetArgs::from(decoded), args);
+    }
+
+    #[test]
+    fn test_raw_sizes() {
+        assert_eq!(core::mem::size_of::<ResetArgsRaw>(), RESET_ARGS_LEN);
+        assert_eq!(core::mem::size_of::<TfuiArgsRaw>(), TFUI_ARGS_LEN);
+        assert_eq!(core::mem::size_of::<TfudArgsRaw>(), TFUD_ARGS_LEN);
+        assert_eq!(core::mem::size_of::<TfuqArgsRaw>(), TFUQ_ARGS_LEN);
+        assert_eq!(core::mem::size_of::<TfuqReturnValueRaw>(), TFUQ_RETURN_VALUE_LEN);
     }
 
     #[test]
@@ -644,16 +820,14 @@ mod test {
             broadcast_u16_address: 0xDEF0,
         };
         let expected = [0x34, 0x12, 0x78, 0x56, 0xBC, 0x9A, 0xF0, 0xDE];
-        let mut buf = [0; TFUI_ARGS_LEN];
 
         // Test encoding
-        bincode::encode_into_slice(args, &mut buf, config::standard().with_fixed_int_encoding()).unwrap();
-        assert_eq!(buf, expected);
+        let raw = TfuiArgsRaw::from(args);
+        assert_eq!(bytemuck::bytes_of(&raw), &expected);
 
         // Test decoding
-        let (decoded, _): (TfuiArgs, _) =
-            bincode::decode_from_slice(&buf, config::standard().with_fixed_int_encoding()).unwrap();
-        assert_eq!(decoded, args);
+        let decoded: TfuiArgsRaw = bytemuck::pod_read_unaligned(&expected);
+        assert_eq!(TfuiArgs::from(decoded), args);
     }
 
     #[test]
@@ -662,9 +836,9 @@ mod test {
             status_query: TfuqStatusQuery::StatusBank0,
             command: TfuqCommandType::QueryTfuStatus,
         };
-        let mut buf = [0; TFUQ_ARGS_LEN];
-        bincode::encode_into_slice(args, &mut buf, config::standard().with_fixed_int_encoding()).unwrap();
-        assert_eq!(buf, [0x02, 0x00]);
+        let raw = TfuqArgsRaw::from(args);
+        assert_eq!(bytemuck::bytes_of(&raw), &[0x02, 0x00]);
+        assert_eq!(TfuqArgs::try_from(raw).unwrap(), args);
     }
 
     #[test]
@@ -681,10 +855,28 @@ mod test {
                 status_query: query,
                 command: TfuqCommandType::QueryTfuStatus,
             };
-            let mut buf = [0; TFUQ_ARGS_LEN];
-            bincode::encode_into_slice(args, &mut buf, config::standard().with_fixed_int_encoding()).unwrap();
-            assert_eq!(buf, expected, "Failed for {:?}", query);
+            let raw = TfuqArgsRaw::from(args);
+            assert_eq!(bytemuck::bytes_of(&raw), &expected, "Failed for {:?}", query);
+            assert_eq!(TfuqArgs::try_from(raw).unwrap(), args, "Failed for {:?}", query);
         }
+    }
+
+    #[test]
+    fn test_tfuq_args_invalid_raw() {
+        assert_eq!(
+            TfuqArgs::try_from(TfuqArgsRaw {
+                status_query: 0x04,
+                command: 0x00
+            }),
+            Err(PdError::InvalidParams)
+        );
+        assert_eq!(
+            TfuqArgs::try_from(TfuqArgsRaw {
+                status_query: 0x00,
+                command: 0x01
+            }),
+            Err(PdError::InvalidParams)
+        );
     }
 
     #[test]
@@ -717,9 +909,27 @@ mod test {
             0x01, 0x02, 0x00, 0x00, 0x03, 0x05, 0x04, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
             0x0B, 0xC, 0x09, 0x08, 0x07, 0x06, 0x00, 0x00, 0x0D, 0x0C, 0x0B, 0x0A, 0x00, 0x00, 0x0F, 0x0E,
         ];
-        let (decoded, _): (TfuqReturnValue, _) =
-            bincode::decode_from_slice(&expected, config::standard().with_fixed_int_encoding()).unwrap();
-        assert_eq!(decoded, args);
+        let raw: TfuqReturnValueRaw = bytemuck::pod_read_unaligned(&expected);
+        assert_eq!(TfuqReturnValue::try_from(raw).unwrap(), args);
+
+        // Reserved bytes are zeroed when re-encoding
+        assert_eq!(bytemuck::bytes_of(&TfuqReturnValueRaw::from(args)), &expected);
+    }
+
+    #[test]
+    fn test_tfuq_return_value_invalid_block_status() {
+        let mut raw = TfuqReturnValueRaw::from(TfuqReturnValue {
+            active_host: 0,
+            current_state: 0,
+            image_write_status: 0,
+            blocks_written_bitfield: 0,
+            block_status: [TfuqBlockStatus::Success; TFUQ_RETURN_BLOCK_STATUS_LEN],
+            num_of_header_bytes_received: 0,
+            num_of_data_bytes_received: 0,
+            num_of_app_config_updates: 0,
+        });
+        raw.block_status[0] = 0xFF;
+        assert_eq!(TfuqReturnValue::try_from(raw), Err(PdError::InvalidParams));
     }
 
     #[test]
@@ -731,16 +941,14 @@ mod test {
             broadcast_u16_address: 0xDEF0,
         };
         let expected = [0x34, 0x12, 0x78, 0x56, 0xBC, 0x9A, 0xF0, 0xDE];
-        let mut buf = [0; TFUD_ARGS_LEN];
 
         // Test encoding
-        bincode::encode_into_slice(args, &mut buf, config::standard().with_fixed_int_encoding()).unwrap();
-        assert_eq!(buf, expected);
+        let raw = TfudArgsRaw::from(args);
+        assert_eq!(bytemuck::bytes_of(&raw), &expected);
 
         // Test decoding
-        let (decoded, _): (TfudArgs, _) =
-            bincode::decode_from_slice(&buf, config::standard().with_fixed_int_encoding()).unwrap();
-        assert_eq!(decoded, args);
+        let decoded: TfudArgsRaw = bytemuck::pod_read_unaligned(&expected);
+        assert_eq!(TfudArgs::from(decoded), args);
     }
 
     #[test]

@@ -3,7 +3,6 @@ use core::future::Future;
 use core::iter::zip;
 use core::sync::atomic::AtomicBool;
 
-use bincode::config;
 use embassy_sync::blocking_mutex::raw::RawMutex;
 use embassy_sync::mutex::{Mutex, MutexGuard};
 use embassy_sync::signal::Signal;
@@ -398,10 +397,7 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
         cmd: trig::Cmd,
     ) -> Result<ReturnValue, Error<B::Error>> {
         let args = trig::Args { edge, cmd };
-        let mut args_buf = [0; trig::ARGS_LEN];
-
-        bincode::encode_into_slice(args, &mut args_buf, config::standard().with_fixed_int_encoding())
-            .map_err(|_| Error::Pd(PdError::InvalidParams))?;
+        let args_buf: [u8; trig::ARGS_LEN] = bytemuck::must_cast(trig::ArgsRaw::from(args));
 
         self.execute_command(port, Command::Trig, Some(&args_buf), None).await
     }
@@ -799,19 +795,13 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
         port: LocalPortId,
         input: gcdm::Input,
     ) -> Result<gcdm::DiscoveredModes, Error<B::Error>> {
-        let mut input_data = [0u8; gcdm::INPUT_LEN];
         let mut output_data = [0u8; gcdm::OUTPUT_LEN];
 
         // Executing `GCdm` too soon after the discover modes interrupt can fail
         // Brief delay to work around this, value determined by trial and error
         Timer::after_millis(5).await;
 
-        let _size = bincode::encode_into_slice(
-            input,
-            input_data.as_mut_slice(),
-            bincode::config::standard().with_fixed_int_encoding(),
-        )
-        .map_err(|_| Error::Pd(PdError::Serialize))?;
+        let input_data: [u8; gcdm::INPUT_LEN] = bytemuck::must_cast(gcdm::InputRaw::from(input));
 
         let ret: Result<(), PdError> = self
             .execute_command(
@@ -824,9 +814,9 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
             .into();
         ret?;
 
-        let (modes, _): (gcdm::DiscoveredModes, _) =
-            bincode::decode_from_slice(&output_data, bincode::config::standard().with_fixed_int_encoding())
-                .map_err(|_| Error::Pd(PdError::Serialize))?;
+        let raw: gcdm::DiscoveredModesRaw =
+            bytemuck::try_pod_read_unaligned(&output_data).map_err(|_| Error::Pd(PdError::Serialize))?;
+        let modes = gcdm::DiscoveredModes::from(raw);
 
         // Documentation says that this command doesn't have a standard return value.
         // But it actually can fail with a rejection error, however the output data is not shifted to accommodate this.

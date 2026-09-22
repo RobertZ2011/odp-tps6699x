@@ -386,6 +386,12 @@ delta = "1.23.2 -> 1.25.0"
 notes = "Delta 1.23.2->1.25.0: New unsafe impl AnyBitPattern for [MaybeUninit<T>; N] (sound — any bit pattern valid for MaybeUninit arrays of AnyBitPattern types). Portable SIMD impls split by rustversion for LaneCount removal (same safety invariants). AVX512 feature gates simplified from nightly_stdsimd to stable avx512_simd. stdcall fn ptr ZeroableInOption impls correctly restricted to x86 only. New optional rustversion dep for compile-time version detection. No build script, no I/O, no new powerful imports. Assisted-by: copilot-cli:claude-opus-4.6"
 aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/embedded-services/refs/heads/main/supply-chain/audits.toml"
 
+[[audits.bytemuck_derive]]
+who = "Robert Zieba <robertzieba@microsoft.com>"
+criteria = "safe-to-deploy"
+version = "1.10.2"
+notes = "Changes support more types of structs and enums, no unsafe changes to the generated code."
+
 [[audits.cc]]
 who = "Jerry Xie <jerryxie@microsoft.com>"
 criteria = "safe-to-deploy"
@@ -2855,6 +2861,12 @@ who = "Robert Zieba <robertzieba@microsoft.com>"
 criteria = "safe-to-run"
 version = "1.70.2"
 aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/embedded-services/refs/heads/main/supply-chain/audits.toml"
+
+[[audits.pack1]]
+who = "Robert Zieba <robertzieba@microsoft.com>"
+criteria = "safe-to-deploy"
+version = "1.1.0"
+notes = "No unsafe code, only wrapper types around byte arrays, endianness conversion are handled by the built-in `from_*_bytes` functions."
 
 [[audits.pico-de-gallo-hal]]
 who = "Jerry Xie <jerryxie@microsoft.com>"
@@ -6855,42 +6867,42 @@ aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/bq257
 
 [[trusted.zerocopy]]
 criteria = "safe-to-deploy"
-user-id = 7178 # Joshua Liebow-Feeser (joshlf)
+user-id = 7178 # Josh Liebow-Feeser (joshlf)
 start = "2019-02-28"
 end = "2026-10-06"
 aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/patina/refs/heads/main/supply-chain/audits.toml"
 
 [[trusted.zerocopy]]
 criteria = "safe-to-deploy"
-user-id = 7178 # Joshua Liebow-Feeser (joshlf)
+user-id = 7178 # Josh Liebow-Feeser (joshlf)
 start = "2019-02-28"
 end = "2027-03-13"
 aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/INA4230/refs/heads/main/supply-chain/audits.toml"
 
 [[trusted.zerocopy]]
 criteria = "safe-to-deploy"
-user-id = 7178 # Joshua Liebow-Feeser (joshlf)
+user-id = 7178 # Josh Liebow-Feeser (joshlf)
 start = "2019-02-28"
 end = "2027-03-13"
 aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/bq25723/refs/heads/main/supply-chain/audits.toml"
 
 [[trusted.zerocopy-derive]]
 criteria = "safe-to-deploy"
-user-id = 7178 # Joshua Liebow-Feeser (joshlf)
+user-id = 7178 # Josh Liebow-Feeser (joshlf)
 start = "2019-02-28"
 end = "2026-10-06"
 aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/patina/refs/heads/main/supply-chain/audits.toml"
 
 [[trusted.zerocopy-derive]]
 criteria = "safe-to-deploy"
-user-id = 7178 # Joshua Liebow-Feeser (joshlf)
+user-id = 7178 # Josh Liebow-Feeser (joshlf)
 start = "2019-02-28"
 end = "2027-03-13"
 aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/INA4230/refs/heads/main/supply-chain/audits.toml"
 
 [[trusted.zerocopy-derive]]
 criteria = "safe-to-deploy"
-user-id = 7178 # Joshua Liebow-Feeser (joshlf)
+user-id = 7178 # Josh Liebow-Feeser (joshlf)
 start = "2019-02-28"
 end = "2027-03-13"
 aggregated-from = "https://raw.githubusercontent.com/OpenDevicePartnership/bq25723/refs/heads/main/supply-chain/audits.toml"
