@@ -1,4 +1,9 @@
 //! UCSI related functionality
+//!
+//! This is the only remaining user of `bincode` in this crate. The rest of the driver serializes
+//! commands with `bytemuck` + `pack1` raw structs, but the UCSI command and response types are
+//! defined in `embedded-usb-pd` and only implement the `bincode` traits.
+//! TODO: drop `bincode` entirely once `embedded-usb-pd` migrates away from it.
 use bincode::{decode_from_slice_with_context, encode_into_slice};
 use embedded_usb_pd::PowerRole;
 use embedded_usb_pd::pdo::PDO_LEN;

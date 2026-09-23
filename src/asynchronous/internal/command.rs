@@ -1,6 +1,5 @@
 //! This module implements functions to access the command register and its associate data register.
 //! The data register is larger than what device_driver can handle so access is done directly through the `AsyncRegisterInterface` trait.
-use bincode::config;
 use device_driver::AsyncRegisterInterface;
 use embedded_hal_async::delay::DelayNs;
 use embedded_hal_async::i2c::I2c;
@@ -112,10 +111,7 @@ impl<B: I2c> Tps6699x<B> {
     /// Reset the controller
     pub async fn reset(&mut self, delay: &mut impl DelayNs, args: &ResetArgs) -> Result<(), Error<B::Error>> {
         // This is a controller-level command, shouldn't matter which port we use
-        let mut arg_bytes = [0u8; RESET_ARGS_LEN];
-
-        bincode::encode_into_slice(args, &mut arg_bytes, config::standard().with_fixed_int_encoding())
-            .map_err(|_| Error::Pd(PdError::Serialize))?;
+        let arg_bytes: [u8; RESET_ARGS_LEN] = bytemuck::must_cast(ResetArgsRaw::from(*args));
         self.send_command(PORT0, Command::Gaid, Some(&arg_bytes)).await?;
 
         delay.delay_ms(RESET_DELAY_MS).await;
@@ -141,15 +137,12 @@ impl<B: I2c> Tps6699x<B> {
 
     /// Complete firmware update
     pub async fn execute_tfuc(&mut self, delay: &mut impl DelayNs) -> Result<(), Error<B::Error>> {
-        let mut arg_bytes = [0u8; RESET_ARGS_LEN];
-
         let args = ResetArgs {
             switch_banks: false,
             copy_bank: true,
         };
 
-        bincode::encode_into_slice(args, &mut arg_bytes, config::standard().with_fixed_int_encoding())
-            .map_err(|_| Error::Pd(PdError::Serialize))?;
+        let arg_bytes: [u8; RESET_ARGS_LEN] = bytemuck::must_cast(ResetArgsRaw::from(args));
 
         // This is a controller-level command, shouldn't matter which port we use
         let port = LocalPortId(0);
@@ -249,13 +242,7 @@ mod test {
             copy_bank: false,
         };
 
-        let mut arg_bytes = [0u8; RESET_ARGS_LEN];
-        bincode::encode_into_slice(
-            &expected_args,
-            &mut arg_bytes,
-            config::standard().with_fixed_int_encoding(),
-        )
-        .unwrap();
+        let arg_bytes: [u8; RESET_ARGS_LEN] = bytemuck::must_cast(ResetArgsRaw::from(expected_args));
 
         transactions.push(create_register_write(PORT0_ADDR0, REG_DATA1, arg_bytes));
         transactions.push(create_register_write(

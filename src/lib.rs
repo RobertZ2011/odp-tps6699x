@@ -117,14 +117,13 @@ pub(crate) mod test {
     use std::vec;
     use std::vec::Vec;
 
-    use bincode::encode_into_slice;
     use embedded_hal_async::delay::DelayNs;
     use embedded_hal_mock::eh1::i2c::Transaction;
     use embedded_usb_pd::pdo::{self, MA10_UNIT, MV50_UNIT};
     use tokio::time::sleep;
 
     use super::*;
-    use crate::command::{TFUD_ARGS_LEN, TfudArgs, TfuiArgs};
+    use crate::command::{TFUD_ARGS_LEN, TFUI_ARGS_LEN, TfudArgs, TfudArgsRaw, TfuiArgs, TfuiArgsRaw};
     use crate::fw_update::{APP_IMAGE_SIZE_OFFSET, HEADER_BLOCK_LEN, HEADER_METADATA_OFFSET};
 
     pub const PORT0_ADDR0: u8 = ADDR0[0];
@@ -268,13 +267,11 @@ pub(crate) mod test {
 
     /// Generates a mock FW update that contains no actual data, just headers
     pub fn generate_mock_fw() -> Vec<u8> {
-        let mut buf = [0u8; TFUD_ARGS_LEN];
         let mut data: Vec<(usize, Vec<u8>)> = Vec::new();
-        let config = bincode::config::standard().with_fixed_int_encoding();
 
         // Encode the update header
-        encode_into_slice(MOCK_UPDATE_HEADER, &mut buf, config).unwrap();
-        data.push((HEADER_METADATA_OFFSET, buf.clone().into()));
+        let buf: [u8; TFUI_ARGS_LEN] = bytemuck::must_cast(TfuiArgsRaw::from(MOCK_UPDATE_HEADER));
+        data.push((HEADER_METADATA_OFFSET, buf.into()));
 
         // Encode the app size
         data.push((APP_IMAGE_SIZE_OFFSET, MOCK_APP_SIZE.to_le_bytes().into()));
@@ -295,13 +292,13 @@ pub(crate) mod test {
         ];
 
         for (offset, header) in headers.iter() {
-            encode_into_slice(header, &mut buf, config).unwrap();
-            data.push((*offset, buf.clone().into()));
+            let buf: [u8; TFUD_ARGS_LEN] = bytemuck::must_cast(TfudArgsRaw::from(*header));
+            data.push((*offset, buf.into()));
         }
 
         // Encode the app config header
-        encode_into_slice(APP_CONFIG_HEADER, &mut buf, config).unwrap();
-        data.push((APP_CONFIG_HEADER_OFFSET, buf.clone().into()));
+        let buf: [u8; TFUD_ARGS_LEN] = bytemuck::must_cast(TfudArgsRaw::from(APP_CONFIG_HEADER));
+        data.push((APP_CONFIG_HEADER_OFFSET, buf.into()));
 
         let mut buffer = vec![0; 171 * 1024];
         for (offset, bytes) in data {

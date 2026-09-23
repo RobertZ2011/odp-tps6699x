@@ -1,4 +1,3 @@
-use bincode::config;
 use embassy_sync::blocking_mutex::raw::RawMutex;
 use embassy_time::with_timeout;
 use embedded_hal_async::delay::DelayNs;
@@ -8,7 +7,6 @@ use embedded_usb_pd::{Error, PdError};
 use super::Tps6699x;
 use crate::asynchronous::fw_update::UpdateTarget;
 use crate::command::*;
-use crate::fw_update::*;
 use crate::{PORT0, error, info, warn};
 
 impl<M: RawMutex, B: I2c> UpdateTarget for Tps6699x<'_, M, B> {
@@ -33,10 +31,7 @@ impl<M: RawMutex, B: I2c> UpdateTarget for Tps6699x<'_, M, B> {
         _delay: &mut impl DelayNs,
         args: &TfuiArgs,
     ) -> Result<ReturnValue, Error<Self::BusError>> {
-        let mut args_buf = [0u8; HEADER_METADATA_LEN];
-
-        bincode::encode_into_slice(args, &mut args_buf, config::standard().with_fixed_int_encoding())
-            .map_err(|_| PdError::Serialize)?;
+        let args_buf: [u8; TFUI_ARGS_LEN] = bytemuck::must_cast(TfuiArgsRaw::from(*args));
 
         self.execute_command(PORT0, Command::Tfui, Some(&args_buf), None).await
     }
@@ -74,11 +69,8 @@ impl<M: RawMutex, B: I2c> UpdateTarget for Tps6699x<'_, M, B> {
             status_query: TfuqStatusQuery::StatusInProgress,
         };
 
-        let mut arg_bytes = [0u8; 2];
+        let arg_bytes: [u8; TFUQ_ARGS_LEN] = bytemuck::must_cast(TfuqArgsRaw::from(args));
         let mut return_bytes = [0u8; TFUQ_RETURN_LEN];
-
-        bincode::encode_into_slice(args, &mut arg_bytes, config::standard().with_fixed_int_encoding())
-            .map_err(|_| PdError::Serialize)?;
 
         let result = self
             .execute_command(PORT0, Command::Tfuq, Some(&arg_bytes), Some(&mut return_bytes))
@@ -89,9 +81,13 @@ impl<M: RawMutex, B: I2c> UpdateTarget for Tps6699x<'_, M, B> {
             return PdError::Failed.into();
         }
 
-        let (ret, _): (TfuqReturnValue, _) =
-            bincode::decode_from_slice(&return_bytes, config::standard().with_fixed_int_encoding())
-                .map_err(|_| PdError::Serialize)?;
+        let raw: TfuqReturnValueRaw = bytemuck::try_pod_read_unaligned(
+            return_bytes
+                .get(..TFUQ_RETURN_VALUE_LEN)
+                .ok_or(Error::Pd(PdError::Serialize))?,
+        )
+        .map_err(|_| Error::Pd(PdError::Serialize))?;
+        let ret = TfuqReturnValue::try_from(raw).map_err(Error::Pd)?;
 
         ret.block_status
             .get(block_index)
@@ -104,10 +100,7 @@ impl<M: RawMutex, B: I2c> UpdateTarget for Tps6699x<'_, M, B> {
         _delay: &mut impl DelayNs,
         args: &TfudArgs,
     ) -> Result<(), Error<Self::BusError>> {
-        let mut arg_bytes = [0u8; TFUD_ARGS_LEN];
-
-        bincode::encode_into_slice(args, &mut arg_bytes, config::standard().with_fixed_int_encoding())
-            .map_err(|_| PdError::Serialize)?;
+        let arg_bytes: [u8; TFUD_ARGS_LEN] = bytemuck::must_cast(TfudArgsRaw::from(*args));
         let result = self
             .execute_command(PORT0, Command::Tfud, Some(&arg_bytes), None)
             .await?;
