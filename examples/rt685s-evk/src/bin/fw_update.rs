@@ -12,13 +12,14 @@ use embassy_imxrt::{self, bind_interrupts, peripherals};
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::mutex::Mutex;
 use embassy_time::Delay;
-use mimxrt600_fcb::FlexSPIFlashConfigurationBlock;
 use static_cell::StaticCell;
 use tps6699x::asynchronous::embassy as pd_controller;
 use tps6699x::asynchronous::fw_update::perform_fw_update_borrowed;
 use tps6699x::fw_update::UpdateConfig;
 use tps6699x::ADDR0;
 use {defmt_rtt as _, panic_probe as _};
+
+extern crate tps6699x_examples_rt685s_evk;
 
 bind_interrupts!(struct Irqs {
     FLEXCOMM2 => embassy_imxrt::i2c::InterruptHandler<peripherals::FLEXCOMM2>;
@@ -38,7 +39,7 @@ async fn interrupt_task(mut int_in: Input<'static>, mut interrupt: InterruptProc
 async fn main(spawner: Spawner) {
     let p = embassy_imxrt::init(Default::default());
 
-    let int_in = Input::new(p.PIO1_0, Pull::Up, Inverter::Disabled);
+    let int_in = Input::new(p.PIO1_7, Pull::Up, Inverter::Disabled);
     static BUS: StaticCell<Mutex<NoopRawMutex, I2cMaster<'static, Async>>> = StaticCell::new();
     let bus = BUS.init(Mutex::new(
         I2cMaster::new_async(p.FLEXCOMM2, p.PIO0_18, p.PIO0_17, Irqs, Default::default(), p.DMA0_CH5).unwrap(),
@@ -83,19 +84,3 @@ async fn main(spawner: Spawner) {
         );
     }
 }
-
-#[link_section = ".otfad"]
-#[used]
-static OTFAD: [u8; 256] = [0; 256];
-
-#[link_section = ".fcb"]
-#[used]
-static FCB: FlexSPIFlashConfigurationBlock = FlexSPIFlashConfigurationBlock::build();
-
-#[link_section = ".biv"]
-#[used]
-static BOOT_IMAGE_VERSION: u32 = 0x01000000;
-
-#[link_section = ".keystore"]
-#[used]
-static KEYSTORE: [u8; 2048] = [0; 2048];

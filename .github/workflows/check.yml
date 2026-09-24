@@ -178,10 +178,12 @@ jobs:
           submodules: true
       - name: Install stable
         uses: dtolnay/rust-toolchain@stable
+      - name: cargo install cargo-hack
+        uses: taiki-e/install-action@cargo-hack
       - name: cargo check
         working-directory: ${{ matrix.example_directory }}
         run: |
-          cargo check --target thumbv8m.main-none-eabihf
+          cargo hack --feature-powerset check --target thumbv8m.main-none-eabihf
 
   test:
     runs-on: ubuntu-latest
