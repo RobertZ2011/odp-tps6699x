@@ -12,12 +12,13 @@ use embassy_imxrt::{self, bind_interrupts, peripherals};
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::mutex::Mutex;
 use embedded_usb_pd::LocalPortId;
-use mimxrt600_fcb::FlexSPIFlashConfigurationBlock;
 use static_cell::StaticCell;
 use tps6699x::asynchronous::embassy as pd_controller;
 use tps6699x::registers::field_sets::IntEventBus1;
 use tps6699x::{ADDR0, MAX_SUPPORTED_PORTS};
 use {defmt_rtt as _, panic_probe as _};
+
+extern crate tps6699x_examples_rt685s_evk;
 
 bind_interrupts!(struct Irqs {
     FLEXCOMM2 => embassy_imxrt::i2c::InterruptHandler<peripherals::FLEXCOMM2>;
@@ -88,19 +89,3 @@ async fn main(spawner: Spawner) {
         }
     }
 }
-
-#[link_section = ".otfad"]
-#[used]
-static OTFAD: [u8; 256] = [0; 256];
-
-#[link_section = ".fcb"]
-#[used]
-static FCB: FlexSPIFlashConfigurationBlock = FlexSPIFlashConfigurationBlock::build();
-
-#[link_section = ".biv"]
-#[used]
-static BOOT_IMAGE_VERSION: u32 = 0x01000000;
-
-#[link_section = ".keystore"]
-#[used]
-static KEYSTORE: [u8; 2048] = [0; 2048];

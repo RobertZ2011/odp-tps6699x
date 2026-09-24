@@ -48,8 +48,57 @@ mimxrt600-fcb = "0.1.0"
 tps6699x = { path = "../../.", features = ["defmt", "embassy"] }
 static_cell = "2.1.0"
 
+embedded-cfu-protocol = { git = "https://github.com/OpenDevicePartnership/embedded-cfu", optional = true }
+# ODP dependencies
+embedded-services = { git = "https://github.com/OpenDevicePartnership/embedded-services", optional = true, features = [
+    "defmt",
+] }
+type-c-interface = { git = "https://github.com/OpenDevicePartnership/embedded-services", optional = true, features = [
+    "defmt",
+] }
+fw-update-interface = { git = "https://github.com/OpenDevicePartnership/embedded-services", optional = true, features = [
+    "defmt",
+] }
+type-c-service = { git = "https://github.com/OpenDevicePartnership/embedded-services", optional = true, features = [
+    "defmt",
+] }
+power-policy-interface = { git = "https://github.com/OpenDevicePartnership/embedded-services", optional = true, features = [
+    "defmt",
+] }
+power-policy-service = { git = "https://github.com/OpenDevicePartnership/embedded-services", optional = true, features = [
+    "defmt",
+] }
+cfu-service = { git = "https://github.com/OpenDevicePartnership/embedded-services", optional = true, features = [
+    "defmt",
+] }
+
+[features]
+default = []
+odp = [
+    "dep:embedded-services",
+    "dep:type-c-interface",
+    "dep:fw-update-interface",
+    "dep:type-c-service",
+    "dep:power-policy-interface",
+    "dep:power-policy-service",
+    "dep:cfu-service",
+    "dep:embedded-cfu-protocol",
+    "tps6699x/odp-type-c-service",
+    "tps6699x/odp-fw-update-interface",
+]
+
 [[bin]]
 name = "fw_update"
 
 [[bin]]
 name = "plug_status"
+
+[[bin]]
+name = "odp-tcpm"
+path = "src/bin/odp/tcpm.rs"
+required-features = ["odp"]
+
+[[bin]]
+name = "odp-tcpm-cfu"
+path = "src/bin/odp/tcpm-cfu.rs"
+required-features = ["odp"]
