@@ -1,7 +1,7 @@
 //! This module contains a high-level API uses embassy synchronization types
 use core::future::Future;
 use core::iter::zip;
-use core::sync::atomic::AtomicBool;
+use core::sync::atomic::{AtomicBool, Ordering};
 
 use embassy_sync::blocking_mutex::raw::RawMutex;
 use embassy_sync::mutex::{Mutex, MutexGuard};
@@ -39,20 +39,28 @@ pub mod controller {
         pub interrupt_processor_config: crate::asynchronous::embassy::interrupt::Config,
     }
 
+    /// Per-port state
+    pub struct PerPort<M: RawMutex> {
+        /// Command completion signals
+        pub(super) command_complete: Signal<M, ()>,
+        /// Current interrupt state
+        pub(super) interrupts_enabled: AtomicBool,
+        /// Most recent command was successfully sent to the controller
+        pub(super) last_command_sent: AtomicBool,
+    }
+
     /// Controller struct. This struct is meant to be created and then immediately broken into its parts
     pub struct Controller<M: RawMutex, B: I2c> {
         /// Config
         pub(super) config: Config,
         /// Low-level TPS6699x driver
         pub(super) inner: Mutex<M, internal::Tps6699x<B>>,
-        /// Command completion signals
-        pub(super) command_complete: [Signal<M, ()>; MAX_SUPPORTED_PORTS],
         /// Signal for awaiting an interrupt
         pub(super) interrupt_waker: Signal<M, [IntEventBus1; MAX_SUPPORTED_PORTS]>,
-        /// Current interrupt state
-        pub(super) interrupts_enabled: [AtomicBool; MAX_SUPPORTED_PORTS],
         /// Number of active ports
         pub(super) num_ports: usize,
+        /// Per-port state
+        pub(super) per_port: [PerPort<M>; MAX_SUPPORTED_PORTS],
     }
 
     impl<M: RawMutex, B: I2c> Controller<M, B> {
@@ -67,8 +75,13 @@ pub mod controller {
                 config,
                 inner: Mutex::new(internal::Tps6699x::new(bus, addr, num_ports)),
                 interrupt_waker: Signal::new(),
-                command_complete: [const { Signal::new() }; MAX_SUPPORTED_PORTS],
-                interrupts_enabled: [const { AtomicBool::new(true) }; MAX_SUPPORTED_PORTS],
+                per_port: [const {
+                    PerPort {
+                        command_complete: Signal::new(),
+                        interrupts_enabled: AtomicBool::new(true),
+                        last_command_sent: AtomicBool::new(false),
+                    }
+                }; MAX_SUPPORTED_PORTS],
                 num_ports,
             })
         }
@@ -99,7 +112,7 @@ pub mod controller {
 
         /// Enable or disable interrupts for the given ports
         pub(super) fn enable_interrupts(&self, enabled: [bool; MAX_SUPPORTED_PORTS]) {
-            for (enabled, s) in zip(enabled.iter(), self.interrupts_enabled.iter()) {
+            for (enabled, s) in zip(enabled.iter(), self.per_port.iter().map(|p| &p.interrupts_enabled)) {
                 s.store(*enabled, core::sync::atomic::Ordering::SeqCst);
             }
         }
@@ -107,7 +120,10 @@ pub mod controller {
         /// Returns current interrupt state
         pub(super) fn interrupts_enabled(&self) -> [bool; MAX_SUPPORTED_PORTS] {
             let mut interrupts_enabled = [false; MAX_SUPPORTED_PORTS];
-            for (copy, enabled) in zip(interrupts_enabled.iter_mut(), self.interrupts_enabled.iter()) {
+            for (copy, enabled) in zip(
+                interrupts_enabled.iter_mut(),
+                self.per_port.iter().map(|p| &p.interrupts_enabled),
+            ) {
                 *copy = enabled.load(core::sync::atomic::Ordering::SeqCst);
             }
 
@@ -299,16 +315,25 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
             return Err(Error::Pd(PdError::InvalidPort));
         }
 
-        let command_complete = self
+        let command_complete = &self
             .controller
-            .command_complete
+            .per_port
             .get(port.0 as usize)
-            .ok_or(Error::Pd(PdError::InvalidPort))?;
+            .ok_or(Error::Pd(PdError::InvalidPort))?
+            .command_complete;
+        let last_command_sent = &self
+            .controller
+            .per_port
+            .get(port.0 as usize)
+            .ok_or(Error::Pd(PdError::InvalidPort))?
+            .last_command_sent;
         command_complete.reset();
+        last_command_sent.store(false, Ordering::SeqCst);
         {
             let mut inner = self.lock_inner().await;
             inner.send_command(port, cmd, indata).await?;
         }
+        last_command_sent.store(true, Ordering::SeqCst);
 
         command_complete.wait().await;
         {
@@ -344,11 +369,20 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
         .await;
         if let Ok(result) = result {
             result
-        } else {
-            error!("Command {:#?} timed out", cmd);
+        } else if self
+            .controller
+            .per_port
+            .get(port.0 as usize)
+            .map(|v| v.last_command_sent.load(Ordering::SeqCst))
+            .unwrap_or(false)
+        {
             // Reconcile a completion that raced the software timeout.
+            error!("Command {:#?} timed out", cmd);
             let mut inner = self.lock_inner().await;
             inner.read_command_result(port, outdata, cmd.has_return_value()).await
+        } else {
+            // The command was never sent so there is no completion to reconcile.
+            Err(Error::Pd(PdError::Timeout))
         }
     }
 
@@ -988,5 +1022,59 @@ mod test {
             Err(Error::Bus(ErrorKind::Other))
         );
         pd.lock_inner().await.bus.done();
+    }
+
+    /// A mock implementation that can block indefinitely.
+    pub struct BlockingMock {
+        pub inner: Mock,
+        block_duration: Option<Duration>,
+    }
+
+    impl BlockingMock {
+        /// Creates a new `BlockingMock` wrapping the given `Mock`.
+        pub fn new(mock: Mock) -> Self {
+            Self {
+                inner: mock,
+                block_duration: None,
+            }
+        }
+
+        pub fn set_block_duration(&mut self, duration: Duration) {
+            self.block_duration = Some(duration);
+        }
+    }
+
+    impl embedded_hal::i2c::ErrorType for BlockingMock {
+        type Error = ErrorKind;
+    }
+
+    impl embedded_hal_async::i2c::I2c<embedded_hal_async::i2c::SevenBitAddress> for BlockingMock {
+        async fn transaction(
+            &mut self,
+            address: u8,
+            operations: &mut [embedded_hal::i2c::Operation<'_>],
+        ) -> Result<(), Self::Error> {
+            if let Some(duration) = self.block_duration.take() {
+                Timer::after(duration).await;
+            }
+            self.inner.transaction(address, operations).await
+        }
+    }
+
+    // Test that a command send timeout doesn't hit the reconciliation logic.
+    #[tokio::test]
+    async fn test_command_timeout_handles_send_timeout() {
+        let mut bus = BlockingMock::new(Mock::new(&[]));
+        bus.set_block_duration(Duration::from_millis(200));
+
+        let mut controller: Controller<NoopRawMutex, _> =
+            Controller::new_tps66993(bus, Default::default(), PORT0_ADDR0).unwrap();
+        let (mut pd, _interrupt, _receiver) = controller.make_parts();
+        assert_eq!(
+            pd.execute_command_with_timeout(Duration::from_millis(100), PORT0, Command::Gaid, None, None)
+                .await,
+            Err(Error::Pd(PdError::Timeout))
+        );
+        pd.lock_inner().await.bus.inner.done();
     }
 }
