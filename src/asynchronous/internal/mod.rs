@@ -412,13 +412,12 @@ impl<B: I2c> Tps6699x<B> {
     }
 
     /// Get boot flags
-    pub async fn get_boot_flags(&mut self) -> Result<registers::boot_flags::BootFlags, Error<B::Error>> {
-        let mut buf = [0u8; registers::boot_flags::LEN];
+    pub async fn get_boot_flags(&mut self) -> Result<registers::BootFlags, Error<B::Error>> {
         self.borrow_port(PORT0)?
-            .read_register(registers::boot_flags::ADDR, &mut buf, &FieldsetMetadata::DEFAULT)
-            .await?;
-
-        Ok(registers::boot_flags::BootFlagsRaw(buf))
+            .into_registers()
+            .boot_flags()
+            .read_async()
+            .await
     }
 
     /// Get DP status
@@ -1350,18 +1349,17 @@ mod test {
 
     #[tokio::test]
     async fn test_get_boot_flags() {
-        use registers::boot_flags;
+        use registers::BootFlags;
 
         let mock = Mock::new(&[]);
         let mut tps6699x: Tps6699x<Mock> = Tps6699x::new_tps66994(mock, ADDR0);
 
-        let data = [0u8; boot_flags::LEN];
         tps6699x
             .bus
-            .update_expectations(&[create_register_read(PORT0_ADDR0, 0x2D, data)]);
+            .update_expectations(&[create_register_read(PORT0_ADDR0, 0x2D, BootFlags::ZERO)]);
 
         let result = tps6699x.get_boot_flags().await.unwrap();
-        assert_eq!(result.0, data);
+        assert_eq!(result, BootFlags::ZERO);
         tps6699x.bus.done();
     }
 

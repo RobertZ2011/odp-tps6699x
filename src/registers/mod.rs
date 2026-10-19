@@ -5,7 +5,6 @@ use embedded_usb_pd::type_c::ConnectionState;
 use embedded_usb_pd::{PdError, type_c};
 
 pub mod autonegotiate_sink;
-pub mod boot_flags;
 pub mod discovered_svids;
 pub mod dp_status;
 pub mod port_config;

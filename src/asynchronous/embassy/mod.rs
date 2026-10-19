@@ -530,7 +530,7 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
     }
 
     /// Get boot flags
-    pub async fn get_boot_flags(&mut self) -> Result<registers::boot_flags::BootFlags, Error<B::Error>> {
+    pub async fn get_boot_flags(&mut self) -> Result<registers::BootFlags, Error<B::Error>> {
         let mut inner = self.lock_inner().await;
         inner.get_boot_flags().await
     }

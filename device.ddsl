@@ -558,6 +558,58 @@ device Registers {
             },
         },
     },
+    /// Boot flags
+    register BootFlags {
+        address: 0x2D,
+        reset: 0x0,
+        access: RO,
+        fields: fieldset _ {
+            size-bytes: 44,
+
+            /// Current boot stage
+            field BootStage 3:0,
+            /// Number of ports
+            field TotalNumPps 65:64,
+            /// 1 if external power path is present
+            field IsExtPpPresent 66,
+            /// Dead battery flag
+            field DeadBatteryFlag 128,
+            /// Dead battery, port B is power provider
+            field DbPortBPowerProvider 129,
+            /// Dead battery, port A is power provider
+            field DbPortAPowerProvider 130,
+            /// Port A sink switch is enabled
+            field PortASinkSwitch 131,
+            /// Port B sink switch is enabled
+            field PortBSinkSwitch 132,
+            /// Port A I2C1 Target Address
+            field PortA_I2c1TrgtAddr 167:160,
+            /// Port B I2C1 Target Address
+            field PortB_I2c1TrgtAddr 175:168,
+            /// Port A I2C2 Target Address
+            field PortA_I2c2TrgtAddr 183:176,
+            /// Port B I2C2 Target Address
+            field PortB_I2c2TrgtAddr 191:184,
+            /// Port A I2C4 Target Address
+            field PortA_I2c4TrgtAddr 199:192,
+            /// Port B I2C4 Target Address
+            field PortB_I2c4TrgtAddr 207:200,
+            /// Active Bank the device booted from
+            field ActiveBank 225:224,
+            /// Asserted 1 if Bank 0 has valid Application Code
+            field Bank0Valid 226,
+            /// Asserted 1 if Bank 1 has valid Application Code
+            field Bank1Valid 227,
+            /// Application Firmware Version in Bank 0
+            field Bank0FwVersion 287:256,
+            /// Application Firmware Version in Bank 1
+            field Bank1FwVersion 319:288,
+            /// Raw ADCIN Value
+            field AdcInValue 335:320,
+            /// ADCIN Index
+            field AdcInIndex 351:336,
+        },
+    },
     /// Active PDO contract
     register ActivePdoContract {
         address: 0x34,
