@@ -714,10 +714,7 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
     }
 
     /// Get Tx Identity
-    pub async fn get_tx_identity(
-        &mut self,
-        port: LocalPortId,
-    ) -> Result<registers::tx_identity::TxIdentity, Error<B::Error>> {
+    pub async fn get_tx_identity(&mut self, port: LocalPortId) -> Result<registers::TxIdentity, Error<B::Error>> {
         self.lock_inner().await.get_tx_identity(port).await
     }
 
@@ -725,7 +722,7 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
     pub async fn set_tx_identity(
         &mut self,
         port: LocalPortId,
-        value: registers::tx_identity::TxIdentity,
+        value: registers::TxIdentity,
     ) -> Result<(), Error<B::Error>> {
         self.lock_inner().await.set_tx_identity(port, value).await
     }
@@ -734,8 +731,8 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
     pub async fn modify_tx_identity(
         &mut self,
         port: LocalPortId,
-        f: impl FnOnce(&mut registers::tx_identity::TxIdentity) -> registers::tx_identity::TxIdentity,
-    ) -> Result<registers::tx_identity::TxIdentity, Error<B::Error>> {
+        f: impl FnOnce(&mut registers::TxIdentity) -> registers::TxIdentity,
+    ) -> Result<registers::TxIdentity, Error<B::Error>> {
         self.lock_inner().await.modify_tx_identity(port, f).await
     }
 

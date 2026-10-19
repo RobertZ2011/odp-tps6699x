@@ -58,7 +58,7 @@ pub(super) struct FwUpdateState<'a, M: RawMutex, B: I2c> {
 #[derive(Debug, Copy, Clone, Default)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum UsbControlMethod {
-    /// Set USB capabilities through [`crate::registers::tx_identity`].
+    /// Set USB capabilities through [`crate::registers::TxIdentity`].
     #[default]
     TxIdentity,
 
@@ -530,10 +530,10 @@ impl<M: RawMutex, B: I2c> Pd for Tps6699x<'_, M, B> {
 
                 self.tps6699x
                     .modify_tx_identity(port, |identity| {
-                        let mut dfp_vdo = DfpVdo(identity.dfp1_vdo());
+                        let mut dfp_vdo = DfpVdo(identity.dfp_1_vdo());
                         dfp_vdo.set_host_capability(tx_identity_value);
-                        identity.set_dfp1_vdo(dfp_vdo.0);
-                        identity.clone()
+                        identity.set_dfp_1_vdo(dfp_vdo.0);
+                        *identity
                     })
                     .await
                     .map_err(|e| self.log_error(e))?;

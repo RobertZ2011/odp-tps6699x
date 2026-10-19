@@ -770,6 +770,55 @@ device Registers {
             },
         },
     },
+    /// Tx Identity
+    register TxIdentity {
+        address: 0x47,
+        reset: [0x06, 0x51, 0x04, 0x00, 0xD5, 0x51, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+        fields: fieldset _ {
+            size-bytes: 25,
+
+            /// Number of valid VDOs in this register
+            field NumberValidVdos 2:0,
+            /// Vendor ID as defined in USB PD specification.
+            /// This value is also used to populate VID in TX_MIDB_SOP, TX_SCEDB, and TX_SKEDB registers.
+            field VendorId 23:8,
+            /// Product Type DFP as defined in USB PD specification
+            field ProductTypeDfp 33:31 -> _ as enum ProductTypeDfp {
+                UndefinedDfp: 0,
+                PdUsbHub: 1,
+                PdUsbHost: 2,
+                PowerBrick: 3,
+                Amc: 4,
+                Reserved: catch-all _,
+            },
+            /// Assert this bit if Alternate Modes are supported
+            field ModalOperationSupported 34,
+            /// Product Type UFP as defined in USB PD specification
+            field ProductTypeUfp 37:35 -> _ as enum ProductTypeUfp {
+                UndefinedUfp: 0,
+                PdUsbHub: 1,
+                PdUsbPeripheral: 2,
+                Psd: 3,
+                Reserved: catch-all _,
+            },
+            /// Assert if USB communications capable as a device
+            field UsbCommunicationCapableAsDevice 38,
+            /// Assert if USB communications capable as a host
+            field UsbCommunicationCapableAsHost 39,
+            /// 32-bit XID assigned by USB-IF.
+            /// This value is also used to populate XID in TX_SCEDB and TX_SKEDB registers.
+            field CertificationTestId 71:40,
+            /// FW version for the PD controller (read-only)
+            field BcdDevice 87:72,
+            /// Product ID used to populate PID in other registers.
+            /// This value is also used to populate PID in TX_MIDB_SOP, TX_SCEDB, and TX_SKEDB registers.
+            field UsbProductId 103:88,
+            /// UFP1 VDO
+            field Ufp1Vdo 135:104,
+            /// DFP1 VDO
+            field Dfp1Vdo 199:168,
+        },
+    },
     /// Display Port Configuration
     register DpConfig {
         address: 0x51,

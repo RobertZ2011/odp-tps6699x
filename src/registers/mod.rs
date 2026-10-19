@@ -11,7 +11,6 @@ pub mod received_sop_identity_data;
 pub mod received_sop_prime_identity_data;
 pub mod rx_caps;
 pub mod rx_other_vdm;
-pub mod tx_identity;
 
 // Generated register definitions from device.ddsl
 // Skip format checking for generated code

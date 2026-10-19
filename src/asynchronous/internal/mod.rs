@@ -695,26 +695,20 @@ impl<B: I2c> Tps6699x<B> {
     }
 
     /// Get Tx Identity
-    pub async fn get_tx_identity(
-        &mut self,
-        port: LocalPortId,
-    ) -> Result<registers::tx_identity::TxIdentity, Error<B::Error>> {
-        let mut buf = [0u8; registers::tx_identity::LEN];
-        self.borrow_port(port)?
-            .read_register(registers::tx_identity::ADDR, &mut buf, &FieldsetMetadata::DEFAULT)
-            .await?;
-        Ok(buf.into())
+    pub async fn get_tx_identity(&mut self, port: LocalPortId) -> Result<registers::TxIdentity, Error<B::Error>> {
+        self.borrow_port(port)?.into_registers().tx_identity().read_async().await
     }
 
     /// Set Tx Identity
     pub async fn set_tx_identity(
         &mut self,
         port: LocalPortId,
-        value: registers::tx_identity::TxIdentity,
+        value: registers::TxIdentity,
     ) -> Result<(), Error<B::Error>> {
-        let mut buf = *value.as_bytes();
         self.borrow_port(port)?
-            .write_register(registers::tx_identity::ADDR, &mut buf, &FieldsetMetadata::DEFAULT)
+            .into_registers()
+            .tx_identity()
+            .write_async(|r| *r = value)
             .await
     }
 
@@ -722,12 +716,13 @@ impl<B: I2c> Tps6699x<B> {
     pub async fn modify_tx_identity(
         &mut self,
         port: LocalPortId,
-        f: impl FnOnce(&mut registers::tx_identity::TxIdentity) -> registers::tx_identity::TxIdentity,
-    ) -> Result<registers::tx_identity::TxIdentity, Error<B::Error>> {
-        let mut reg = self.get_tx_identity(port).await?;
-        reg = f(&mut reg);
-        self.set_tx_identity(port, reg.clone()).await?;
-        Ok(reg)
+        f: impl FnOnce(&mut registers::TxIdentity) -> registers::TxIdentity,
+    ) -> Result<registers::TxIdentity, Error<B::Error>> {
+        let port = self.borrow_port(port)?;
+        let mut registers = port.into_registers();
+        let mut modified = registers::TxIdentity::ZERO;
+        registers.tx_identity().modify_async(|r| modified = f(r)).await?;
+        Ok(modified)
     }
 
     /// Get the latest received SOP identity data
@@ -1695,27 +1690,49 @@ mod test {
     }
 
     async fn run_get_tx_identity(tps6699x: &mut Tps6699x<Mock>, port: LocalPortId, expected_addr: u8) {
-        use registers::tx_identity;
+        use registers::TxIdentity;
 
-        let data = [0u8; tx_identity::LEN];
         tps6699x
             .bus
-            .update_expectations(&[create_register_read(expected_addr, 0x47, data)]);
+            .update_expectations(&[create_register_read(expected_addr, 0x47, TxIdentity::ZERO)]);
 
         let result = tps6699x.get_tx_identity(port).await.unwrap();
-        assert_eq!(<[u8; tx_identity::LEN]>::from(result), data);
+        assert_eq!(result, TxIdentity::ZERO);
         tps6699x.bus.done();
     }
 
     async fn run_set_tx_identity(tps6699x: &mut Tps6699x<Mock>, port: LocalPortId, expected_addr: u8) {
-        use registers::tx_identity::{self, TxIdentity};
+        use registers::TxIdentity;
 
-        let data = [0u8; tx_identity::LEN];
         tps6699x
             .bus
-            .update_expectations(&[create_register_write(expected_addr, 0x47, data)]);
+            .update_expectations(&[create_register_write(expected_addr, 0x47, TxIdentity::ZERO)]);
 
-        tps6699x.set_tx_identity(port, TxIdentity::from(data)).await.unwrap();
+        tps6699x.set_tx_identity(port, TxIdentity::ZERO).await.unwrap();
+        tps6699x.bus.done();
+    }
+
+    async fn run_modify_tx_identity(tps6699x: &mut Tps6699x<Mock>, port: LocalPortId, expected_addr: u8) {
+        use registers::TxIdentity;
+
+        let initial = TxIdentity::ZERO;
+        let mut expected = initial;
+        expected.set_modal_operation_supported(true);
+
+        tps6699x.bus.update_expectations(&[
+            create_register_read(expected_addr, 0x47, initial),
+            create_register_write(expected_addr, 0x47, expected),
+        ]);
+
+        let result = tps6699x
+            .modify_tx_identity(port, |r| {
+                r.set_modal_operation_supported(true);
+                *r
+            })
+            .await
+            .unwrap();
+
+        assert_eq!(result, expected);
         tps6699x.bus.done();
     }
 
@@ -1735,5 +1752,14 @@ mod test {
 
         run_set_tx_identity(&mut tps6699x, PORT0, PORT0_ADDR0).await;
         run_set_tx_identity(&mut tps6699x, PORT1, PORT1_ADDR0).await;
+    }
+
+    #[tokio::test]
+    async fn test_modify_tx_identity() {
+        let mock = Mock::new(&[]);
+        let mut tps6699x: Tps6699x<Mock> = Tps6699x::new_tps66994(mock, ADDR0);
+
+        run_modify_tx_identity(&mut tps6699x, PORT0, PORT0_ADDR0).await;
+        run_modify_tx_identity(&mut tps6699x, PORT1, PORT1_ADDR0).await;
     }
 }

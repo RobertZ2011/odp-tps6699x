@@ -452,6 +452,35 @@ impl<I> Registers<I> {
             || PdStatus::from([0, 0, 0, 0]),
         )
     }
+    /// Tx Identity
+    ///
+    /// Register operation:
+    /// - Address: `71`
+    /// - Reset value: `[0x06, 0x51, 0x04, 0x00, 0xD5, 0x51, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]`
+    #[doc(alias = "TxIdentity")]
+    pub fn tx_identity(
+        &mut self,
+    ) -> ::device_driver::RegisterOperation<
+        '_,
+        Self,
+        TxIdentity,
+        u8,
+        ::device_driver::RW,
+        (),
+    >
+    where
+        I: ::device_driver::RegisterInterfaceBase<AddressType = u8>,
+    {
+        let address = self.base_address + 71;
+        ::device_driver::RegisterOperation::new(
+            self,
+            address as u8,
+            || TxIdentity::from([
+                6, 81, 4, 0, 213, 81, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0,
+            ]),
+        )
+    }
     /// Display Port Configuration
     ///
     /// Register operation:
@@ -3616,6 +3645,517 @@ impl core::ops::BitXorAssign for DpConfig {
     }
 }
 impl core::ops::Not for DpConfig {
+    type Output = Self;
+    fn not(mut self) -> Self::Output {
+        for val in self.bits.iter_mut() {
+            *val = !*val;
+        }
+        self
+    }
+}
+#[derive(Copy, Clone, Eq, PartialEq)]
+#[repr(transparent)]
+pub struct TxIdentity {
+    #[doc(hidden)]
+    /// The internal bits
+    bits: [u8; 25],
+}
+unsafe impl ::device_driver::Fieldset for TxIdentity {
+    const METADATA: ::device_driver::FieldsetMetadata = ::device_driver::FieldsetMetadata::new()
+        .with_byte_order(::device_driver::ByteOrder::LE);
+    const ZERO: Self = Self { bits: [0; 25] };
+}
+impl TxIdentity {
+    /// `2:0` - Read the `number_valid_vdos` field.
+    ///
+    /// Number of valid VDOs in this register
+    #[doc(alias = "NumberValidVdos")]
+    #[must_use]
+    pub fn number_valid_vdos(&self) -> u8 {
+        let start = 0;
+        let end = 2;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `23:8` - Read the `vendor_id` field.
+    ///
+    /// Vendor ID as defined in USB PD specification.
+    /// This value is also used to populate VID in TX_MIDB_SOP, TX_SCEDB, and TX_SKEDB registers.
+    #[doc(alias = "VendorId")]
+    #[must_use]
+    pub fn vendor_id(&self) -> u16 {
+        let start = 8;
+        let end = 23;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `33:31` - Read the `product_type_dfp` field.
+    ///
+    /// Product Type DFP as defined in USB PD specification
+    #[doc(alias = "ProductTypeDfp")]
+    #[must_use]
+    pub fn product_type_dfp(&self) -> ProductTypeDfp {
+        let start = 31;
+        let end = 33;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw.into()
+    }
+    /// `bit 34` - Read the `modal_operation_supported` field.
+    ///
+    /// Assert this bit if Alternate Modes are supported
+    #[doc(alias = "ModalOperationSupported")]
+    #[must_use]
+    pub fn modal_operation_supported(&self) -> bool {
+        let start = 34;
+        let end = 34;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `37:35` - Read the `product_type_ufp` field.
+    ///
+    /// Product Type UFP as defined in USB PD specification
+    #[doc(alias = "ProductTypeUfp")]
+    #[must_use]
+    pub fn product_type_ufp(&self) -> ProductTypeUfp {
+        let start = 35;
+        let end = 37;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw.into()
+    }
+    /// `bit 38` - Read the `usb_communication_capable_as_device` field.
+    ///
+    /// Assert if USB communications capable as a device
+    #[doc(alias = "UsbCommunicationCapableAsDevice")]
+    #[must_use]
+    pub fn usb_communication_capable_as_device(&self) -> bool {
+        let start = 38;
+        let end = 38;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `bit 39` - Read the `usb_communication_capable_as_host` field.
+    ///
+    /// Assert if USB communications capable as a host
+    #[doc(alias = "UsbCommunicationCapableAsHost")]
+    #[must_use]
+    pub fn usb_communication_capable_as_host(&self) -> bool {
+        let start = 39;
+        let end = 39;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `71:40` - Read the `certification_test_id` field.
+    ///
+    /// 32-bit XID assigned by USB-IF.
+    /// This value is also used to populate XID in TX_SCEDB and TX_SKEDB registers.
+    #[doc(alias = "CertificationTestId")]
+    #[must_use]
+    pub fn certification_test_id(&self) -> u32 {
+        let start = 40;
+        let end = 71;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `87:72` - Read the `bcd_device` field.
+    ///
+    /// FW version for the PD controller (read-only)
+    #[doc(alias = "BcdDevice")]
+    #[must_use]
+    pub fn bcd_device(&self) -> u16 {
+        let start = 72;
+        let end = 87;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `103:88` - Read the `usb_product_id` field.
+    ///
+    /// Product ID used to populate PID in other registers.
+    /// This value is also used to populate PID in TX_MIDB_SOP, TX_SCEDB, and TX_SKEDB registers.
+    #[doc(alias = "UsbProductId")]
+    #[must_use]
+    pub fn usb_product_id(&self) -> u16 {
+        let start = 88;
+        let end = 103;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `135:104` - Read the `ufp_1_vdo` field.
+    ///
+    /// UFP1 VDO
+    #[doc(alias = "Ufp1Vdo")]
+    #[must_use]
+    pub fn ufp_1_vdo(&self) -> u32 {
+        let start = 104;
+        let end = 135;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `199:168` - Read the `dfp_1_vdo` field.
+    ///
+    /// DFP1 VDO
+    #[doc(alias = "Dfp1Vdo")]
+    #[must_use]
+    pub fn dfp_1_vdo(&self) -> u32 {
+        let start = 168;
+        let end = 199;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `2:0` - Set the `number_valid_vdos` field.
+    ///
+    /// Number of valid VDOs in this register
+    #[doc(alias = "NumberValidVdos")]
+    pub fn set_number_valid_vdos(&mut self, value: u8) {
+        let start = 0;
+        let end = 2;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `23:8` - Set the `vendor_id` field.
+    ///
+    /// Vendor ID as defined in USB PD specification.
+    /// This value is also used to populate VID in TX_MIDB_SOP, TX_SCEDB, and TX_SKEDB registers.
+    #[doc(alias = "VendorId")]
+    pub fn set_vendor_id(&mut self, value: u16) {
+        let start = 8;
+        let end = 23;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `33:31` - Set the `product_type_dfp` field.
+    ///
+    /// Product Type DFP as defined in USB PD specification
+    #[doc(alias = "ProductTypeDfp")]
+    pub fn set_product_type_dfp(&mut self, value: ProductTypeDfp) {
+        let start = 31;
+        let end = 33;
+        let raw = value.into();
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 34` - Set the `modal_operation_supported` field.
+    ///
+    /// Assert this bit if Alternate Modes are supported
+    #[doc(alias = "ModalOperationSupported")]
+    pub fn set_modal_operation_supported(&mut self, value: bool) {
+        let start = 34;
+        let end = 34;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `37:35` - Set the `product_type_ufp` field.
+    ///
+    /// Product Type UFP as defined in USB PD specification
+    #[doc(alias = "ProductTypeUfp")]
+    pub fn set_product_type_ufp(&mut self, value: ProductTypeUfp) {
+        let start = 35;
+        let end = 37;
+        let raw = value.into();
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 38` - Set the `usb_communication_capable_as_device` field.
+    ///
+    /// Assert if USB communications capable as a device
+    #[doc(alias = "UsbCommunicationCapableAsDevice")]
+    pub fn set_usb_communication_capable_as_device(&mut self, value: bool) {
+        let start = 38;
+        let end = 38;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 39` - Set the `usb_communication_capable_as_host` field.
+    ///
+    /// Assert if USB communications capable as a host
+    #[doc(alias = "UsbCommunicationCapableAsHost")]
+    pub fn set_usb_communication_capable_as_host(&mut self, value: bool) {
+        let start = 39;
+        let end = 39;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `71:40` - Set the `certification_test_id` field.
+    ///
+    /// 32-bit XID assigned by USB-IF.
+    /// This value is also used to populate XID in TX_SCEDB and TX_SKEDB registers.
+    #[doc(alias = "CertificationTestId")]
+    pub fn set_certification_test_id(&mut self, value: u32) {
+        let start = 40;
+        let end = 71;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `87:72` - Set the `bcd_device` field.
+    ///
+    /// FW version for the PD controller (read-only)
+    #[doc(alias = "BcdDevice")]
+    pub fn set_bcd_device(&mut self, value: u16) {
+        let start = 72;
+        let end = 87;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `103:88` - Set the `usb_product_id` field.
+    ///
+    /// Product ID used to populate PID in other registers.
+    /// This value is also used to populate PID in TX_MIDB_SOP, TX_SCEDB, and TX_SKEDB registers.
+    #[doc(alias = "UsbProductId")]
+    pub fn set_usb_product_id(&mut self, value: u16) {
+        let start = 88;
+        let end = 103;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `135:104` - Set the `ufp_1_vdo` field.
+    ///
+    /// UFP1 VDO
+    #[doc(alias = "Ufp1Vdo")]
+    pub fn set_ufp_1_vdo(&mut self, value: u32) {
+        let start = 104;
+        let end = 135;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `199:168` - Set the `dfp_1_vdo` field.
+    ///
+    /// DFP1 VDO
+    #[doc(alias = "Dfp1Vdo")]
+    pub fn set_dfp_1_vdo(&mut self, value: u32) {
+        let start = 168;
+        let end = 199;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+}
+impl Default for TxIdentity {
+    fn default() -> Self {
+        <Self as ::device_driver::Fieldset>::ZERO
+    }
+}
+impl From<[u8; 25]> for TxIdentity {
+    fn from(bits: [u8; 25]) -> Self {
+        Self { bits }
+    }
+}
+impl From<TxIdentity> for [u8; 25] {
+    fn from(val: TxIdentity) -> Self {
+        val.bits
+    }
+}
+impl core::fmt::Debug for TxIdentity {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
+        let mut d = f.debug_struct("TxIdentity");
+        d.field("number_valid_vdos", &self.number_valid_vdos());
+        d.field("vendor_id", &self.vendor_id());
+        d.field("product_type_dfp", &self.product_type_dfp());
+        d.field("modal_operation_supported", &self.modal_operation_supported());
+        d.field("product_type_ufp", &self.product_type_ufp());
+        d.field(
+            "usb_communication_capable_as_device",
+            &self.usb_communication_capable_as_device(),
+        );
+        d.field(
+            "usb_communication_capable_as_host",
+            &self.usb_communication_capable_as_host(),
+        );
+        d.field("certification_test_id", &self.certification_test_id());
+        d.field("bcd_device", &self.bcd_device());
+        d.field("usb_product_id", &self.usb_product_id());
+        d.field("ufp_1_vdo", &self.ufp_1_vdo());
+        d.field("dfp_1_vdo", &self.dfp_1_vdo());
+        d.finish()
+    }
+}
+#[cfg(feature = "defmt")]
+impl defmt::Format for TxIdentity {
+    fn format(&self, f: defmt::Formatter) {
+        defmt::write!(f, "TxIdentity {{ ");
+        defmt::write!(f, "number_valid_vdos: {=u8}, ", & self.number_valid_vdos());
+        defmt::write!(f, "vendor_id: {=u16}, ", & self.vendor_id());
+        defmt::write!(f, "product_type_dfp: {}, ", & self.product_type_dfp());
+        defmt::write!(
+            f, "modal_operation_supported: {=bool}, ", & self.modal_operation_supported()
+        );
+        defmt::write!(f, "product_type_ufp: {}, ", & self.product_type_ufp());
+        defmt::write!(
+            f, "usb_communication_capable_as_device: {=bool}, ", & self
+            .usb_communication_capable_as_device()
+        );
+        defmt::write!(
+            f, "usb_communication_capable_as_host: {=bool}, ", & self
+            .usb_communication_capable_as_host()
+        );
+        defmt::write!(
+            f, "certification_test_id: {=u32}, ", & self.certification_test_id()
+        );
+        defmt::write!(f, "bcd_device: {=u16}, ", & self.bcd_device());
+        defmt::write!(f, "usb_product_id: {=u16}, ", & self.usb_product_id());
+        defmt::write!(f, "ufp_1_vdo: {=u32}, ", & self.ufp_1_vdo());
+        defmt::write!(f, "dfp_1_vdo: {=u32}, ", & self.dfp_1_vdo());
+        defmt::write!(f, "}}");
+    }
+}
+impl core::ops::BitAnd for TxIdentity {
+    type Output = Self;
+    fn bitand(mut self, rhs: Self) -> Self::Output {
+        self &= rhs;
+        self
+    }
+}
+impl core::ops::BitAndAssign for TxIdentity {
+    fn bitand_assign(&mut self, rhs: Self) {
+        for (l, r) in self.bits.iter_mut().zip(&rhs.bits) {
+            *l &= *r;
+        }
+    }
+}
+impl core::ops::BitOr for TxIdentity {
+    type Output = Self;
+    fn bitor(mut self, rhs: Self) -> Self::Output {
+        self |= rhs;
+        self
+    }
+}
+impl core::ops::BitOrAssign for TxIdentity {
+    fn bitor_assign(&mut self, rhs: Self) {
+        for (l, r) in self.bits.iter_mut().zip(&rhs.bits) {
+            *l |= *r;
+        }
+    }
+}
+impl core::ops::BitXor for TxIdentity {
+    type Output = Self;
+    fn bitxor(mut self, rhs: Self) -> Self::Output {
+        self ^= rhs;
+        self
+    }
+}
+impl core::ops::BitXorAssign for TxIdentity {
+    fn bitxor_assign(&mut self, rhs: Self) {
+        for (l, r) in self.bits.iter_mut().zip(&rhs.bits) {
+            *l ^= *r;
+        }
+    }
+}
+impl core::ops::Not for TxIdentity {
     type Output = Self;
     fn not(mut self) -> Self::Output {
         for val in self.bits.iter_mut() {
@@ -11827,6 +12367,89 @@ impl From<DpPortCapability> for u8 {
 }
 #[doc(hidden)]
 impl ::device_driver::EnumIndex for DpPortCapability {
+    #[track_caller]
+    fn index(&self) -> i32 {
+        let index = u8::from(*self);
+        index.try_into().unwrap()
+    }
+}
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum ProductTypeUfp {
+    UndefinedUfp = 0,
+    PdUsbHub = 1,
+    PdUsbPeripheral = 2,
+    Psd = 3,
+    Reserved(u8) = 4,
+}
+impl From<u8> for ProductTypeUfp {
+    fn from(val: u8) -> Self {
+        match val {
+            0 => Self::UndefinedUfp,
+            1 => Self::PdUsbHub,
+            2 => Self::PdUsbPeripheral,
+            3 => Self::Psd,
+            val => Self::Reserved(val),
+        }
+    }
+}
+impl From<ProductTypeUfp> for u8 {
+    fn from(val: ProductTypeUfp) -> Self {
+        match val {
+            ProductTypeUfp::UndefinedUfp => 0,
+            ProductTypeUfp::PdUsbHub => 1,
+            ProductTypeUfp::PdUsbPeripheral => 2,
+            ProductTypeUfp::Psd => 3,
+            ProductTypeUfp::Reserved(num) => num,
+        }
+    }
+}
+#[doc(hidden)]
+impl ::device_driver::EnumIndex for ProductTypeUfp {
+    #[track_caller]
+    fn index(&self) -> i32 {
+        let index = u8::from(*self);
+        index.try_into().unwrap()
+    }
+}
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum ProductTypeDfp {
+    UndefinedDfp = 0,
+    PdUsbHub = 1,
+    PdUsbHost = 2,
+    PowerBrick = 3,
+    Amc = 4,
+    Reserved(u8) = 5,
+}
+impl From<u8> for ProductTypeDfp {
+    fn from(val: u8) -> Self {
+        match val {
+            0 => Self::UndefinedDfp,
+            1 => Self::PdUsbHub,
+            2 => Self::PdUsbHost,
+            3 => Self::PowerBrick,
+            4 => Self::Amc,
+            val => Self::Reserved(val),
+        }
+    }
+}
+impl From<ProductTypeDfp> for u8 {
+    fn from(val: ProductTypeDfp) -> Self {
+        match val {
+            ProductTypeDfp::UndefinedDfp => 0,
+            ProductTypeDfp::PdUsbHub => 1,
+            ProductTypeDfp::PdUsbHost => 2,
+            ProductTypeDfp::PowerBrick => 3,
+            ProductTypeDfp::Amc => 4,
+            ProductTypeDfp::Reserved(num) => num,
+        }
+    }
+}
+#[doc(hidden)]
+impl ::device_driver::EnumIndex for ProductTypeDfp {
     #[track_caller]
     fn index(&self) -> i32 {
         let index = u8::from(*self);
