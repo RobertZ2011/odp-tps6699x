@@ -526,6 +526,35 @@ impl<I> Registers<I> {
             || UserVidStatus::from([0, 0]),
         )
     }
+    /// DP status
+    ///
+    /// Register operation:
+    /// - Address: `88`
+    /// - Reset value: `0x0`
+    #[doc(alias = "DpStatus")]
+    pub fn dp_status(
+        &mut self,
+    ) -> ::device_driver::RegisterOperation<
+        '_,
+        Self,
+        DpStatus,
+        u8,
+        ::device_driver::RO,
+        (),
+    >
+    where
+        I: ::device_driver::RegisterInterfaceBase<AddressType = u8>,
+    {
+        let address = self.base_address + 88;
+        ::device_driver::RegisterOperation::new(
+            self,
+            address as u8,
+            || DpStatus::from([
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            ]),
+        )
+    }
     /// Intel VID status
     ///
     /// Register operation:
@@ -1280,6 +1309,604 @@ impl core::ops::BitXorAssign for IntelVidStatus {
     }
 }
 impl core::ops::Not for IntelVidStatus {
+    type Output = Self;
+    fn not(mut self) -> Self::Output {
+        for val in self.bits.iter_mut() {
+            *val = !*val;
+        }
+        self
+    }
+}
+#[derive(Copy, Clone, Eq, PartialEq)]
+#[repr(transparent)]
+pub struct DpStatus {
+    #[doc(hidden)]
+    /// The internal bits
+    bits: [u8; 38],
+}
+unsafe impl ::device_driver::Fieldset for DpStatus {
+    const METADATA: ::device_driver::FieldsetMetadata = ::device_driver::FieldsetMetadata::new()
+        .with_byte_order(::device_driver::ByteOrder::LE);
+    const ZERO: Self = Self { bits: [0; 38] };
+}
+impl DpStatus {
+    /// `bit 0` - Read the `dp_detected` field.
+    ///
+    /// DP Detected
+    #[doc(alias = "DpDetected")]
+    #[must_use]
+    pub fn dp_detected(&self) -> bool {
+        let start = 0;
+        let end = 0;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `bit 1` - Read the `dp_mode_active` field.
+    ///
+    /// DP Mode Active
+    #[doc(alias = "DpModeActive")]
+    #[must_use]
+    pub fn dp_mode_active(&self) -> bool {
+        let start = 1;
+        let end = 1;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `39:8` - Read the `dp_status_tx` field.
+    ///
+    /// DP Status TX
+    #[doc(alias = "DpStatusTx")]
+    #[must_use]
+    pub fn dp_status_tx(&self) -> u32 {
+        let start = 8;
+        let end = 39;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `71:40` - Read the `dp_status_rx` field.
+    ///
+    /// DP Status RX
+    #[doc(alias = "DpStatusRx")]
+    #[must_use]
+    pub fn dp_status_rx(&self) -> u32 {
+        let start = 40;
+        let end = 71;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `103:72` - Read the `dp_configure_message` field.
+    ///
+    /// DP Configure Message
+    #[doc(alias = "DpConfigureMessage")]
+    #[must_use]
+    pub fn dp_configure_message(&self) -> u32 {
+        let start = 72;
+        let end = 103;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `135:104` - Read the `dp_mode_data` field.
+    ///
+    /// DP Mode Data
+    #[doc(alias = "DpModeData")]
+    #[must_use]
+    pub fn dp_mode_data(&self) -> u32 {
+        let start = 104;
+        let end = 135;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `167:136` - Read the `dp_status_to_plug` field.
+    ///
+    /// DP Status to Plug
+    #[doc(alias = "DpStatusToPlug")]
+    #[must_use]
+    pub fn dp_status_to_plug(&self) -> u32 {
+        let start = 136;
+        let end = 167;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `199:168` - Read the `dp_status_ack_from_plug` field.
+    ///
+    /// DP Status ACK from Plug
+    #[doc(alias = "DpStatusAckFromPlug")]
+    #[must_use]
+    pub fn dp_status_ack_from_plug(&self) -> u32 {
+        let start = 168;
+        let end = 199;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `231:200` - Read the `dp_config_to_plug` field.
+    ///
+    /// DP Config to Plug
+    #[doc(alias = "DpConfigToPlug")]
+    #[must_use]
+    pub fn dp_config_to_plug(&self) -> u32 {
+        let start = 200;
+        let end = 231;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `263:232` - Read the `dp_config_from_plug` field.
+    ///
+    /// DP Config from Plug
+    #[doc(alias = "DpConfigFromPlug")]
+    #[must_use]
+    pub fn dp_config_from_plug(&self) -> u32 {
+        let start = 232;
+        let end = 263;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `295:264` - Read the `dp_mode_data_sopprime` field.
+    ///
+    /// DP Mode Data SOPPrime
+    #[doc(alias = "DpModeDataSopprime")]
+    #[must_use]
+    pub fn dp_mode_data_sopprime(&self) -> u32 {
+        let start = 264;
+        let end = 295;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `299:296` - Read the `dp_signalling_rate` field.
+    ///
+    /// DP Signalling Rate
+    #[doc(alias = "DpSignallingRate")]
+    #[must_use]
+    pub fn dp_signalling_rate(&self) -> u8 {
+        let start = 296;
+        let end = 299;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `bit 300` - Read the `cable_uhbr_13_5_support` field.
+    ///
+    /// Cable UHBR13.5 Support
+    #[doc(alias = "CableUhbr13_5Support")]
+    #[must_use]
+    pub fn cable_uhbr_13_5_support(&self) -> bool {
+        let start = 300;
+        let end = 300;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `302:301` - Read the `cable_active_component` field.
+    ///
+    /// Cable Active Component
+    #[doc(alias = "CableActiveComponent")]
+    #[must_use]
+    pub fn cable_active_component(&self) -> u8 {
+        let start = 301;
+        let end = 302;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `bit 303` - Read the `dp_ufp_vdo_version` field.
+    ///
+    /// DP UFP VDO Version
+    #[doc(alias = "DpUfpVdoVersion")]
+    #[must_use]
+    pub fn dp_ufp_vdo_version(&self) -> bool {
+        let start = 303;
+        let end = 303;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `bit 0` - Set the `dp_detected` field.
+    ///
+    /// DP Detected
+    #[doc(alias = "DpDetected")]
+    pub fn set_dp_detected(&mut self, value: bool) {
+        let start = 0;
+        let end = 0;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 1` - Set the `dp_mode_active` field.
+    ///
+    /// DP Mode Active
+    #[doc(alias = "DpModeActive")]
+    pub fn set_dp_mode_active(&mut self, value: bool) {
+        let start = 1;
+        let end = 1;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `39:8` - Set the `dp_status_tx` field.
+    ///
+    /// DP Status TX
+    #[doc(alias = "DpStatusTx")]
+    pub fn set_dp_status_tx(&mut self, value: u32) {
+        let start = 8;
+        let end = 39;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `71:40` - Set the `dp_status_rx` field.
+    ///
+    /// DP Status RX
+    #[doc(alias = "DpStatusRx")]
+    pub fn set_dp_status_rx(&mut self, value: u32) {
+        let start = 40;
+        let end = 71;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `103:72` - Set the `dp_configure_message` field.
+    ///
+    /// DP Configure Message
+    #[doc(alias = "DpConfigureMessage")]
+    pub fn set_dp_configure_message(&mut self, value: u32) {
+        let start = 72;
+        let end = 103;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `135:104` - Set the `dp_mode_data` field.
+    ///
+    /// DP Mode Data
+    #[doc(alias = "DpModeData")]
+    pub fn set_dp_mode_data(&mut self, value: u32) {
+        let start = 104;
+        let end = 135;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `167:136` - Set the `dp_status_to_plug` field.
+    ///
+    /// DP Status to Plug
+    #[doc(alias = "DpStatusToPlug")]
+    pub fn set_dp_status_to_plug(&mut self, value: u32) {
+        let start = 136;
+        let end = 167;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `199:168` - Set the `dp_status_ack_from_plug` field.
+    ///
+    /// DP Status ACK from Plug
+    #[doc(alias = "DpStatusAckFromPlug")]
+    pub fn set_dp_status_ack_from_plug(&mut self, value: u32) {
+        let start = 168;
+        let end = 199;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `231:200` - Set the `dp_config_to_plug` field.
+    ///
+    /// DP Config to Plug
+    #[doc(alias = "DpConfigToPlug")]
+    pub fn set_dp_config_to_plug(&mut self, value: u32) {
+        let start = 200;
+        let end = 231;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `263:232` - Set the `dp_config_from_plug` field.
+    ///
+    /// DP Config from Plug
+    #[doc(alias = "DpConfigFromPlug")]
+    pub fn set_dp_config_from_plug(&mut self, value: u32) {
+        let start = 232;
+        let end = 263;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `295:264` - Set the `dp_mode_data_sopprime` field.
+    ///
+    /// DP Mode Data SOPPrime
+    #[doc(alias = "DpModeDataSopprime")]
+    pub fn set_dp_mode_data_sopprime(&mut self, value: u32) {
+        let start = 264;
+        let end = 295;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `299:296` - Set the `dp_signalling_rate` field.
+    ///
+    /// DP Signalling Rate
+    #[doc(alias = "DpSignallingRate")]
+    pub fn set_dp_signalling_rate(&mut self, value: u8) {
+        let start = 296;
+        let end = 299;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 300` - Set the `cable_uhbr_13_5_support` field.
+    ///
+    /// Cable UHBR13.5 Support
+    #[doc(alias = "CableUhbr13_5Support")]
+    pub fn set_cable_uhbr_13_5_support(&mut self, value: bool) {
+        let start = 300;
+        let end = 300;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `302:301` - Set the `cable_active_component` field.
+    ///
+    /// Cable Active Component
+    #[doc(alias = "CableActiveComponent")]
+    pub fn set_cable_active_component(&mut self, value: u8) {
+        let start = 301;
+        let end = 302;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 303` - Set the `dp_ufp_vdo_version` field.
+    ///
+    /// DP UFP VDO Version
+    #[doc(alias = "DpUfpVdoVersion")]
+    pub fn set_dp_ufp_vdo_version(&mut self, value: bool) {
+        let start = 303;
+        let end = 303;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+}
+impl Default for DpStatus {
+    fn default() -> Self {
+        <Self as ::device_driver::Fieldset>::ZERO
+    }
+}
+impl From<[u8; 38]> for DpStatus {
+    fn from(bits: [u8; 38]) -> Self {
+        Self { bits }
+    }
+}
+impl From<DpStatus> for [u8; 38] {
+    fn from(val: DpStatus) -> Self {
+        val.bits
+    }
+}
+impl core::fmt::Debug for DpStatus {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
+        let mut d = f.debug_struct("DpStatus");
+        d.field("dp_detected", &self.dp_detected());
+        d.field("dp_mode_active", &self.dp_mode_active());
+        d.field("dp_status_tx", &self.dp_status_tx());
+        d.field("dp_status_rx", &self.dp_status_rx());
+        d.field("dp_configure_message", &self.dp_configure_message());
+        d.field("dp_mode_data", &self.dp_mode_data());
+        d.field("dp_status_to_plug", &self.dp_status_to_plug());
+        d.field("dp_status_ack_from_plug", &self.dp_status_ack_from_plug());
+        d.field("dp_config_to_plug", &self.dp_config_to_plug());
+        d.field("dp_config_from_plug", &self.dp_config_from_plug());
+        d.field("dp_mode_data_sopprime", &self.dp_mode_data_sopprime());
+        d.field("dp_signalling_rate", &self.dp_signalling_rate());
+        d.field("cable_uhbr_13_5_support", &self.cable_uhbr_13_5_support());
+        d.field("cable_active_component", &self.cable_active_component());
+        d.field("dp_ufp_vdo_version", &self.dp_ufp_vdo_version());
+        d.finish()
+    }
+}
+#[cfg(feature = "defmt")]
+impl defmt::Format for DpStatus {
+    fn format(&self, f: defmt::Formatter) {
+        defmt::write!(f, "DpStatus {{ ");
+        defmt::write!(f, "dp_detected: {=bool}, ", & self.dp_detected());
+        defmt::write!(f, "dp_mode_active: {=bool}, ", & self.dp_mode_active());
+        defmt::write!(f, "dp_status_tx: {=u32}, ", & self.dp_status_tx());
+        defmt::write!(f, "dp_status_rx: {=u32}, ", & self.dp_status_rx());
+        defmt::write!(
+            f, "dp_configure_message: {=u32}, ", & self.dp_configure_message()
+        );
+        defmt::write!(f, "dp_mode_data: {=u32}, ", & self.dp_mode_data());
+        defmt::write!(f, "dp_status_to_plug: {=u32}, ", & self.dp_status_to_plug());
+        defmt::write!(
+            f, "dp_status_ack_from_plug: {=u32}, ", & self.dp_status_ack_from_plug()
+        );
+        defmt::write!(f, "dp_config_to_plug: {=u32}, ", & self.dp_config_to_plug());
+        defmt::write!(f, "dp_config_from_plug: {=u32}, ", & self.dp_config_from_plug());
+        defmt::write!(
+            f, "dp_mode_data_sopprime: {=u32}, ", & self.dp_mode_data_sopprime()
+        );
+        defmt::write!(f, "dp_signalling_rate: {=u8}, ", & self.dp_signalling_rate());
+        defmt::write!(
+            f, "cable_uhbr_13_5_support: {=bool}, ", & self.cable_uhbr_13_5_support()
+        );
+        defmt::write!(
+            f, "cable_active_component: {=u8}, ", & self.cable_active_component()
+        );
+        defmt::write!(f, "dp_ufp_vdo_version: {=bool}, ", & self.dp_ufp_vdo_version());
+        defmt::write!(f, "}}");
+    }
+}
+impl core::ops::BitAnd for DpStatus {
+    type Output = Self;
+    fn bitand(mut self, rhs: Self) -> Self::Output {
+        self &= rhs;
+        self
+    }
+}
+impl core::ops::BitAndAssign for DpStatus {
+    fn bitand_assign(&mut self, rhs: Self) {
+        for (l, r) in self.bits.iter_mut().zip(&rhs.bits) {
+            *l &= *r;
+        }
+    }
+}
+impl core::ops::BitOr for DpStatus {
+    type Output = Self;
+    fn bitor(mut self, rhs: Self) -> Self::Output {
+        self |= rhs;
+        self
+    }
+}
+impl core::ops::BitOrAssign for DpStatus {
+    fn bitor_assign(&mut self, rhs: Self) {
+        for (l, r) in self.bits.iter_mut().zip(&rhs.bits) {
+            *l |= *r;
+        }
+    }
+}
+impl core::ops::BitXor for DpStatus {
+    type Output = Self;
+    fn bitxor(mut self, rhs: Self) -> Self::Output {
+        self ^= rhs;
+        self
+    }
+}
+impl core::ops::BitXorAssign for DpStatus {
+    fn bitxor_assign(&mut self, rhs: Self) {
+        for (l, r) in self.bits.iter_mut().zip(&rhs.bits) {
+            *l ^= *r;
+        }
+    }
+}
+impl core::ops::Not for DpStatus {
     type Output = Self;
     fn not(mut self) -> Self::Output {
         for val in self.bits.iter_mut() {

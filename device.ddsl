@@ -924,6 +924,46 @@ device Registers {
             field Mode4 12,
         },
     },
+    /// DP status
+    register DpStatus {
+        address: 0x58,
+        reset: 0x0,
+        access: RO,
+        fields: fieldset _ {
+            size-bytes: 38,
+
+            /// DP Detected
+            field DpDetected 0,
+            /// DP Mode Active
+            field DpModeActive 1,
+            /// DP Status TX
+            field DpStatusTx 39:8,
+            /// DP Status RX
+            field DpStatusRx 71:40,
+            /// DP Configure Message
+            field DpConfigureMessage 103:72,
+            /// DP Mode Data
+            field DpModeData 135:104,
+            /// DP Status to Plug
+            field DpStatusToPlug 167:136,
+            /// DP Status ACK from Plug
+            field DpStatusAckFromPlug 199:168,
+            /// DP Config to Plug
+            field DpConfigToPlug 231:200,
+            /// DP Config from Plug
+            field DpConfigFromPlug 263:232,
+            /// DP Mode Data SOPPrime
+            field DpModeDataSopprime 295:264,
+            /// DP Signalling Rate
+            field DpSignallingRate 299:296,
+            /// Cable UHBR13.5 Support
+            field CableUhbr13_5Support 300,
+            /// Cable Active Component
+            field CableActiveComponent 302:301,
+            /// DP UFP VDO Version
+            field DpUfpVdoVersion 303,
+        },
+    },
     /// Intel VID status
     register IntelVidStatus {
         address: 0x59,

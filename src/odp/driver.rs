@@ -583,9 +583,7 @@ impl<M: RawMutex, B: I2c> Pd for Tps6699x<'_, M, B> {
         self.guard_no_fw_update_active()?;
         let dp_status = self.tps6699x.get_dp_status(port).await.map_err(|e| self.log_error(e))?;
         debug!("Port{} DP status: {:#?}", port.0, dp_status);
-
-        let alt_mode_entered = dp_status.dp_mode_active() != 0;
-
+        let alt_mode_entered = dp_status.dp_mode_active();
         let dp_config = PdDpAltConfig(dp_status.dp_configure_message());
         let cfg_raw: PdDpPinConfig = dp_config.config_pin().into();
         let pin_config: DpPinConfig = cfg_raw.into();

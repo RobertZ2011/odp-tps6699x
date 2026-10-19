@@ -6,7 +6,6 @@ use embedded_usb_pd::{PdError, type_c};
 
 pub mod autonegotiate_sink;
 pub mod discovered_svids;
-pub mod dp_status;
 pub mod port_config;
 pub mod received_sop_identity_data;
 pub mod received_sop_prime_identity_data;

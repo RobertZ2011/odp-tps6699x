@@ -421,16 +421,8 @@ impl<B: I2c> Tps6699x<B> {
     }
 
     /// Get DP status
-    pub async fn get_dp_status(
-        &mut self,
-        port: LocalPortId,
-    ) -> Result<registers::dp_status::DpStatus, Error<B::Error>> {
-        let mut buf = [0u8; registers::dp_status::LEN];
-        self.borrow_port(port)?
-            .read_register(registers::dp_status::ADDR, &mut buf, &FieldsetMetadata::DEFAULT)
-            .await?;
-
-        Ok(registers::dp_status::DpStatusRaw(buf))
+    pub async fn get_dp_status(&mut self, port: LocalPortId) -> Result<registers::DpStatus, Error<B::Error>> {
+        self.borrow_port(port)?.into_registers().dp_status().read_async().await
     }
 
     /// Get Intel VID status
@@ -474,7 +466,7 @@ impl<B: I2c> Tps6699x<B> {
             user_vid_status.mode_2(),
             user_vid_status.mode_3(),
             user_vid_status.mode_4(),
-            dp_status.dp_mode_active() != 0,
+            dp_status.dp_mode_active(),
             intel_vid_status.tbt_mode_active(),
             usb_status.eudo_sop_sent_status() == registers::EudoSopSentStatus::SuccessfulEnterUsb,
         ))
@@ -1364,15 +1356,14 @@ mod test {
     }
 
     async fn run_get_dp_status(tps6699x: &mut Tps6699x<Mock>, port: LocalPortId, expected_addr: u8) {
-        use registers::dp_status;
+        use registers::DpStatus;
 
-        let data = [0u8; dp_status::LEN];
         tps6699x
             .bus
-            .update_expectations(&[create_register_read(expected_addr, 0x58, data)]);
+            .update_expectations(&[create_register_read(expected_addr, 0x58, DpStatus::ZERO)]);
 
         let result = tps6699x.get_dp_status(port).await.unwrap();
-        assert_eq!(result.0, data);
+        assert_eq!(result, DpStatus::ZERO);
         tps6699x.bus.done();
     }
 

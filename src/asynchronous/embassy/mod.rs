@@ -536,10 +536,7 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
     }
 
     /// Get DP status
-    pub async fn get_dp_status(
-        &mut self,
-        port: LocalPortId,
-    ) -> Result<registers::dp_status::DpStatus, Error<B::Error>> {
+    pub async fn get_dp_status(&mut self, port: LocalPortId) -> Result<registers::DpStatus, Error<B::Error>> {
         let mut inner = self.lock_inner().await;
         inner.get_dp_status(port).await
     }
