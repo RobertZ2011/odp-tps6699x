@@ -1114,6 +1114,32 @@ device Registers {
             field Vdo6 199:168,
         },
     },
+    /// Received SOP Prime Identity Data Object
+    register ReceivedSopPrimeIdentityData {
+        address: 0x49,
+        reset: 0x0,
+        access: RO,
+        fields: fieldset _ {
+            size-bytes: 25,
+
+            /// Number of valid VDOs in this register (max of 6)
+            field NumberValidVdos 2:0,
+            /// Type of response received
+            field ResponseType 7:6,
+            /// VDO 1
+            field Vdo1 39:8,
+            /// VDO 2
+            field Vdo2 71:40,
+            /// VDO 3
+            field Vdo3 103:72,
+            /// VDO 4
+            field Vdo4 135:104,
+            /// VDO 5
+            field Vdo5 167:136,
+            /// VDO 6
+            field Vdo6 199:168,
+        },
+    },
     /// Display Port Configuration
     register DpConfig {
         address: 0x51,

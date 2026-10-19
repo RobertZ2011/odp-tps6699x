@@ -746,15 +746,13 @@ impl<B: I2c> Tps6699x<B> {
         &mut self,
         port: LocalPortId,
     ) -> Result<registers::received_sop_prime_identity_data::ReceivedSopPrimeIdentityData, Error<B::Error>> {
-        let mut buf = [0u8; registers::received_sop_prime_identity_data::LEN];
-        self.borrow_port(port)?
-            .read_register(
-                registers::received_sop_prime_identity_data::ADDR,
-                &mut buf,
-                &FieldsetMetadata::DEFAULT,
-            )
-            .await?;
-        Ok(buf.into())
+        Ok(self
+            .borrow_port(port)?
+            .into_registers()
+            .received_sop_prime_identity_data()
+            .read_async()
+            .await?
+            .into())
     }
 }
 
