@@ -64,7 +64,7 @@ pub struct PortConfig {
     /// Enables support for GPIO10 to I2C IRQ.
     pub sink_mode_i2c_irq_config: bool,
     /// Threshold voltage to trigger the GREATER_THAN_THRESHOLD_VOLTAGE GPIO Event in millivolts.
-    pub gt_threshold_voltage_mv: u16,
+    pub gt_threshold_voltage_mv: u32,
     /// Enable internal auxbiasing.
     pub enable_internal_auxbiasing: bool,
     /// Enable internal level shifter.
@@ -120,7 +120,7 @@ impl From<crate::registers::PortConfig> for PortConfig {
             vbus_for_valid_pps_status: raw.vbus_for_valid_pps_status(),
             external_dcdc_type: raw.external_dcdc_type(),
             sink_mode_i2c_irq_config: raw.sink_mode_i_2_c_irq_config(),
-            gt_threshold_voltage_mv: raw.gt_threshold_voltage() * MV50_UNIT,
+            gt_threshold_voltage_mv: raw.gt_threshold_voltage() as u32 * MV50_UNIT as u32,
             enable_internal_auxbiasing: raw.enable_internal_auxbiasing(),
             enable_internal_level_shifter: raw.enable_internal_level_shifter(),
             level_shifter_direction_cfg: raw.level_shifter_direction_cfg(),
@@ -137,8 +137,21 @@ impl From<crate::registers::PortConfig> for PortConfig {
     }
 }
 
-impl From<PortConfig> for crate::registers::PortConfig {
-    fn from(config: PortConfig) -> Self {
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum PortConfigError {
+    /// `apdo_vbus_uvp_threshold` exceeds the 2-bit field maximum (`0x3`).
+    InvalidApdoVbusUvpThreshold(u8),
+    /// `apdo_ilim_over_shoot` exceeds the 2-bit field maximum (`0x3`).
+    InvalidApdoIlimOverShoot(u8),
+    /// `gt_threshold_voltage_mv` exceeds the 16-bit field maximum (`0xFFFF * 50` mV).
+    InvalidGtThresholdVoltage(u32),
+}
+
+impl TryFrom<PortConfig> for crate::registers::PortConfig {
+    type Error = PortConfigError;
+
+    fn try_from(config: PortConfig) -> Result<Self, Self::Error> {
         let mut raw = Self::default();
         raw.set_typec_state_machine(config.typec_state_machine);
         raw.set_crossbar_type(config.crossbar_type);
@@ -156,13 +169,26 @@ impl From<PortConfig> for crate::registers::PortConfig {
             config.remove_safe_state_between_usb3_to_dp_transition,
         );
         raw.set_vbus_sink_uvp_trip_hv(config.vbus_sink_uvp_trip_hv);
+        if config.apdo_vbus_uvp_threshold > 0x3 {
+            return Err(PortConfigError::InvalidApdoVbusUvpThreshold(
+                config.apdo_vbus_uvp_threshold,
+            ));
+        }
         raw.set_apdo_vbus_uvp_threshold(config.apdo_vbus_uvp_threshold);
+        if config.apdo_ilim_over_shoot > 0x3 {
+            return Err(PortConfigError::InvalidApdoIlimOverShoot(config.apdo_ilim_over_shoot));
+        }
         raw.set_apdo_ilim_over_shoot(config.apdo_ilim_over_shoot);
         raw.set_apdo_vbus_uvp_trip_point_offset(config.apdo_vbus_uvp_trip_point_offset);
         raw.set_vbus_for_valid_pps_status(config.vbus_for_valid_pps_status);
         raw.set_external_dcdc_type(config.external_dcdc_type);
         raw.set_sink_mode_i_2_c_irq_config(config.sink_mode_i2c_irq_config);
-        raw.set_gt_threshold_voltage(config.gt_threshold_voltage_mv / MV50_UNIT);
+        if config.gt_threshold_voltage_mv / MV50_UNIT as u32 > u16::MAX as u32 {
+            return Err(PortConfigError::InvalidGtThresholdVoltage(
+                config.gt_threshold_voltage_mv,
+            ));
+        }
+        raw.set_gt_threshold_voltage((config.gt_threshold_voltage_mv / MV50_UNIT as u32) as u16);
         raw.set_enable_internal_auxbiasing(config.enable_internal_auxbiasing);
         raw.set_enable_internal_level_shifter(config.enable_internal_level_shifter);
         raw.set_level_shifter_direction_cfg(config.level_shifter_direction_cfg);
@@ -175,7 +201,7 @@ impl From<PortConfig> for crate::registers::PortConfig {
         raw.set_flip_crossbar_dbg_setting(config.flip_crossbar_dbg_setting);
         raw.set_flip_crossbar_aux_setting(config.flip_crossbar_aux_setting);
         raw.set_flip_crossbar_sbtx_setting(config.flip_crossbar_sbtx_setting);
-        raw
+        Ok(raw)
     }
 }
 
@@ -185,9 +211,11 @@ impl From<[u8; LEN]> for PortConfig {
     }
 }
 
-impl From<PortConfig> for [u8; LEN] {
-    fn from(value: PortConfig) -> Self {
-        crate::registers::PortConfig::from(value).into()
+impl TryFrom<PortConfig> for [u8; LEN] {
+    type Error = PortConfigError;
+
+    fn try_from(value: PortConfig) -> Result<Self, Self::Error> {
+        Ok(crate::registers::PortConfig::try_from(value)?.into())
     }
 }
 
@@ -198,7 +226,7 @@ mod tests {
     #[test]
     fn test_port_config_default() {
         let config = PortConfig::default();
-        assert_eq!(<[u8; LEN]>::from(config), [0u8; LEN]);
+        assert_eq!(<[u8; LEN]>::try_from(config), Ok([0u8; LEN]));
     }
 
     #[test]
@@ -228,7 +256,7 @@ mod tests {
             vbus_for_valid_pps_status: 0x1234,
             external_dcdc_type: ExternalDcdcType::Bq25758,
             sink_mode_i2c_irq_config: true,
-            gt_threshold_voltage_mv: 0x0123 * MV50_UNIT,
+            gt_threshold_voltage_mv: 0x0123 * MV50_UNIT as u32,
             enable_internal_auxbiasing: true,
             enable_internal_level_shifter: true,
             level_shifter_direction_cfg: LevelShifterDirectionCfg::I2CControlled,
@@ -243,11 +271,37 @@ mod tests {
             flip_crossbar_sbtx_setting: true,
         };
 
-        let bytes: [u8; LEN] = config.into();
+        let bytes: [u8; LEN] = config.try_into().unwrap();
         assert_eq!(bytes, EXPECTED);
 
-        let raw: crate::registers::PortConfig = config.into();
+        let raw: crate::registers::PortConfig = config.try_into().unwrap();
         let config2 = PortConfig::from(raw);
         assert_eq!(config2, config);
+    }
+
+    #[test]
+    fn test_port_config_overflow() {
+        let mut config = PortConfig::default();
+        config.apdo_vbus_uvp_threshold = 0x4;
+        assert_eq!(
+            TryInto::<[u8; LEN]>::try_into(config),
+            Err(PortConfigError::InvalidApdoVbusUvpThreshold(0x4))
+        );
+
+        let mut config = PortConfig::default();
+        config.apdo_ilim_over_shoot = 0x4;
+        assert_eq!(
+            TryInto::<[u8; LEN]>::try_into(config),
+            Err(PortConfigError::InvalidApdoIlimOverShoot(0x4))
+        );
+
+        let mut config = PortConfig::default();
+        config.gt_threshold_voltage_mv = (u16::MAX as u32 + 1) * MV50_UNIT as u32;
+        assert_eq!(
+            TryInto::<[u8; LEN]>::try_into(config),
+            Err(PortConfigError::InvalidGtThresholdVoltage(
+                (u16::MAX as u32 + 1) * MV50_UNIT as u32
+            ))
+        );
     }
 }

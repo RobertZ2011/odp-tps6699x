@@ -124,8 +124,36 @@ impl From<crate::registers::AutonegotiateSink> for AutonegotiateSink {
     }
 }
 
-impl From<AutonegotiateSink> for crate::registers::AutonegotiateSink {
-    fn from(sink: AutonegotiateSink) -> Self {
+/// Error returned when a field in [`AutonegotiateSink`] exceeds its hardware bit-width.
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum AutonegotiateSinkError {
+    /// `auto_neg_max_current_ma` exceeds the 10-bit field maximum (`0x3FF * 10` mA).
+    InvalidAutoNegMaxCurrent(u16),
+    /// `auto_neg_sink_min_required_power_mw` exceeds the 10-bit field maximum (`0x3FF * 250` mW).
+    InvalidAutoNegSinkMinRequiredPower(u32),
+    /// `auto_neg_max_voltage_mv` exceeds the 10-bit field maximum (`0x3FF * 50` mV).
+    InvalidAutoNegMaxVoltage(u16),
+    /// `auto_neg_min_voltage_mv` exceeds the 10-bit field maximum (`0x3FF * 50` mV).
+    InvalidAutoNegMinVoltage(u16),
+    /// `auto_neg_capabilities_mismatch_power_mw` exceeds the 10-bit field maximum (`0x3FF * 250` mW).
+    InvalidAutoNegCapabilitiesMismatchPower(u32),
+    /// `pps_sink_voltage_threshold` exceeds the 11-bit field maximum (`0x7FF`).
+    InvalidPpsSinkVoltageThreshold(u16),
+    /// `pps_operating_current_ma` exceeds the 7-bit field maximum (`0x7F * 50` mA).
+    InvalidPpsOperatingCurrent(u16),
+    /// `pps_output_voltage_mv` exceeds the 11-bit field maximum (`0x7FF * 20` mV).
+    InvalidPpsOutputVoltage(u16),
+    /// `epr_avs_operating_current` exceeds the 7-bit field maximum (`0x7F`).
+    InvalidEprAvsOperatingCurrent(u8),
+    /// `epr_avs_output_voltage` exceeds the 12-bit field maximum (`0xFFF`).
+    InvalidEprAvsOutputVoltage(u16),
+}
+
+impl TryFrom<AutonegotiateSink> for crate::registers::AutonegotiateSink {
+    type Error = AutonegotiateSinkError;
+
+    fn try_from(sink: AutonegotiateSink) -> Result<Self, Self::Error> {
         let mut raw = Self::default();
         raw.set_auto_neg_rdo_priority(sink.auto_neg_rdo_priority);
         raw.set_no_usb_suspend(sink.no_usb_suspend);
@@ -138,13 +166,46 @@ impl From<AutonegotiateSink> for crate::registers::AutonegotiateSink {
         raw.set_auto_disable_input_for_sink_standby_in_dbm(sink.auto_disable_input_for_sink_standby_in_dbm);
         raw.set_auto_enable_standby_srdy(sink.auto_enable_standby_srdy);
         raw.set_auto_enable_input_after_snk_ready_in_dbm(sink.auto_enable_input_after_snk_ready_in_dbm);
-        raw.set_auto_neg_max_current(sink.auto_neg_max_current_ma / MA10_UNIT);
-        raw.set_auto_neg_sink_min_required_power((sink.auto_neg_sink_min_required_power_mw / MW250_UNIT) as u16);
-        raw.set_auto_neg_max_voltage(sink.auto_neg_max_voltage_mv / MV50_UNIT);
-        raw.set_auto_neg_min_voltage(sink.auto_neg_min_voltage_mv / MV50_UNIT);
-        raw.set_auto_neg_capabilities_mismatch_power(
-            (sink.auto_neg_capabilities_mismatch_power_mw / MW250_UNIT) as u16,
-        );
+        let auto_neg_max_current = sink.auto_neg_max_current_ma / MA10_UNIT;
+        if auto_neg_max_current > 0x3FF {
+            return Err(AutonegotiateSinkError::InvalidAutoNegMaxCurrent(
+                sink.auto_neg_max_current_ma,
+            ));
+        }
+        raw.set_auto_neg_max_current(auto_neg_max_current);
+
+        let auto_neg_sink_min_required_power = sink.auto_neg_sink_min_required_power_mw / MW250_UNIT;
+        if auto_neg_sink_min_required_power > 0x3FF {
+            return Err(AutonegotiateSinkError::InvalidAutoNegSinkMinRequiredPower(
+                sink.auto_neg_sink_min_required_power_mw,
+            ));
+        }
+        raw.set_auto_neg_sink_min_required_power(auto_neg_sink_min_required_power as u16);
+
+        let auto_neg_max_voltage = sink.auto_neg_max_voltage_mv / MV50_UNIT;
+        if auto_neg_max_voltage > 0x3FF {
+            return Err(AutonegotiateSinkError::InvalidAutoNegMaxVoltage(
+                sink.auto_neg_max_voltage_mv,
+            ));
+        }
+        raw.set_auto_neg_max_voltage(auto_neg_max_voltage);
+
+        let auto_neg_min_voltage = sink.auto_neg_min_voltage_mv / MV50_UNIT;
+        if auto_neg_min_voltage > 0x3FF {
+            return Err(AutonegotiateSinkError::InvalidAutoNegMinVoltage(
+                sink.auto_neg_min_voltage_mv,
+            ));
+        }
+        raw.set_auto_neg_min_voltage(auto_neg_min_voltage);
+
+        let auto_neg_capabilities_mismatch_power = sink.auto_neg_capabilities_mismatch_power_mw / MW250_UNIT;
+        if auto_neg_capabilities_mismatch_power > 0x3FF {
+            return Err(AutonegotiateSinkError::InvalidAutoNegCapabilitiesMismatchPower(
+                sink.auto_neg_capabilities_mismatch_power_mw,
+            ));
+        }
+        raw.set_auto_neg_capabilities_mismatch_power(auto_neg_capabilities_mismatch_power as u16);
+
         raw.set_pps_enable_sink_mode(sink.pps_enable_sink_mode);
         raw.set_pps_request_interval(sink.pps_request_interval);
         raw.set_pps_source_operating_mode(sink.pps_source_operating_mode);
@@ -154,13 +215,44 @@ impl From<AutonegotiateSink> for crate::registers::AutonegotiateSink {
             sink.enable_sink_path_above_pps_sink_voltage_threshold,
         );
         raw.set_disable_sink_if_not_in_pps_contract(sink.disable_sink_if_not_in_pps_contract);
+        if sink.pps_sink_voltage_threshold > 0x7FF {
+            return Err(AutonegotiateSinkError::InvalidPpsSinkVoltageThreshold(
+                sink.pps_sink_voltage_threshold,
+            ));
+        }
         raw.set_pps_sink_voltage_threshold(sink.pps_sink_voltage_threshold);
-        raw.set_pps_operating_current((sink.pps_operating_current_ma / MA50_UNIT) as u8);
-        raw.set_pps_output_voltage(sink.pps_output_voltage_mv / MV20_UNIT);
+
+        let pps_operating_current = sink.pps_operating_current_ma / MA50_UNIT;
+        if pps_operating_current > 0x7F {
+            return Err(AutonegotiateSinkError::InvalidPpsOperatingCurrent(
+                sink.pps_operating_current_ma,
+            ));
+        }
+        raw.set_pps_operating_current(pps_operating_current as u8);
+
+        let pps_output_voltage = sink.pps_output_voltage_mv / MV20_UNIT;
+        if pps_output_voltage > 0x7FF {
+            return Err(AutonegotiateSinkError::InvalidPpsOutputVoltage(
+                sink.pps_output_voltage_mv,
+            ));
+        }
+        raw.set_pps_output_voltage(pps_output_voltage);
+
         raw.set_epr_avs_enable_sink_mode(sink.epr_avs_enable_sink_mode);
+        if sink.epr_avs_operating_current > 0x7F {
+            return Err(AutonegotiateSinkError::InvalidEprAvsOperatingCurrent(
+                sink.epr_avs_operating_current,
+            ));
+        }
         raw.set_epr_avs_operating_current(sink.epr_avs_operating_current);
+
+        if sink.epr_avs_output_voltage > 0xFFF {
+            return Err(AutonegotiateSinkError::InvalidEprAvsOutputVoltage(
+                sink.epr_avs_output_voltage,
+            ));
+        }
         raw.set_epr_avs_output_voltage(sink.epr_avs_output_voltage);
-        raw
+        Ok(raw)
     }
 }
 
@@ -170,9 +262,11 @@ impl From<[u8; LEN]> for AutonegotiateSink {
     }
 }
 
-impl From<AutonegotiateSink> for [u8; LEN] {
-    fn from(value: AutonegotiateSink) -> Self {
-        crate::registers::AutonegotiateSink::from(value).into()
+impl TryFrom<AutonegotiateSink> for [u8; LEN] {
+    type Error = AutonegotiateSinkError;
+
+    fn try_from(value: AutonegotiateSink) -> Result<Self, Self::Error> {
+        Ok(crate::registers::AutonegotiateSink::try_from(value)?.into())
     }
 }
 
@@ -229,7 +323,7 @@ mod tests {
         assert_eq!(actual.epr_avs_operating_current, 0);
         assert_eq!(actual.epr_avs_output_voltage, 0);
 
-        let bytes: [u8; LEN] = actual.into();
+        let bytes: [u8; LEN] = actual.try_into().unwrap();
         assert_eq!(bytes, AutonegotiateSink::DEFAULT);
     }
 
@@ -272,11 +366,88 @@ mod tests {
             epr_avs_output_voltage: 0x0ABC,
         };
 
-        let bytes: [u8; LEN] = sink.into();
+        let bytes: [u8; LEN] = sink.try_into().unwrap();
         assert_eq!(bytes, EXPECTED);
 
-        let raw: crate::registers::AutonegotiateSink = sink.into();
+        let raw: crate::registers::AutonegotiateSink = sink.try_into().unwrap();
         let sink2 = AutonegotiateSink::from(raw);
         assert_eq!(sink2, sink);
+    }
+
+    #[test]
+    fn test_autonegotiate_sink_overflow() {
+        let mut sink = AutonegotiateSink::default();
+        sink.auto_neg_max_current_ma = 0x400 * MA10_UNIT;
+        assert_eq!(
+            TryInto::<[u8; LEN]>::try_into(sink),
+            Err(AutonegotiateSinkError::InvalidAutoNegMaxCurrent(0x400 * MA10_UNIT))
+        );
+
+        let mut sink = AutonegotiateSink::default();
+        sink.auto_neg_sink_min_required_power_mw = 0x400 * MW250_UNIT;
+        assert_eq!(
+            TryInto::<[u8; LEN]>::try_into(sink),
+            Err(AutonegotiateSinkError::InvalidAutoNegSinkMinRequiredPower(
+                0x400 * MW250_UNIT
+            ))
+        );
+
+        let mut sink = AutonegotiateSink::default();
+        sink.auto_neg_max_voltage_mv = 0x400 * MV50_UNIT;
+        assert_eq!(
+            TryInto::<[u8; LEN]>::try_into(sink),
+            Err(AutonegotiateSinkError::InvalidAutoNegMaxVoltage(0x400 * MV50_UNIT))
+        );
+
+        let mut sink = AutonegotiateSink::default();
+        sink.auto_neg_min_voltage_mv = 0x400 * MV50_UNIT;
+        assert_eq!(
+            TryInto::<[u8; LEN]>::try_into(sink),
+            Err(AutonegotiateSinkError::InvalidAutoNegMinVoltage(0x400 * MV50_UNIT))
+        );
+
+        let mut sink = AutonegotiateSink::default();
+        sink.auto_neg_capabilities_mismatch_power_mw = 0x400 * MW250_UNIT;
+        assert_eq!(
+            TryInto::<[u8; LEN]>::try_into(sink),
+            Err(AutonegotiateSinkError::InvalidAutoNegCapabilitiesMismatchPower(
+                0x400 * MW250_UNIT
+            ))
+        );
+
+        let mut sink = AutonegotiateSink::default();
+        sink.pps_sink_voltage_threshold = 0x800;
+        assert_eq!(
+            TryInto::<[u8; LEN]>::try_into(sink),
+            Err(AutonegotiateSinkError::InvalidPpsSinkVoltageThreshold(0x800))
+        );
+
+        let mut sink = AutonegotiateSink::default();
+        sink.pps_operating_current_ma = 0x80 * MA50_UNIT;
+        assert_eq!(
+            TryInto::<[u8; LEN]>::try_into(sink),
+            Err(AutonegotiateSinkError::InvalidPpsOperatingCurrent(0x80 * MA50_UNIT))
+        );
+
+        let mut sink = AutonegotiateSink::default();
+        sink.pps_output_voltage_mv = 0x800 * MV20_UNIT;
+        assert_eq!(
+            TryInto::<[u8; LEN]>::try_into(sink),
+            Err(AutonegotiateSinkError::InvalidPpsOutputVoltage(0x800 * MV20_UNIT))
+        );
+
+        let mut sink = AutonegotiateSink::default();
+        sink.epr_avs_operating_current = 0x80;
+        assert_eq!(
+            TryInto::<[u8; LEN]>::try_into(sink),
+            Err(AutonegotiateSinkError::InvalidEprAvsOperatingCurrent(0x80))
+        );
+
+        let mut sink = AutonegotiateSink::default();
+        sink.epr_avs_output_voltage = 0x1000;
+        assert_eq!(
+            TryInto::<[u8; LEN]>::try_into(sink),
+            Err(AutonegotiateSinkError::InvalidEprAvsOutputVoltage(0x1000))
+        );
     }
 }

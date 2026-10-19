@@ -281,10 +281,11 @@ impl<B: I2c> Tps6699x<B> {
         port: LocalPortId,
         value: registers::autonegotiate_sink::AutonegotiateSink,
     ) -> Result<(), Error<B::Error>> {
+        let value = value.try_into().map_err(|_| Error::Pd(PdError::InvalidParams))?;
         self.borrow_port(port)?
             .into_registers()
             .autonegotiate_sink()
-            .write_async(|r| *r = value.into())
+            .write_async(|r| *r = value)
             .await
     }
 
@@ -571,10 +572,11 @@ impl<B: I2c> Tps6699x<B> {
         port: LocalPortId,
         config: registers::port_config::PortConfig,
     ) -> Result<(), Error<B::Error>> {
+        let config = config.try_into().map_err(|_| Error::Pd(PdError::InvalidParams))?;
         self.borrow_port(port)?
             .into_registers()
             .port_config()
-            .write_async(|r| *r = config.into())
+            .write_async(|r| *r = config)
             .await
     }
 
@@ -788,6 +790,7 @@ mod test {
     use device_driver::AsyncRegisterInterface;
     use embedded_hal_async::i2c::ErrorType;
     use embedded_hal_mock::eh1::i2c::{Mock, Transaction};
+    use embedded_usb_pd::pdo::MV50_UNIT;
     use embedded_usb_pd::pdo::source::Pdo;
 
     use super::*;
@@ -1205,7 +1208,7 @@ mod test {
             .update_expectations(&[create_register_read(expected_addr, 0x37, data)]);
 
         let result = tps6699x.get_autonegotiate_sink(port).await.unwrap();
-        assert_eq!(<[u8; autonegotiate_sink::LEN]>::from(result), data);
+        assert_eq!(<[u8; autonegotiate_sink::LEN]>::try_from(result), Ok(data));
         tps6699x.bus.done();
     }
 
@@ -1233,6 +1236,81 @@ mod test {
         tps6699x.bus.done();
     }
 
+    async fn run_set_autonegotiate_sink_invalid(tps6699x: &mut Tps6699x<Mock>, port: LocalPortId) {
+        use embedded_usb_pd::pdo::{MA10_UNIT, MA50_UNIT, MV20_UNIT, MV50_UNIT, MW250_UNIT};
+        use registers::autonegotiate_sink::AutonegotiateSink;
+
+        let mut sink = AutonegotiateSink::default();
+        sink.auto_neg_max_current_ma = 0x400 * MA10_UNIT;
+        assert_eq!(
+            tps6699x.set_autonegotiate_sink(port, sink).await,
+            Err(Error::Pd(PdError::InvalidParams))
+        );
+
+        let mut sink = AutonegotiateSink::default();
+        sink.auto_neg_sink_min_required_power_mw = 0x400 * MW250_UNIT;
+        assert_eq!(
+            tps6699x.set_autonegotiate_sink(port, sink).await,
+            Err(Error::Pd(PdError::InvalidParams))
+        );
+
+        let mut sink = AutonegotiateSink::default();
+        sink.auto_neg_max_voltage_mv = 0x400 * MV50_UNIT;
+        assert_eq!(
+            tps6699x.set_autonegotiate_sink(port, sink).await,
+            Err(Error::Pd(PdError::InvalidParams))
+        );
+
+        let mut sink = AutonegotiateSink::default();
+        sink.auto_neg_min_voltage_mv = 0x400 * MV50_UNIT;
+        assert_eq!(
+            tps6699x.set_autonegotiate_sink(port, sink).await,
+            Err(Error::Pd(PdError::InvalidParams))
+        );
+
+        let mut sink = AutonegotiateSink::default();
+        sink.auto_neg_capabilities_mismatch_power_mw = 0x400 * MW250_UNIT;
+        assert_eq!(
+            tps6699x.set_autonegotiate_sink(port, sink).await,
+            Err(Error::Pd(PdError::InvalidParams))
+        );
+
+        let mut sink = AutonegotiateSink::default();
+        sink.pps_sink_voltage_threshold = 0x800;
+        assert_eq!(
+            tps6699x.set_autonegotiate_sink(port, sink).await,
+            Err(Error::Pd(PdError::InvalidParams))
+        );
+
+        let mut sink = AutonegotiateSink::default();
+        sink.pps_operating_current_ma = 0x80 * MA50_UNIT;
+        assert_eq!(
+            tps6699x.set_autonegotiate_sink(port, sink).await,
+            Err(Error::Pd(PdError::InvalidParams))
+        );
+
+        let mut sink = AutonegotiateSink::default();
+        sink.pps_output_voltage_mv = 0x800 * MV20_UNIT;
+        assert_eq!(
+            tps6699x.set_autonegotiate_sink(port, sink).await,
+            Err(Error::Pd(PdError::InvalidParams))
+        );
+
+        let mut sink = AutonegotiateSink::default();
+        sink.epr_avs_operating_current = 0x80;
+        assert_eq!(
+            tps6699x.set_autonegotiate_sink(port, sink).await,
+            Err(Error::Pd(PdError::InvalidParams))
+        );
+
+        let mut sink = AutonegotiateSink::default();
+        sink.epr_avs_output_voltage = 0x1000;
+        assert_eq!(
+            tps6699x.set_autonegotiate_sink(port, sink).await,
+            Err(Error::Pd(PdError::InvalidParams))
+        );
+    }
+
     #[tokio::test]
     async fn test_set_autonegotiate_sink() {
         let mock = Mock::new(&[]);
@@ -1242,13 +1320,23 @@ mod test {
         run_set_autonegotiate_sink(&mut tps6699x, PORT1, PORT1_ADDR0).await;
     }
 
+    #[tokio::test]
+    async fn test_set_autonegotiate_sink_invalid() {
+        let mock = Mock::new(&[]);
+        let mut tps6699x: Tps6699x<Mock> = Tps6699x::new_tps66994(mock, ADDR0);
+
+        run_set_autonegotiate_sink_invalid(&mut tps6699x, PORT0).await;
+        run_set_autonegotiate_sink_invalid(&mut tps6699x, PORT1).await;
+        tps6699x.bus.done();
+    }
+
     async fn run_modify_autonegotiate_sink(tps6699x: &mut Tps6699x<Mock>, port: LocalPortId, expected_addr: u8) {
         use registers::autonegotiate_sink::{self, AutonegotiateSink};
 
         let initial_bytes = [0u8; autonegotiate_sink::LEN];
         let mut expected = AutonegotiateSink::from(initial_bytes);
         expected.no_usb_suspend = true;
-        let expected_bytes: [u8; autonegotiate_sink::LEN] = expected.into();
+        let expected_bytes: [u8; autonegotiate_sink::LEN] = expected.try_into().unwrap();
 
         tps6699x.bus.update_expectations(&[
             create_register_read(expected_addr, 0x37, initial_bytes),
@@ -1642,8 +1730,34 @@ mod test {
             .update_expectations(&[create_register_read(expected_addr, 0x28, data)]);
 
         let result = tps6699x.get_port_config(port).await.unwrap();
-        assert_eq!(<[u8; port_config::LEN]>::from(result), data);
+        assert_eq!(<[u8; port_config::LEN]>::try_from(result), Ok(data));
         tps6699x.bus.done();
+    }
+
+    /// Test logic for an invalid register value attempting to be written to hardware
+    async fn run_set_port_config_invalid(tps6699x: &mut Tps6699x<Mock>, port: LocalPortId) {
+        use registers::port_config;
+
+        let mut port_config = port_config::PortConfig::default();
+        port_config.apdo_vbus_uvp_threshold = 0x4;
+        assert_eq!(
+            tps6699x.set_port_config(port, port_config).await,
+            Err(Error::Pd(PdError::InvalidParams))
+        );
+
+        let mut port_config = port_config::PortConfig::default();
+        port_config.apdo_ilim_over_shoot = 0x4;
+        assert_eq!(
+            tps6699x.set_port_config(port, port_config).await,
+            Err(Error::Pd(PdError::InvalidParams))
+        );
+
+        let mut port_config = port_config::PortConfig::default();
+        port_config.gt_threshold_voltage_mv = (u16::MAX as u32 + 1) * MV50_UNIT as u32;
+        assert_eq!(
+            tps6699x.set_port_config(port, port_config).await,
+            Err(Error::Pd(PdError::InvalidParams))
+        );
     }
 
     async fn run_set_port_config(tps6699x: &mut Tps6699x<Mock>, port: LocalPortId, expected_addr: u8) {
@@ -1674,6 +1788,16 @@ mod test {
 
         run_set_port_config(&mut tps6699x, PORT0, PORT0_ADDR0).await;
         run_set_port_config(&mut tps6699x, PORT1, PORT1_ADDR0).await;
+    }
+
+    #[tokio::test]
+    async fn test_set_port_config_invalid() {
+        let mock = Mock::new(&[]);
+        let mut tps6699x: Tps6699x<Mock> = Tps6699x::new_tps66994(mock, ADDR0);
+
+        run_set_port_config_invalid(&mut tps6699x, PORT0).await;
+        run_set_port_config_invalid(&mut tps6699x, PORT1).await;
+        tps6699x.bus.done();
     }
 
     async fn run_get_rx_ado(tps6699x: &mut Tps6699x<Mock>, port: LocalPortId, expected_addr: u8) {
