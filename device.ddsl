@@ -778,6 +778,93 @@ device Registers {
             field AcceptedActiveRdo 127:96,
         },
     },
+    /// Autonegotiate Sink
+    register AutonegotiateSink {
+        address: 0x37,
+        reset: [0xBE, 0x40, 0x1F, 0x0F, 0x90, 0x91, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+        fields: fieldset _ {
+            size-bytes: 24,
+
+            /// Configuration for tie-breaker in PDO selection
+            field AutoNegRdoPriority 0:0 -> _ as enum AutoNegRdoPriority {
+                HigherVoltage: 0,
+                LowerVoltage: 1,
+            },
+            /// Value used for the NoUSBSusp Flag in the RDO
+            field NoUsbSuspend 1,
+            /// How to compute the minimum power that the sink requires
+            field AutoComputeSinkMinPower 2:2 -> _ as enum AutoComputeSinkMinPower {
+                ProvidedByHost: 0,
+                ComputedByPdController: 1,
+            },
+            /// Configuration for capability mismatch in RDO
+            field NoCapabilityMismatch 3:3 -> _ as enum NoCapabilityMismatch {
+                Enabled: 0,
+                Disabled: 1,
+            },
+            /// How to compute the minimum voltage that the sink requires
+            field AutoComputeSinkMinVoltage 4:4 -> _ as enum AutoComputeSinkMinVoltage {
+                ProvidedByHost: 0,
+                ComputedByPdController: 1,
+            },
+            /// How to compute the maximum voltage that the sink requires
+            field AutoComputeSinkMaxVoltage 5:5 -> _ as enum AutoComputeSinkMaxVoltage {
+                ProvidedByHost: 0,
+                ComputedByPdController: 1,
+            },
+            /// Sink path and capability mismatch setting
+            field AutoDisableSinkUponCapabilityMismatch 6,
+            /// Disable the sinking path during contract negotiation, and enable it back after receiving PS-RDY from SRC
+            field AutoDisableInputForSinkStandby 7,
+            /// Disable the sinking path during contract negotiation, and enable it back after receiving PS-RDY from SRC when in DBM
+            field AutoDisableInputForSinkStandbyInDbm 8,
+            /// Automatically re-enable the sink path for Sink Standby when PS-RDY is received
+            field AutoEnableStandbySrdy 9,
+            /// Keep the sink path disabled until final PD contract is set
+            field AutoEnableInputAfterSnkReadyInDbm 10,
+            /// Maximum current to request (10 mA per LSB)
+            field AutoNegMaxCurrent 21:12,
+            /// Minimum operating power required by the sink (250 mW per LSB)
+            field AutoNegSinkMinRequiredPower 31:22,
+            /// Maximum voltage to request (50 mV per LSB)
+            field AutoNegMaxVoltage 41:32,
+            /// Minimum voltage to request (50 mV per LSB)
+            field AutoNegMinVoltage 51:42,
+            /// Capabilities mismatch power threshold (250 mW per LSB)
+            field AutoNegCapabilitiesMismatchPower 61:52,
+            /// Enable Sink PPS mode
+            field PpsEnableSinkMode 64,
+            /// Sink PPS request interval
+            field PpsRequestInterval 66:65 -> _ as enum PpsRequestInterval {
+                EightSeconds: 0,
+                FourSeconds: 1,
+                TwoSeconds: 2,
+                OneSecond: 3,
+            },
+            /// Selection for CV or CC mode
+            field PpsSourceOperatingMode 67,
+            /// Select only a source with full voltage range
+            field PpsRequiredFullVoltageRange 68,
+            /// Sink path handling during supply type transition
+            field PpsDisableSinkUponNonApdoContract 69,
+            /// Enable Sink Path above PPS Sink Voltage threshold
+            field EnableSinkPathAbovePpsSinkVoltageThreshold 83,
+            /// Disable Sink Path if not in PPS contract
+            field DisableSinkIfNotInPpsContract 84,
+            /// Operation current in Sink PPS mode
+            field PpsSinkVoltageThreshold 95:85,
+            /// Operation current in Sink PPS mode (50 mA per LSB)
+            field PpsOperatingCurrent 102:96,
+            /// Desired output voltage (20 mV per LSB)
+            field PpsOutputVoltage 115:105,
+            /// Enable Sink EPR AVS mode
+            field EprAvsEnableSinkMode 128,
+            /// AVS operating current
+            field EprAvsOperatingCurrent 166:160,
+            /// AVS operating voltage
+            field EprAvsOutputVoltage 180:169,
+        },
+    },
     /// PD status
     register PdStatus {
         address: 0x40,

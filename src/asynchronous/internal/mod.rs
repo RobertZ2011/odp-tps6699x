@@ -260,16 +260,13 @@ impl<B: I2c> Tps6699x<B> {
         &mut self,
         port: LocalPortId,
     ) -> Result<registers::autonegotiate_sink::AutonegotiateSink, Error<B::Error>> {
-        let mut buf = [0u8; registers::autonegotiate_sink::LEN];
-        self.borrow_port(port)?
-            .read_register(
-                registers::autonegotiate_sink::ADDR,
-                &mut buf,
-                &FieldsetMetadata::DEFAULT,
-            )
-            .await?;
-
-        Ok(buf.into())
+        Ok(self
+            .borrow_port(port)?
+            .into_registers()
+            .autonegotiate_sink()
+            .read_async()
+            .await?
+            .into())
     }
 
     /// Set the Autonegotiate Sink register (`0x37`).
@@ -278,13 +275,10 @@ impl<B: I2c> Tps6699x<B> {
         port: LocalPortId,
         value: registers::autonegotiate_sink::AutonegotiateSink,
     ) -> Result<(), Error<B::Error>> {
-        let mut buf = *value.as_bytes();
         self.borrow_port(port)?
-            .write_register(
-                registers::autonegotiate_sink::ADDR,
-                &mut buf,
-                &FieldsetMetadata::DEFAULT,
-            )
+            .into_registers()
+            .autonegotiate_sink()
+            .write_async(|r| *r = value.into())
             .await
     }
 
@@ -298,7 +292,7 @@ impl<B: I2c> Tps6699x<B> {
     ) -> Result<registers::autonegotiate_sink::AutonegotiateSink, Error<B::Error>> {
         let mut reg = self.get_autonegotiate_sink(port).await?;
         reg = f(&mut reg);
-        self.set_autonegotiate_sink(port, reg.clone()).await?;
+        self.set_autonegotiate_sink(port, reg).await?;
         Ok(reg)
     }
 

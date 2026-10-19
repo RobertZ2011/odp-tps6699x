@@ -658,14 +658,14 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
     ) -> Result<(), Error<B::Error>> {
         self.modify_autonegotiate_sink(port, |settings| {
             if let Some(voltage) = voltage_mv {
-                settings.set_auto_compute_sink_max_voltage(AutoComputeSinkMaxVoltage::ProvidedByHost);
-                settings.set_auto_neg_max_voltage(voltage);
+                settings.auto_compute_sink_max_voltage = AutoComputeSinkMaxVoltage::ProvidedByHost;
+                settings.auto_neg_max_voltage_mv = voltage;
             } else {
                 // Auto neg max voltage is ignored if this value is set
-                settings.set_auto_compute_sink_max_voltage(AutoComputeSinkMaxVoltage::ComputedByPdController);
+                settings.auto_compute_sink_max_voltage = AutoComputeSinkMaxVoltage::ComputedByPdController;
             }
 
-            settings.clone()
+            *settings
         })
         .await?;
 

@@ -452,6 +452,35 @@ impl<I> Registers<I> {
             || ActiveRdoContract::from([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
         )
     }
+    /// Autonegotiate Sink
+    ///
+    /// Register operation:
+    /// - Address: `55`
+    /// - Reset value: `[0xBE, 0x40, 0x1F, 0x0F, 0x90, 0x91, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]`
+    #[doc(alias = "AutonegotiateSink")]
+    pub fn autonegotiate_sink(
+        &mut self,
+    ) -> ::device_driver::RegisterOperation<
+        '_,
+        Self,
+        AutonegotiateSink,
+        u8,
+        ::device_driver::RW,
+        (),
+    >
+    where
+        I: ::device_driver::RegisterInterfaceBase<AddressType = u8>,
+    {
+        let address = self.base_address + 55;
+        ::device_driver::RegisterOperation::new(
+            self,
+            address as u8,
+            || AutonegotiateSink::from([
+                190, 64, 31, 15, 144, 145, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0,
+            ]),
+        )
+    }
     /// PD status
     ///
     /// Register operation:
@@ -4508,6 +4537,1158 @@ impl core::ops::BitXorAssign for PdStatus {
     }
 }
 impl core::ops::Not for PdStatus {
+    type Output = Self;
+    fn not(mut self) -> Self::Output {
+        for val in self.bits.iter_mut() {
+            *val = !*val;
+        }
+        self
+    }
+}
+#[derive(Copy, Clone, Eq, PartialEq)]
+#[repr(transparent)]
+pub struct AutonegotiateSink {
+    #[doc(hidden)]
+    /// The internal bits
+    bits: [u8; 24],
+}
+unsafe impl ::device_driver::Fieldset for AutonegotiateSink {
+    const METADATA: ::device_driver::FieldsetMetadata = ::device_driver::FieldsetMetadata::new()
+        .with_byte_order(::device_driver::ByteOrder::LE);
+    const ZERO: Self = Self { bits: [0; 24] };
+}
+impl AutonegotiateSink {
+    /// `bit 0` - Read the `auto_neg_rdo_priority` field.
+    ///
+    /// Configuration for tie-breaker in PDO selection
+    #[doc(alias = "AutoNegRdoPriority")]
+    #[must_use]
+    pub fn auto_neg_rdo_priority(&self) -> AutoNegRdoPriority {
+        let start = 0;
+        let end = 0;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        unsafe { raw.try_into().unwrap_unchecked() }
+    }
+    /// `bit 1` - Read the `no_usb_suspend` field.
+    ///
+    /// Value used for the NoUSBSusp Flag in the RDO
+    #[doc(alias = "NoUsbSuspend")]
+    #[must_use]
+    pub fn no_usb_suspend(&self) -> bool {
+        let start = 1;
+        let end = 1;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `bit 2` - Read the `auto_compute_sink_min_power` field.
+    ///
+    /// How to compute the minimum power that the sink requires
+    #[doc(alias = "AutoComputeSinkMinPower")]
+    #[must_use]
+    pub fn auto_compute_sink_min_power(&self) -> AutoComputeSinkMinPower {
+        let start = 2;
+        let end = 2;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        unsafe { raw.try_into().unwrap_unchecked() }
+    }
+    /// `bit 3` - Read the `no_capability_mismatch` field.
+    ///
+    /// Configuration for capability mismatch in RDO
+    #[doc(alias = "NoCapabilityMismatch")]
+    #[must_use]
+    pub fn no_capability_mismatch(&self) -> NoCapabilityMismatch {
+        let start = 3;
+        let end = 3;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        unsafe { raw.try_into().unwrap_unchecked() }
+    }
+    /// `bit 4` - Read the `auto_compute_sink_min_voltage` field.
+    ///
+    /// How to compute the minimum voltage that the sink requires
+    #[doc(alias = "AutoComputeSinkMinVoltage")]
+    #[must_use]
+    pub fn auto_compute_sink_min_voltage(&self) -> AutoComputeSinkMinVoltage {
+        let start = 4;
+        let end = 4;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        unsafe { raw.try_into().unwrap_unchecked() }
+    }
+    /// `bit 5` - Read the `auto_compute_sink_max_voltage` field.
+    ///
+    /// How to compute the maximum voltage that the sink requires
+    #[doc(alias = "AutoComputeSinkMaxVoltage")]
+    #[must_use]
+    pub fn auto_compute_sink_max_voltage(&self) -> AutoComputeSinkMaxVoltage {
+        let start = 5;
+        let end = 5;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        unsafe { raw.try_into().unwrap_unchecked() }
+    }
+    /// `bit 6` - Read the `auto_disable_sink_upon_capability_mismatch` field.
+    ///
+    /// Sink path and capability mismatch setting
+    #[doc(alias = "AutoDisableSinkUponCapabilityMismatch")]
+    #[must_use]
+    pub fn auto_disable_sink_upon_capability_mismatch(&self) -> bool {
+        let start = 6;
+        let end = 6;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `bit 7` - Read the `auto_disable_input_for_sink_standby` field.
+    ///
+    /// Disable the sinking path during contract negotiation, and enable it back after receiving PS-RDY from SRC
+    #[doc(alias = "AutoDisableInputForSinkStandby")]
+    #[must_use]
+    pub fn auto_disable_input_for_sink_standby(&self) -> bool {
+        let start = 7;
+        let end = 7;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `bit 8` - Read the `auto_disable_input_for_sink_standby_in_dbm` field.
+    ///
+    /// Disable the sinking path during contract negotiation, and enable it back after receiving PS-RDY from SRC when in DBM
+    #[doc(alias = "AutoDisableInputForSinkStandbyInDbm")]
+    #[must_use]
+    pub fn auto_disable_input_for_sink_standby_in_dbm(&self) -> bool {
+        let start = 8;
+        let end = 8;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `bit 9` - Read the `auto_enable_standby_srdy` field.
+    ///
+    /// Automatically re-enable the sink path for Sink Standby when PS-RDY is received
+    #[doc(alias = "AutoEnableStandbySrdy")]
+    #[must_use]
+    pub fn auto_enable_standby_srdy(&self) -> bool {
+        let start = 9;
+        let end = 9;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `bit 10` - Read the `auto_enable_input_after_snk_ready_in_dbm` field.
+    ///
+    /// Keep the sink path disabled until final PD contract is set
+    #[doc(alias = "AutoEnableInputAfterSnkReadyInDbm")]
+    #[must_use]
+    pub fn auto_enable_input_after_snk_ready_in_dbm(&self) -> bool {
+        let start = 10;
+        let end = 10;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `21:12` - Read the `auto_neg_max_current` field.
+    ///
+    /// Maximum current to request (10 mA per LSB)
+    #[doc(alias = "AutoNegMaxCurrent")]
+    #[must_use]
+    pub fn auto_neg_max_current(&self) -> u16 {
+        let start = 12;
+        let end = 21;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `31:22` - Read the `auto_neg_sink_min_required_power` field.
+    ///
+    /// Minimum operating power required by the sink (250 mW per LSB)
+    #[doc(alias = "AutoNegSinkMinRequiredPower")]
+    #[must_use]
+    pub fn auto_neg_sink_min_required_power(&self) -> u16 {
+        let start = 22;
+        let end = 31;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `41:32` - Read the `auto_neg_max_voltage` field.
+    ///
+    /// Maximum voltage to request (50 mV per LSB)
+    #[doc(alias = "AutoNegMaxVoltage")]
+    #[must_use]
+    pub fn auto_neg_max_voltage(&self) -> u16 {
+        let start = 32;
+        let end = 41;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `51:42` - Read the `auto_neg_min_voltage` field.
+    ///
+    /// Minimum voltage to request (50 mV per LSB)
+    #[doc(alias = "AutoNegMinVoltage")]
+    #[must_use]
+    pub fn auto_neg_min_voltage(&self) -> u16 {
+        let start = 42;
+        let end = 51;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `61:52` - Read the `auto_neg_capabilities_mismatch_power` field.
+    ///
+    /// Capabilities mismatch power threshold (250 mW per LSB)
+    #[doc(alias = "AutoNegCapabilitiesMismatchPower")]
+    #[must_use]
+    pub fn auto_neg_capabilities_mismatch_power(&self) -> u16 {
+        let start = 52;
+        let end = 61;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `bit 64` - Read the `pps_enable_sink_mode` field.
+    ///
+    /// Enable Sink PPS mode
+    #[doc(alias = "PpsEnableSinkMode")]
+    #[must_use]
+    pub fn pps_enable_sink_mode(&self) -> bool {
+        let start = 64;
+        let end = 64;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `66:65` - Read the `pps_request_interval` field.
+    ///
+    /// Sink PPS request interval
+    #[doc(alias = "PpsRequestInterval")]
+    #[must_use]
+    pub fn pps_request_interval(&self) -> PpsRequestInterval {
+        let start = 65;
+        let end = 66;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        unsafe { raw.try_into().unwrap_unchecked() }
+    }
+    /// `bit 67` - Read the `pps_source_operating_mode` field.
+    ///
+    /// Selection for CV or CC mode
+    #[doc(alias = "PpsSourceOperatingMode")]
+    #[must_use]
+    pub fn pps_source_operating_mode(&self) -> bool {
+        let start = 67;
+        let end = 67;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `bit 68` - Read the `pps_required_full_voltage_range` field.
+    ///
+    /// Select only a source with full voltage range
+    #[doc(alias = "PpsRequiredFullVoltageRange")]
+    #[must_use]
+    pub fn pps_required_full_voltage_range(&self) -> bool {
+        let start = 68;
+        let end = 68;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `bit 69` - Read the `pps_disable_sink_upon_non_apdo_contract` field.
+    ///
+    /// Sink path handling during supply type transition
+    #[doc(alias = "PpsDisableSinkUponNonApdoContract")]
+    #[must_use]
+    pub fn pps_disable_sink_upon_non_apdo_contract(&self) -> bool {
+        let start = 69;
+        let end = 69;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `bit 83` - Read the `enable_sink_path_above_pps_sink_voltage_threshold` field.
+    ///
+    /// Enable Sink Path above PPS Sink Voltage threshold
+    #[doc(alias = "EnableSinkPathAbovePpsSinkVoltageThreshold")]
+    #[must_use]
+    pub fn enable_sink_path_above_pps_sink_voltage_threshold(&self) -> bool {
+        let start = 83;
+        let end = 83;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `bit 84` - Read the `disable_sink_if_not_in_pps_contract` field.
+    ///
+    /// Disable Sink Path if not in PPS contract
+    #[doc(alias = "DisableSinkIfNotInPpsContract")]
+    #[must_use]
+    pub fn disable_sink_if_not_in_pps_contract(&self) -> bool {
+        let start = 84;
+        let end = 84;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `95:85` - Read the `pps_sink_voltage_threshold` field.
+    ///
+    /// Operation current in Sink PPS mode
+    #[doc(alias = "PpsSinkVoltageThreshold")]
+    #[must_use]
+    pub fn pps_sink_voltage_threshold(&self) -> u16 {
+        let start = 85;
+        let end = 95;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `102:96` - Read the `pps_operating_current` field.
+    ///
+    /// Operation current in Sink PPS mode (50 mA per LSB)
+    #[doc(alias = "PpsOperatingCurrent")]
+    #[must_use]
+    pub fn pps_operating_current(&self) -> u8 {
+        let start = 96;
+        let end = 102;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `115:105` - Read the `pps_output_voltage` field.
+    ///
+    /// Desired output voltage (20 mV per LSB)
+    #[doc(alias = "PpsOutputVoltage")]
+    #[must_use]
+    pub fn pps_output_voltage(&self) -> u16 {
+        let start = 105;
+        let end = 115;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `bit 128` - Read the `epr_avs_enable_sink_mode` field.
+    ///
+    /// Enable Sink EPR AVS mode
+    #[doc(alias = "EprAvsEnableSinkMode")]
+    #[must_use]
+    pub fn epr_avs_enable_sink_mode(&self) -> bool {
+        let start = 128;
+        let end = 128;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `166:160` - Read the `epr_avs_operating_current` field.
+    ///
+    /// AVS operating current
+    #[doc(alias = "EprAvsOperatingCurrent")]
+    #[must_use]
+    pub fn epr_avs_operating_current(&self) -> u8 {
+        let start = 160;
+        let end = 166;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `180:169` - Read the `epr_avs_output_voltage` field.
+    ///
+    /// AVS operating voltage
+    #[doc(alias = "EprAvsOutputVoltage")]
+    #[must_use]
+    pub fn epr_avs_output_voltage(&self) -> u16 {
+        let start = 169;
+        let end = 180;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `bit 0` - Set the `auto_neg_rdo_priority` field.
+    ///
+    /// Configuration for tie-breaker in PDO selection
+    #[doc(alias = "AutoNegRdoPriority")]
+    pub fn set_auto_neg_rdo_priority(&mut self, value: AutoNegRdoPriority) {
+        let start = 0;
+        let end = 0;
+        let raw = value.into();
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 1` - Set the `no_usb_suspend` field.
+    ///
+    /// Value used for the NoUSBSusp Flag in the RDO
+    #[doc(alias = "NoUsbSuspend")]
+    pub fn set_no_usb_suspend(&mut self, value: bool) {
+        let start = 1;
+        let end = 1;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 2` - Set the `auto_compute_sink_min_power` field.
+    ///
+    /// How to compute the minimum power that the sink requires
+    #[doc(alias = "AutoComputeSinkMinPower")]
+    pub fn set_auto_compute_sink_min_power(&mut self, value: AutoComputeSinkMinPower) {
+        let start = 2;
+        let end = 2;
+        let raw = value.into();
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 3` - Set the `no_capability_mismatch` field.
+    ///
+    /// Configuration for capability mismatch in RDO
+    #[doc(alias = "NoCapabilityMismatch")]
+    pub fn set_no_capability_mismatch(&mut self, value: NoCapabilityMismatch) {
+        let start = 3;
+        let end = 3;
+        let raw = value.into();
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 4` - Set the `auto_compute_sink_min_voltage` field.
+    ///
+    /// How to compute the minimum voltage that the sink requires
+    #[doc(alias = "AutoComputeSinkMinVoltage")]
+    pub fn set_auto_compute_sink_min_voltage(
+        &mut self,
+        value: AutoComputeSinkMinVoltage,
+    ) {
+        let start = 4;
+        let end = 4;
+        let raw = value.into();
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 5` - Set the `auto_compute_sink_max_voltage` field.
+    ///
+    /// How to compute the maximum voltage that the sink requires
+    #[doc(alias = "AutoComputeSinkMaxVoltage")]
+    pub fn set_auto_compute_sink_max_voltage(
+        &mut self,
+        value: AutoComputeSinkMaxVoltage,
+    ) {
+        let start = 5;
+        let end = 5;
+        let raw = value.into();
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 6` - Set the `auto_disable_sink_upon_capability_mismatch` field.
+    ///
+    /// Sink path and capability mismatch setting
+    #[doc(alias = "AutoDisableSinkUponCapabilityMismatch")]
+    pub fn set_auto_disable_sink_upon_capability_mismatch(&mut self, value: bool) {
+        let start = 6;
+        let end = 6;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 7` - Set the `auto_disable_input_for_sink_standby` field.
+    ///
+    /// Disable the sinking path during contract negotiation, and enable it back after receiving PS-RDY from SRC
+    #[doc(alias = "AutoDisableInputForSinkStandby")]
+    pub fn set_auto_disable_input_for_sink_standby(&mut self, value: bool) {
+        let start = 7;
+        let end = 7;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 8` - Set the `auto_disable_input_for_sink_standby_in_dbm` field.
+    ///
+    /// Disable the sinking path during contract negotiation, and enable it back after receiving PS-RDY from SRC when in DBM
+    #[doc(alias = "AutoDisableInputForSinkStandbyInDbm")]
+    pub fn set_auto_disable_input_for_sink_standby_in_dbm(&mut self, value: bool) {
+        let start = 8;
+        let end = 8;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 9` - Set the `auto_enable_standby_srdy` field.
+    ///
+    /// Automatically re-enable the sink path for Sink Standby when PS-RDY is received
+    #[doc(alias = "AutoEnableStandbySrdy")]
+    pub fn set_auto_enable_standby_srdy(&mut self, value: bool) {
+        let start = 9;
+        let end = 9;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 10` - Set the `auto_enable_input_after_snk_ready_in_dbm` field.
+    ///
+    /// Keep the sink path disabled until final PD contract is set
+    #[doc(alias = "AutoEnableInputAfterSnkReadyInDbm")]
+    pub fn set_auto_enable_input_after_snk_ready_in_dbm(&mut self, value: bool) {
+        let start = 10;
+        let end = 10;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `21:12` - Set the `auto_neg_max_current` field.
+    ///
+    /// Maximum current to request (10 mA per LSB)
+    #[doc(alias = "AutoNegMaxCurrent")]
+    pub fn set_auto_neg_max_current(&mut self, value: u16) {
+        let start = 12;
+        let end = 21;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `31:22` - Set the `auto_neg_sink_min_required_power` field.
+    ///
+    /// Minimum operating power required by the sink (250 mW per LSB)
+    #[doc(alias = "AutoNegSinkMinRequiredPower")]
+    pub fn set_auto_neg_sink_min_required_power(&mut self, value: u16) {
+        let start = 22;
+        let end = 31;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `41:32` - Set the `auto_neg_max_voltage` field.
+    ///
+    /// Maximum voltage to request (50 mV per LSB)
+    #[doc(alias = "AutoNegMaxVoltage")]
+    pub fn set_auto_neg_max_voltage(&mut self, value: u16) {
+        let start = 32;
+        let end = 41;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `51:42` - Set the `auto_neg_min_voltage` field.
+    ///
+    /// Minimum voltage to request (50 mV per LSB)
+    #[doc(alias = "AutoNegMinVoltage")]
+    pub fn set_auto_neg_min_voltage(&mut self, value: u16) {
+        let start = 42;
+        let end = 51;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `61:52` - Set the `auto_neg_capabilities_mismatch_power` field.
+    ///
+    /// Capabilities mismatch power threshold (250 mW per LSB)
+    #[doc(alias = "AutoNegCapabilitiesMismatchPower")]
+    pub fn set_auto_neg_capabilities_mismatch_power(&mut self, value: u16) {
+        let start = 52;
+        let end = 61;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 64` - Set the `pps_enable_sink_mode` field.
+    ///
+    /// Enable Sink PPS mode
+    #[doc(alias = "PpsEnableSinkMode")]
+    pub fn set_pps_enable_sink_mode(&mut self, value: bool) {
+        let start = 64;
+        let end = 64;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `66:65` - Set the `pps_request_interval` field.
+    ///
+    /// Sink PPS request interval
+    #[doc(alias = "PpsRequestInterval")]
+    pub fn set_pps_request_interval(&mut self, value: PpsRequestInterval) {
+        let start = 65;
+        let end = 66;
+        let raw = value.into();
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 67` - Set the `pps_source_operating_mode` field.
+    ///
+    /// Selection for CV or CC mode
+    #[doc(alias = "PpsSourceOperatingMode")]
+    pub fn set_pps_source_operating_mode(&mut self, value: bool) {
+        let start = 67;
+        let end = 67;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 68` - Set the `pps_required_full_voltage_range` field.
+    ///
+    /// Select only a source with full voltage range
+    #[doc(alias = "PpsRequiredFullVoltageRange")]
+    pub fn set_pps_required_full_voltage_range(&mut self, value: bool) {
+        let start = 68;
+        let end = 68;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 69` - Set the `pps_disable_sink_upon_non_apdo_contract` field.
+    ///
+    /// Sink path handling during supply type transition
+    #[doc(alias = "PpsDisableSinkUponNonApdoContract")]
+    pub fn set_pps_disable_sink_upon_non_apdo_contract(&mut self, value: bool) {
+        let start = 69;
+        let end = 69;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 83` - Set the `enable_sink_path_above_pps_sink_voltage_threshold` field.
+    ///
+    /// Enable Sink Path above PPS Sink Voltage threshold
+    #[doc(alias = "EnableSinkPathAbovePpsSinkVoltageThreshold")]
+    pub fn set_enable_sink_path_above_pps_sink_voltage_threshold(
+        &mut self,
+        value: bool,
+    ) {
+        let start = 83;
+        let end = 83;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 84` - Set the `disable_sink_if_not_in_pps_contract` field.
+    ///
+    /// Disable Sink Path if not in PPS contract
+    #[doc(alias = "DisableSinkIfNotInPpsContract")]
+    pub fn set_disable_sink_if_not_in_pps_contract(&mut self, value: bool) {
+        let start = 84;
+        let end = 84;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `95:85` - Set the `pps_sink_voltage_threshold` field.
+    ///
+    /// Operation current in Sink PPS mode
+    #[doc(alias = "PpsSinkVoltageThreshold")]
+    pub fn set_pps_sink_voltage_threshold(&mut self, value: u16) {
+        let start = 85;
+        let end = 95;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `102:96` - Set the `pps_operating_current` field.
+    ///
+    /// Operation current in Sink PPS mode (50 mA per LSB)
+    #[doc(alias = "PpsOperatingCurrent")]
+    pub fn set_pps_operating_current(&mut self, value: u8) {
+        let start = 96;
+        let end = 102;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `115:105` - Set the `pps_output_voltage` field.
+    ///
+    /// Desired output voltage (20 mV per LSB)
+    #[doc(alias = "PpsOutputVoltage")]
+    pub fn set_pps_output_voltage(&mut self, value: u16) {
+        let start = 105;
+        let end = 115;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 128` - Set the `epr_avs_enable_sink_mode` field.
+    ///
+    /// Enable Sink EPR AVS mode
+    #[doc(alias = "EprAvsEnableSinkMode")]
+    pub fn set_epr_avs_enable_sink_mode(&mut self, value: bool) {
+        let start = 128;
+        let end = 128;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `166:160` - Set the `epr_avs_operating_current` field.
+    ///
+    /// AVS operating current
+    #[doc(alias = "EprAvsOperatingCurrent")]
+    pub fn set_epr_avs_operating_current(&mut self, value: u8) {
+        let start = 160;
+        let end = 166;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `180:169` - Set the `epr_avs_output_voltage` field.
+    ///
+    /// AVS operating voltage
+    #[doc(alias = "EprAvsOutputVoltage")]
+    pub fn set_epr_avs_output_voltage(&mut self, value: u16) {
+        let start = 169;
+        let end = 180;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+}
+impl Default for AutonegotiateSink {
+    fn default() -> Self {
+        <Self as ::device_driver::Fieldset>::ZERO
+    }
+}
+impl From<[u8; 24]> for AutonegotiateSink {
+    fn from(bits: [u8; 24]) -> Self {
+        Self { bits }
+    }
+}
+impl From<AutonegotiateSink> for [u8; 24] {
+    fn from(val: AutonegotiateSink) -> Self {
+        val.bits
+    }
+}
+impl core::fmt::Debug for AutonegotiateSink {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
+        let mut d = f.debug_struct("AutonegotiateSink");
+        d.field("auto_neg_rdo_priority", &self.auto_neg_rdo_priority());
+        d.field("no_usb_suspend", &self.no_usb_suspend());
+        d.field("auto_compute_sink_min_power", &self.auto_compute_sink_min_power());
+        d.field("no_capability_mismatch", &self.no_capability_mismatch());
+        d.field("auto_compute_sink_min_voltage", &self.auto_compute_sink_min_voltage());
+        d.field("auto_compute_sink_max_voltage", &self.auto_compute_sink_max_voltage());
+        d.field(
+            "auto_disable_sink_upon_capability_mismatch",
+            &self.auto_disable_sink_upon_capability_mismatch(),
+        );
+        d.field(
+            "auto_disable_input_for_sink_standby",
+            &self.auto_disable_input_for_sink_standby(),
+        );
+        d.field(
+            "auto_disable_input_for_sink_standby_in_dbm",
+            &self.auto_disable_input_for_sink_standby_in_dbm(),
+        );
+        d.field("auto_enable_standby_srdy", &self.auto_enable_standby_srdy());
+        d.field(
+            "auto_enable_input_after_snk_ready_in_dbm",
+            &self.auto_enable_input_after_snk_ready_in_dbm(),
+        );
+        d.field("auto_neg_max_current", &self.auto_neg_max_current());
+        d.field(
+            "auto_neg_sink_min_required_power",
+            &self.auto_neg_sink_min_required_power(),
+        );
+        d.field("auto_neg_max_voltage", &self.auto_neg_max_voltage());
+        d.field("auto_neg_min_voltage", &self.auto_neg_min_voltage());
+        d.field(
+            "auto_neg_capabilities_mismatch_power",
+            &self.auto_neg_capabilities_mismatch_power(),
+        );
+        d.field("pps_enable_sink_mode", &self.pps_enable_sink_mode());
+        d.field("pps_request_interval", &self.pps_request_interval());
+        d.field("pps_source_operating_mode", &self.pps_source_operating_mode());
+        d.field(
+            "pps_required_full_voltage_range",
+            &self.pps_required_full_voltage_range(),
+        );
+        d.field(
+            "pps_disable_sink_upon_non_apdo_contract",
+            &self.pps_disable_sink_upon_non_apdo_contract(),
+        );
+        d.field(
+            "enable_sink_path_above_pps_sink_voltage_threshold",
+            &self.enable_sink_path_above_pps_sink_voltage_threshold(),
+        );
+        d.field(
+            "disable_sink_if_not_in_pps_contract",
+            &self.disable_sink_if_not_in_pps_contract(),
+        );
+        d.field("pps_sink_voltage_threshold", &self.pps_sink_voltage_threshold());
+        d.field("pps_operating_current", &self.pps_operating_current());
+        d.field("pps_output_voltage", &self.pps_output_voltage());
+        d.field("epr_avs_enable_sink_mode", &self.epr_avs_enable_sink_mode());
+        d.field("epr_avs_operating_current", &self.epr_avs_operating_current());
+        d.field("epr_avs_output_voltage", &self.epr_avs_output_voltage());
+        d.finish()
+    }
+}
+#[cfg(feature = "defmt")]
+impl defmt::Format for AutonegotiateSink {
+    fn format(&self, f: defmt::Formatter) {
+        defmt::write!(f, "AutonegotiateSink {{ ");
+        defmt::write!(f, "auto_neg_rdo_priority: {}, ", & self.auto_neg_rdo_priority());
+        defmt::write!(f, "no_usb_suspend: {=bool}, ", & self.no_usb_suspend());
+        defmt::write!(
+            f, "auto_compute_sink_min_power: {}, ", & self.auto_compute_sink_min_power()
+        );
+        defmt::write!(
+            f, "no_capability_mismatch: {}, ", & self.no_capability_mismatch()
+        );
+        defmt::write!(
+            f, "auto_compute_sink_min_voltage: {}, ", & self
+            .auto_compute_sink_min_voltage()
+        );
+        defmt::write!(
+            f, "auto_compute_sink_max_voltage: {}, ", & self
+            .auto_compute_sink_max_voltage()
+        );
+        defmt::write!(
+            f, "auto_disable_sink_upon_capability_mismatch: {=bool}, ", & self
+            .auto_disable_sink_upon_capability_mismatch()
+        );
+        defmt::write!(
+            f, "auto_disable_input_for_sink_standby: {=bool}, ", & self
+            .auto_disable_input_for_sink_standby()
+        );
+        defmt::write!(
+            f, "auto_disable_input_for_sink_standby_in_dbm: {=bool}, ", & self
+            .auto_disable_input_for_sink_standby_in_dbm()
+        );
+        defmt::write!(
+            f, "auto_enable_standby_srdy: {=bool}, ", & self.auto_enable_standby_srdy()
+        );
+        defmt::write!(
+            f, "auto_enable_input_after_snk_ready_in_dbm: {=bool}, ", & self
+            .auto_enable_input_after_snk_ready_in_dbm()
+        );
+        defmt::write!(
+            f, "auto_neg_max_current: {=u16}, ", & self.auto_neg_max_current()
+        );
+        defmt::write!(
+            f, "auto_neg_sink_min_required_power: {=u16}, ", & self
+            .auto_neg_sink_min_required_power()
+        );
+        defmt::write!(
+            f, "auto_neg_max_voltage: {=u16}, ", & self.auto_neg_max_voltage()
+        );
+        defmt::write!(
+            f, "auto_neg_min_voltage: {=u16}, ", & self.auto_neg_min_voltage()
+        );
+        defmt::write!(
+            f, "auto_neg_capabilities_mismatch_power: {=u16}, ", & self
+            .auto_neg_capabilities_mismatch_power()
+        );
+        defmt::write!(
+            f, "pps_enable_sink_mode: {=bool}, ", & self.pps_enable_sink_mode()
+        );
+        defmt::write!(f, "pps_request_interval: {}, ", & self.pps_request_interval());
+        defmt::write!(
+            f, "pps_source_operating_mode: {=bool}, ", & self.pps_source_operating_mode()
+        );
+        defmt::write!(
+            f, "pps_required_full_voltage_range: {=bool}, ", & self
+            .pps_required_full_voltage_range()
+        );
+        defmt::write!(
+            f, "pps_disable_sink_upon_non_apdo_contract: {=bool}, ", & self
+            .pps_disable_sink_upon_non_apdo_contract()
+        );
+        defmt::write!(
+            f, "enable_sink_path_above_pps_sink_voltage_threshold: {=bool}, ", & self
+            .enable_sink_path_above_pps_sink_voltage_threshold()
+        );
+        defmt::write!(
+            f, "disable_sink_if_not_in_pps_contract: {=bool}, ", & self
+            .disable_sink_if_not_in_pps_contract()
+        );
+        defmt::write!(
+            f, "pps_sink_voltage_threshold: {=u16}, ", & self
+            .pps_sink_voltage_threshold()
+        );
+        defmt::write!(
+            f, "pps_operating_current: {=u8}, ", & self.pps_operating_current()
+        );
+        defmt::write!(f, "pps_output_voltage: {=u16}, ", & self.pps_output_voltage());
+        defmt::write!(
+            f, "epr_avs_enable_sink_mode: {=bool}, ", & self.epr_avs_enable_sink_mode()
+        );
+        defmt::write!(
+            f, "epr_avs_operating_current: {=u8}, ", & self.epr_avs_operating_current()
+        );
+        defmt::write!(
+            f, "epr_avs_output_voltage: {=u16}, ", & self.epr_avs_output_voltage()
+        );
+        defmt::write!(f, "}}");
+    }
+}
+impl core::ops::BitAnd for AutonegotiateSink {
+    type Output = Self;
+    fn bitand(mut self, rhs: Self) -> Self::Output {
+        self &= rhs;
+        self
+    }
+}
+impl core::ops::BitAndAssign for AutonegotiateSink {
+    fn bitand_assign(&mut self, rhs: Self) {
+        for (l, r) in self.bits.iter_mut().zip(&rhs.bits) {
+            *l &= *r;
+        }
+    }
+}
+impl core::ops::BitOr for AutonegotiateSink {
+    type Output = Self;
+    fn bitor(mut self, rhs: Self) -> Self::Output {
+        self |= rhs;
+        self
+    }
+}
+impl core::ops::BitOrAssign for AutonegotiateSink {
+    fn bitor_assign(&mut self, rhs: Self) {
+        for (l, r) in self.bits.iter_mut().zip(&rhs.bits) {
+            *l |= *r;
+        }
+    }
+}
+impl core::ops::BitXor for AutonegotiateSink {
+    type Output = Self;
+    fn bitxor(mut self, rhs: Self) -> Self::Output {
+        self ^= rhs;
+        self
+    }
+}
+impl core::ops::BitXorAssign for AutonegotiateSink {
+    fn bitxor_assign(&mut self, rhs: Self) {
+        for (l, r) in self.bits.iter_mut().zip(&rhs.bits) {
+            *l ^= *r;
+        }
+    }
+}
+impl core::ops::Not for AutonegotiateSink {
     type Output = Self;
     fn not(mut self) -> Self::Output {
         for val in self.bits.iter_mut() {
@@ -14178,6 +15359,240 @@ impl From<PdCcPullUp> for u8 {
 }
 #[doc(hidden)]
 impl ::device_driver::EnumIndex for PdCcPullUp {
+    #[track_caller]
+    fn index(&self) -> i32 {
+        let index = u8::from(*self);
+        index.try_into().unwrap()
+    }
+}
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum PpsRequestInterval {
+    EightSeconds = 0,
+    FourSeconds = 1,
+    TwoSeconds = 2,
+    OneSecond = 3,
+}
+impl core::convert::TryFrom<u8> for PpsRequestInterval {
+    type Error = ::device_driver::ConversionError<u8>;
+    fn try_from(val: u8) -> Result<Self, Self::Error> {
+        match val {
+            0 => Ok(Self::EightSeconds),
+            1 => Ok(Self::FourSeconds),
+            2 => Ok(Self::TwoSeconds),
+            3 => Ok(Self::OneSecond),
+            val => {
+                Err(::device_driver::ConversionError {
+                    source: val,
+                    target: "PpsRequestInterval",
+                })
+            }
+        }
+    }
+}
+impl From<PpsRequestInterval> for u8 {
+    fn from(val: PpsRequestInterval) -> Self {
+        match val {
+            PpsRequestInterval::EightSeconds => 0,
+            PpsRequestInterval::FourSeconds => 1,
+            PpsRequestInterval::TwoSeconds => 2,
+            PpsRequestInterval::OneSecond => 3,
+        }
+    }
+}
+#[doc(hidden)]
+impl ::device_driver::EnumIndex for PpsRequestInterval {
+    #[track_caller]
+    fn index(&self) -> i32 {
+        let index = u8::from(*self);
+        index.try_into().unwrap()
+    }
+}
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum AutoComputeSinkMaxVoltage {
+    ProvidedByHost = 0,
+    ComputedByPdController = 1,
+}
+impl core::convert::TryFrom<u8> for AutoComputeSinkMaxVoltage {
+    type Error = ::device_driver::ConversionError<u8>;
+    fn try_from(val: u8) -> Result<Self, Self::Error> {
+        match val {
+            0 => Ok(Self::ProvidedByHost),
+            1 => Ok(Self::ComputedByPdController),
+            val => {
+                Err(::device_driver::ConversionError {
+                    source: val,
+                    target: "AutoComputeSinkMaxVoltage",
+                })
+            }
+        }
+    }
+}
+impl From<AutoComputeSinkMaxVoltage> for u8 {
+    fn from(val: AutoComputeSinkMaxVoltage) -> Self {
+        match val {
+            AutoComputeSinkMaxVoltage::ProvidedByHost => 0,
+            AutoComputeSinkMaxVoltage::ComputedByPdController => 1,
+        }
+    }
+}
+#[doc(hidden)]
+impl ::device_driver::EnumIndex for AutoComputeSinkMaxVoltage {
+    #[track_caller]
+    fn index(&self) -> i32 {
+        let index = u8::from(*self);
+        index.try_into().unwrap()
+    }
+}
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum AutoComputeSinkMinVoltage {
+    ProvidedByHost = 0,
+    ComputedByPdController = 1,
+}
+impl core::convert::TryFrom<u8> for AutoComputeSinkMinVoltage {
+    type Error = ::device_driver::ConversionError<u8>;
+    fn try_from(val: u8) -> Result<Self, Self::Error> {
+        match val {
+            0 => Ok(Self::ProvidedByHost),
+            1 => Ok(Self::ComputedByPdController),
+            val => {
+                Err(::device_driver::ConversionError {
+                    source: val,
+                    target: "AutoComputeSinkMinVoltage",
+                })
+            }
+        }
+    }
+}
+impl From<AutoComputeSinkMinVoltage> for u8 {
+    fn from(val: AutoComputeSinkMinVoltage) -> Self {
+        match val {
+            AutoComputeSinkMinVoltage::ProvidedByHost => 0,
+            AutoComputeSinkMinVoltage::ComputedByPdController => 1,
+        }
+    }
+}
+#[doc(hidden)]
+impl ::device_driver::EnumIndex for AutoComputeSinkMinVoltage {
+    #[track_caller]
+    fn index(&self) -> i32 {
+        let index = u8::from(*self);
+        index.try_into().unwrap()
+    }
+}
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum NoCapabilityMismatch {
+    Enabled = 0,
+    Disabled = 1,
+}
+impl core::convert::TryFrom<u8> for NoCapabilityMismatch {
+    type Error = ::device_driver::ConversionError<u8>;
+    fn try_from(val: u8) -> Result<Self, Self::Error> {
+        match val {
+            0 => Ok(Self::Enabled),
+            1 => Ok(Self::Disabled),
+            val => {
+                Err(::device_driver::ConversionError {
+                    source: val,
+                    target: "NoCapabilityMismatch",
+                })
+            }
+        }
+    }
+}
+impl From<NoCapabilityMismatch> for u8 {
+    fn from(val: NoCapabilityMismatch) -> Self {
+        match val {
+            NoCapabilityMismatch::Enabled => 0,
+            NoCapabilityMismatch::Disabled => 1,
+        }
+    }
+}
+#[doc(hidden)]
+impl ::device_driver::EnumIndex for NoCapabilityMismatch {
+    #[track_caller]
+    fn index(&self) -> i32 {
+        let index = u8::from(*self);
+        index.try_into().unwrap()
+    }
+}
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum AutoComputeSinkMinPower {
+    ProvidedByHost = 0,
+    ComputedByPdController = 1,
+}
+impl core::convert::TryFrom<u8> for AutoComputeSinkMinPower {
+    type Error = ::device_driver::ConversionError<u8>;
+    fn try_from(val: u8) -> Result<Self, Self::Error> {
+        match val {
+            0 => Ok(Self::ProvidedByHost),
+            1 => Ok(Self::ComputedByPdController),
+            val => {
+                Err(::device_driver::ConversionError {
+                    source: val,
+                    target: "AutoComputeSinkMinPower",
+                })
+            }
+        }
+    }
+}
+impl From<AutoComputeSinkMinPower> for u8 {
+    fn from(val: AutoComputeSinkMinPower) -> Self {
+        match val {
+            AutoComputeSinkMinPower::ProvidedByHost => 0,
+            AutoComputeSinkMinPower::ComputedByPdController => 1,
+        }
+    }
+}
+#[doc(hidden)]
+impl ::device_driver::EnumIndex for AutoComputeSinkMinPower {
+    #[track_caller]
+    fn index(&self) -> i32 {
+        let index = u8::from(*self);
+        index.try_into().unwrap()
+    }
+}
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum AutoNegRdoPriority {
+    HigherVoltage = 0,
+    LowerVoltage = 1,
+}
+impl core::convert::TryFrom<u8> for AutoNegRdoPriority {
+    type Error = ::device_driver::ConversionError<u8>;
+    fn try_from(val: u8) -> Result<Self, Self::Error> {
+        match val {
+            0 => Ok(Self::HigherVoltage),
+            1 => Ok(Self::LowerVoltage),
+            val => {
+                Err(::device_driver::ConversionError {
+                    source: val,
+                    target: "AutoNegRdoPriority",
+                })
+            }
+        }
+    }
+}
+impl From<AutoNegRdoPriority> for u8 {
+    fn from(val: AutoNegRdoPriority) -> Self {
+        match val {
+            AutoNegRdoPriority::HigherVoltage => 0,
+            AutoNegRdoPriority::LowerVoltage => 1,
+        }
+    }
+}
+#[doc(hidden)]
+impl ::device_driver::EnumIndex for AutoNegRdoPriority {
     #[track_caller]
     fn index(&self) -> i32 {
         let index = u8::from(*self);
