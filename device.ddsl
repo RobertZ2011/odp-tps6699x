@@ -491,6 +491,142 @@ device Registers {
             field SourcePolicyMode 104:103,
         },
     },
+    /// Port configuration
+    register PortConfig {
+        address: 0x28,
+        reset: 0x0,
+        fields: fieldset _ {
+            size-bytes: 18,
+
+            /// Type-C State machine
+            field TypecStateMachine 1:0 -> _ as enum TypeCStateMachine {
+                Sink: 0,
+                Source: 1,
+                Drp: 2,
+                Disabled: 3,
+            },
+            /// Crossbar Type
+            field CrossbarType 2:2 -> _ as enum CrossbarType {
+                Type1: 0,
+                Type2: 1,
+            },
+            /// PP_EXT ActiveLow
+            field PpExtActiveLow 7,
+            /// TypeC Support Options
+            field TypecSupportOptions 9:8 -> _ as enum TypeCSupportOptions {
+                None: 0,
+                TrySrcDrp: 1,
+                Reserved: catch-all _,
+            },
+            /// Disable PD
+            field DisablePd 10,
+            /// USB Communication Capable
+            field UsbCommunicationCapable 11,
+            /// DebugAccessory Support
+            field DebugAccessorySupport 12,
+            /// USB3 Rate
+            field Usb3Rate 14:13 -> _ as enum Usb3Rate {
+                NotSupported: 0,
+                Gen1: 1,
+                Gen2: 2,
+                Reserved: catch-all _,
+            },
+            /// Crossbar I2C Controller enable
+            field CrossbarI2cControllerEnable 15,
+            /// VBUS OVP Usage
+            field VbusOvpUsage 17:16 -> _ as enum VbusOvpUsage {
+                Pct100: 0,
+                Pct105: 1,
+                Pct111: 2,
+                Pct114: 3,
+            },
+            /// OVP for PP5V
+            field OvpForPp5v 21:20 -> _ as enum OvpForPp5v {
+                V5p25: 0,
+                V5p5: 1,
+                V5p8: 2,
+                V6p1: 3,
+            },
+            /// Crossbar Config Type 1 Extended
+            field CrossbarConfigType1Extended 22,
+            /// Remove Safe-State Between USB3-to-DP Transition
+            field RemoveSafeStateBetweenUsb3ToDpTransition 23,
+            /// VBUS Sink UVP Trip HV
+            field VbusSinkUvpTripHv 26:24 -> _ as enum VbusSinkUvpTripHv {
+                Pct5: 0,
+                Pct10: 1,
+                Pct15: 2,
+                Pct20: 3,
+                Pct25: 4,
+                Pct30: 5,
+                Pct40: 6,
+                Reserved: catch-all _,
+            },
+            /// APDO VBUS UVP Threshold
+            field ApdoVbusUvpThreshold 28:27,
+            /// APDO ILIM Over Shoot
+            field ApdoIlimOverShoot 30:29,
+            /// APDO VBUS Uvp TripPoint Offset
+            field ApdoVbusUvpTripPointOffset 47:32,
+            /// VBUS For Valid PPS Status
+            field VbusForValidPpsStatus 63:48,
+            /// External DCDC Type
+            field ExternalDcdcType 71:64 -> _ as enum ExternalDcdcType {
+                MarinaBay: 0,
+                Bq25758: 1,
+                Reserved: catch-all _,
+            },
+            /// Enables support for GPIO10 to I2C IRQ
+            field SinkModeI2cIrqConfig 72,
+            /// Threshold voltage to trigger the GREATER_THAN_THRESHOLD_VOLTAGE GPIO Event (50mV per LSB)
+            field GtThresholdVoltage 95:80,
+            /// Enable Internal Auxbiasing
+            field EnableInternalAuxbiasing 124,
+            /// EnableInternalLevelShifter
+            field EnableInternalLevelShifter 125,
+            /// Level shifter direction configuration
+            field LevelShifterDirectionCfg 127:126 -> _ as enum LevelShifterDirectionCfg {
+                Automatic: 0,
+                GpioControlled: 1,
+                I2cControlled: 2,
+                Reserved: catch-all _,
+            },
+            /// SBU Mux Debug Setting
+            field SbuMuxDebugSetting 130:128 -> _ as enum SbuMuxDebugSetting {
+                DebugSnk: 0,
+                UnorientedDebugSrc: 1,
+                OrientedDebugSrc: 2,
+                AnyDebug: 3,
+                NeverEnable: 4,
+                Reserved: catch-all _,
+            },
+            /// SBU Mux Default Setting
+            field SbuMuxDefaultSetting 133:131 -> _ as enum SbuMuxDefaultSetting {
+                DontChange: 0,
+                DisableSbuMux: 1,
+                EnableDbg: 2,
+                Reserved: catch-all _,
+            },
+            /// Sbu Mux Usage
+            field SbuMuxUsage 135:134 -> _ as enum SbuMuxUsage {
+                DisplayPortAux: 0,
+                AllAux: 1,
+                Reserved: catch-all _,
+            },
+            /// EPR Supported as Source
+            field EprSupportedAsSource 136,
+            /// EPR Supported as Sink
+            field EprSupportedAsSink 137,
+            /// Disable sourcing in dead battery mode
+            field DisableSourcingInDbm 138,
+            /// Flip Px_DBG
+            field FlipCrossbarDbgSetting 139,
+            /// Flip Px_AUX
+            field FlipCrossbarAuxSetting 140,
+            /// Flip PX_SBTX/RX
+            field FlipCrossbarSbtxSetting 141,
+        },
+    },
     /// Port control
     register PortControl {
         address: 0x29,

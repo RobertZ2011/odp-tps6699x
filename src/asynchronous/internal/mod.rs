@@ -546,11 +546,13 @@ impl<B: I2c> Tps6699x<B> {
         &mut self,
         port: LocalPortId,
     ) -> Result<registers::port_config::PortConfig, Error<B::Error>> {
-        let mut buf = [0u8; registers::port_config::LEN];
-        self.borrow_port(port)?
-            .read_register(registers::port_config::ADDR, &mut buf, &FieldsetMetadata::DEFAULT)
-            .await?;
-        Ok(buf.into())
+        Ok(self
+            .borrow_port(port)?
+            .into_registers()
+            .port_config()
+            .read_async()
+            .await?
+            .into())
     }
 
     /// Set port config
@@ -559,9 +561,10 @@ impl<B: I2c> Tps6699x<B> {
         port: LocalPortId,
         config: registers::port_config::PortConfig,
     ) -> Result<(), Error<B::Error>> {
-        let mut buf = *config.as_bytes();
         self.borrow_port(port)?
-            .write_register(registers::port_config::ADDR, &mut buf, &FieldsetMetadata::DEFAULT)
+            .into_registers()
+            .port_config()
+            .write_async(|r| *r = config.into())
             .await
     }
 
@@ -696,7 +699,11 @@ impl<B: I2c> Tps6699x<B> {
 
     /// Get Tx Identity
     pub async fn get_tx_identity(&mut self, port: LocalPortId) -> Result<registers::TxIdentity, Error<B::Error>> {
-        self.borrow_port(port)?.into_registers().tx_identity().read_async().await
+        self.borrow_port(port)?
+            .into_registers()
+            .tx_identity()
+            .read_async()
+            .await
     }
 
     /// Set Tx Identity

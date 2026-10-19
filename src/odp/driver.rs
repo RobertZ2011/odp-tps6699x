@@ -777,7 +777,7 @@ impl<M: RawMutex, B: I2c> tcpm_interface::controller::pd::StateMachine for Tps66
         let mut config_reg =
             { self.tps6699x.lock_inner().await.get_port_config(port).await }.map_err(|e| self.log_error(e))?;
 
-        config_reg.set_disable_pd(!config.enabled);
+        config_reg.disable_pd = !config.enabled;
 
         { self.tps6699x.lock_inner().await.set_port_config(port, config_reg).await }.map_err(|e| self.log_error(e))
     }
@@ -801,7 +801,7 @@ impl<M: RawMutex, B: I2c> tcpm_interface::controller::type_c::StateMachine for T
             TypeCStateMachineState::Disabled => TypeCStateMachine::Disabled,
         };
 
-        config_reg.set_typec_state_machine(typec_state);
+        config_reg.typec_state_machine = typec_state;
         { self.tps6699x.lock_inner().await.set_port_config(port, config_reg).await }.map_err(|e| self.log_error(e))
     }
 }

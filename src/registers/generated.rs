@@ -319,6 +319,32 @@ impl<I> Registers<I> {
             || SystemConfig::from([5, 137, 51, 140, 25, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
         )
     }
+    /// Port configuration
+    ///
+    /// Register operation:
+    /// - Address: `40`
+    /// - Reset value: `0x0`
+    #[doc(alias = "PortConfig")]
+    pub fn port_config(
+        &mut self,
+    ) -> ::device_driver::RegisterOperation<
+        '_,
+        Self,
+        PortConfig,
+        u8,
+        ::device_driver::RW,
+        (),
+    >
+    where
+        I: ::device_driver::RegisterInterfaceBase<AddressType = u8>,
+    {
+        let address = self.base_address + 40;
+        ::device_driver::RegisterOperation::new(
+            self,
+            address as u8,
+            || PortConfig::from([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+        )
+    }
     /// Port control
     ///
     /// Register operation:
@@ -6505,6 +6531,1248 @@ impl core::ops::BitXorAssign for PortControl {
     }
 }
 impl core::ops::Not for PortControl {
+    type Output = Self;
+    fn not(mut self) -> Self::Output {
+        for val in self.bits.iter_mut() {
+            *val = !*val;
+        }
+        self
+    }
+}
+#[derive(Copy, Clone, Eq, PartialEq)]
+#[repr(transparent)]
+pub struct PortConfig {
+    #[doc(hidden)]
+    /// The internal bits
+    bits: [u8; 18],
+}
+unsafe impl ::device_driver::Fieldset for PortConfig {
+    const METADATA: ::device_driver::FieldsetMetadata = ::device_driver::FieldsetMetadata::new()
+        .with_byte_order(::device_driver::ByteOrder::LE);
+    const ZERO: Self = Self { bits: [0; 18] };
+}
+impl PortConfig {
+    /// `1:0` - Read the `typec_state_machine` field.
+    ///
+    /// Type-C State machine
+    #[doc(alias = "TypecStateMachine")]
+    #[must_use]
+    pub fn typec_state_machine(&self) -> TypeCStateMachine {
+        let start = 0;
+        let end = 1;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        unsafe { raw.try_into().unwrap_unchecked() }
+    }
+    /// `bit 2` - Read the `crossbar_type` field.
+    ///
+    /// Crossbar Type
+    #[doc(alias = "CrossbarType")]
+    #[must_use]
+    pub fn crossbar_type(&self) -> CrossbarType {
+        let start = 2;
+        let end = 2;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        unsafe { raw.try_into().unwrap_unchecked() }
+    }
+    /// `bit 7` - Read the `pp_ext_active_low` field.
+    ///
+    /// PP_EXT ActiveLow
+    #[doc(alias = "PpExtActiveLow")]
+    #[must_use]
+    pub fn pp_ext_active_low(&self) -> bool {
+        let start = 7;
+        let end = 7;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `9:8` - Read the `typec_support_options` field.
+    ///
+    /// TypeC Support Options
+    #[doc(alias = "TypecSupportOptions")]
+    #[must_use]
+    pub fn typec_support_options(&self) -> TypeCSupportOptions {
+        let start = 8;
+        let end = 9;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw.into()
+    }
+    /// `bit 10` - Read the `disable_pd` field.
+    ///
+    /// Disable PD
+    #[doc(alias = "DisablePd")]
+    #[must_use]
+    pub fn disable_pd(&self) -> bool {
+        let start = 10;
+        let end = 10;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `bit 11` - Read the `usb_communication_capable` field.
+    ///
+    /// USB Communication Capable
+    #[doc(alias = "UsbCommunicationCapable")]
+    #[must_use]
+    pub fn usb_communication_capable(&self) -> bool {
+        let start = 11;
+        let end = 11;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `bit 12` - Read the `debug_accessory_support` field.
+    ///
+    /// DebugAccessory Support
+    #[doc(alias = "DebugAccessorySupport")]
+    #[must_use]
+    pub fn debug_accessory_support(&self) -> bool {
+        let start = 12;
+        let end = 12;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `14:13` - Read the `usb_3_rate` field.
+    ///
+    /// USB3 Rate
+    #[doc(alias = "Usb3Rate")]
+    #[must_use]
+    pub fn usb_3_rate(&self) -> Usb3Rate {
+        let start = 13;
+        let end = 14;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw.into()
+    }
+    /// `bit 15` - Read the `crossbar_i_2_c_controller_enable` field.
+    ///
+    /// Crossbar I2C Controller enable
+    #[doc(alias = "CrossbarI2cControllerEnable")]
+    #[must_use]
+    pub fn crossbar_i_2_c_controller_enable(&self) -> bool {
+        let start = 15;
+        let end = 15;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `17:16` - Read the `vbus_ovp_usage` field.
+    ///
+    /// VBUS OVP Usage
+    #[doc(alias = "VbusOvpUsage")]
+    #[must_use]
+    pub fn vbus_ovp_usage(&self) -> VbusOvpUsage {
+        let start = 16;
+        let end = 17;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        unsafe { raw.try_into().unwrap_unchecked() }
+    }
+    /// `21:20` - Read the `ovp_for_pp_5_v` field.
+    ///
+    /// OVP for PP5V
+    #[doc(alias = "OvpForPp5v")]
+    #[must_use]
+    pub fn ovp_for_pp_5_v(&self) -> OvpForPp5V {
+        let start = 20;
+        let end = 21;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        unsafe { raw.try_into().unwrap_unchecked() }
+    }
+    /// `bit 22` - Read the `crossbar_config_type_1_extended` field.
+    ///
+    /// Crossbar Config Type 1 Extended
+    #[doc(alias = "CrossbarConfigType1Extended")]
+    #[must_use]
+    pub fn crossbar_config_type_1_extended(&self) -> bool {
+        let start = 22;
+        let end = 22;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `bit 23` - Read the `remove_safe_state_between_usb_3_to_dp_transition` field.
+    ///
+    /// Remove Safe-State Between USB3-to-DP Transition
+    #[doc(alias = "RemoveSafeStateBetweenUsb3ToDpTransition")]
+    #[must_use]
+    pub fn remove_safe_state_between_usb_3_to_dp_transition(&self) -> bool {
+        let start = 23;
+        let end = 23;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `26:24` - Read the `vbus_sink_uvp_trip_hv` field.
+    ///
+    /// VBUS Sink UVP Trip HV
+    #[doc(alias = "VbusSinkUvpTripHv")]
+    #[must_use]
+    pub fn vbus_sink_uvp_trip_hv(&self) -> VbusSinkUvpTripHv {
+        let start = 24;
+        let end = 26;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw.into()
+    }
+    /// `28:27` - Read the `apdo_vbus_uvp_threshold` field.
+    ///
+    /// APDO VBUS UVP Threshold
+    #[doc(alias = "ApdoVbusUvpThreshold")]
+    #[must_use]
+    pub fn apdo_vbus_uvp_threshold(&self) -> u8 {
+        let start = 27;
+        let end = 28;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `30:29` - Read the `apdo_ilim_over_shoot` field.
+    ///
+    /// APDO ILIM Over Shoot
+    #[doc(alias = "ApdoIlimOverShoot")]
+    #[must_use]
+    pub fn apdo_ilim_over_shoot(&self) -> u8 {
+        let start = 29;
+        let end = 30;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `47:32` - Read the `apdo_vbus_uvp_trip_point_offset` field.
+    ///
+    /// APDO VBUS Uvp TripPoint Offset
+    #[doc(alias = "ApdoVbusUvpTripPointOffset")]
+    #[must_use]
+    pub fn apdo_vbus_uvp_trip_point_offset(&self) -> u16 {
+        let start = 32;
+        let end = 47;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `63:48` - Read the `vbus_for_valid_pps_status` field.
+    ///
+    /// VBUS For Valid PPS Status
+    #[doc(alias = "VbusForValidPpsStatus")]
+    #[must_use]
+    pub fn vbus_for_valid_pps_status(&self) -> u16 {
+        let start = 48;
+        let end = 63;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `71:64` - Read the `external_dcdc_type` field.
+    ///
+    /// External DCDC Type
+    #[doc(alias = "ExternalDcdcType")]
+    #[must_use]
+    pub fn external_dcdc_type(&self) -> ExternalDcdcType {
+        let start = 64;
+        let end = 71;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw.into()
+    }
+    /// `bit 72` - Read the `sink_mode_i_2_c_irq_config` field.
+    ///
+    /// Enables support for GPIO10 to I2C IRQ
+    #[doc(alias = "SinkModeI2cIrqConfig")]
+    #[must_use]
+    pub fn sink_mode_i_2_c_irq_config(&self) -> bool {
+        let start = 72;
+        let end = 72;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `95:80` - Read the `gt_threshold_voltage` field.
+    ///
+    /// Threshold voltage to trigger the GREATER_THAN_THRESHOLD_VOLTAGE GPIO Event (50mV per LSB)
+    #[doc(alias = "GtThresholdVoltage")]
+    #[must_use]
+    pub fn gt_threshold_voltage(&self) -> u16 {
+        let start = 80;
+        let end = 95;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `bit 124` - Read the `enable_internal_auxbiasing` field.
+    ///
+    /// Enable Internal Auxbiasing
+    #[doc(alias = "EnableInternalAuxbiasing")]
+    #[must_use]
+    pub fn enable_internal_auxbiasing(&self) -> bool {
+        let start = 124;
+        let end = 124;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `bit 125` - Read the `enable_internal_level_shifter` field.
+    ///
+    /// EnableInternalLevelShifter
+    #[doc(alias = "EnableInternalLevelShifter")]
+    #[must_use]
+    pub fn enable_internal_level_shifter(&self) -> bool {
+        let start = 125;
+        let end = 125;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `127:126` - Read the `level_shifter_direction_cfg` field.
+    ///
+    /// Level shifter direction configuration
+    #[doc(alias = "LevelShifterDirectionCfg")]
+    #[must_use]
+    pub fn level_shifter_direction_cfg(&self) -> LevelShifterDirectionCfg {
+        let start = 126;
+        let end = 127;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw.into()
+    }
+    /// `130:128` - Read the `sbu_mux_debug_setting` field.
+    ///
+    /// SBU Mux Debug Setting
+    #[doc(alias = "SbuMuxDebugSetting")]
+    #[must_use]
+    pub fn sbu_mux_debug_setting(&self) -> SbuMuxDebugSetting {
+        let start = 128;
+        let end = 130;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw.into()
+    }
+    /// `133:131` - Read the `sbu_mux_default_setting` field.
+    ///
+    /// SBU Mux Default Setting
+    #[doc(alias = "SbuMuxDefaultSetting")]
+    #[must_use]
+    pub fn sbu_mux_default_setting(&self) -> SbuMuxDefaultSetting {
+        let start = 131;
+        let end = 133;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw.into()
+    }
+    /// `135:134` - Read the `sbu_mux_usage` field.
+    ///
+    /// Sbu Mux Usage
+    #[doc(alias = "SbuMuxUsage")]
+    #[must_use]
+    pub fn sbu_mux_usage(&self) -> SbuMuxUsage {
+        let start = 134;
+        let end = 135;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw.into()
+    }
+    /// `bit 136` - Read the `epr_supported_as_source` field.
+    ///
+    /// EPR Supported as Source
+    #[doc(alias = "EprSupportedAsSource")]
+    #[must_use]
+    pub fn epr_supported_as_source(&self) -> bool {
+        let start = 136;
+        let end = 136;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `bit 137` - Read the `epr_supported_as_sink` field.
+    ///
+    /// EPR Supported as Sink
+    #[doc(alias = "EprSupportedAsSink")]
+    #[must_use]
+    pub fn epr_supported_as_sink(&self) -> bool {
+        let start = 137;
+        let end = 137;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `bit 138` - Read the `disable_sourcing_in_dbm` field.
+    ///
+    /// Disable sourcing in dead battery mode
+    #[doc(alias = "DisableSourcingInDbm")]
+    #[must_use]
+    pub fn disable_sourcing_in_dbm(&self) -> bool {
+        let start = 138;
+        let end = 138;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `bit 139` - Read the `flip_crossbar_dbg_setting` field.
+    ///
+    /// Flip Px_DBG
+    #[doc(alias = "FlipCrossbarDbgSetting")]
+    #[must_use]
+    pub fn flip_crossbar_dbg_setting(&self) -> bool {
+        let start = 139;
+        let end = 139;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `bit 140` - Read the `flip_crossbar_aux_setting` field.
+    ///
+    /// Flip Px_AUX
+    #[doc(alias = "FlipCrossbarAuxSetting")]
+    #[must_use]
+    pub fn flip_crossbar_aux_setting(&self) -> bool {
+        let start = 140;
+        let end = 140;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `bit 141` - Read the `flip_crossbar_sbtx_setting` field.
+    ///
+    /// Flip PX_SBTX/RX
+    #[doc(alias = "FlipCrossbarSbtxSetting")]
+    #[must_use]
+    pub fn flip_crossbar_sbtx_setting(&self) -> bool {
+        let start = 141;
+        let end = 141;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `1:0` - Set the `typec_state_machine` field.
+    ///
+    /// Type-C State machine
+    #[doc(alias = "TypecStateMachine")]
+    pub fn set_typec_state_machine(&mut self, value: TypeCStateMachine) {
+        let start = 0;
+        let end = 1;
+        let raw = value.into();
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 2` - Set the `crossbar_type` field.
+    ///
+    /// Crossbar Type
+    #[doc(alias = "CrossbarType")]
+    pub fn set_crossbar_type(&mut self, value: CrossbarType) {
+        let start = 2;
+        let end = 2;
+        let raw = value.into();
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 7` - Set the `pp_ext_active_low` field.
+    ///
+    /// PP_EXT ActiveLow
+    #[doc(alias = "PpExtActiveLow")]
+    pub fn set_pp_ext_active_low(&mut self, value: bool) {
+        let start = 7;
+        let end = 7;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `9:8` - Set the `typec_support_options` field.
+    ///
+    /// TypeC Support Options
+    #[doc(alias = "TypecSupportOptions")]
+    pub fn set_typec_support_options(&mut self, value: TypeCSupportOptions) {
+        let start = 8;
+        let end = 9;
+        let raw = value.into();
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 10` - Set the `disable_pd` field.
+    ///
+    /// Disable PD
+    #[doc(alias = "DisablePd")]
+    pub fn set_disable_pd(&mut self, value: bool) {
+        let start = 10;
+        let end = 10;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 11` - Set the `usb_communication_capable` field.
+    ///
+    /// USB Communication Capable
+    #[doc(alias = "UsbCommunicationCapable")]
+    pub fn set_usb_communication_capable(&mut self, value: bool) {
+        let start = 11;
+        let end = 11;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 12` - Set the `debug_accessory_support` field.
+    ///
+    /// DebugAccessory Support
+    #[doc(alias = "DebugAccessorySupport")]
+    pub fn set_debug_accessory_support(&mut self, value: bool) {
+        let start = 12;
+        let end = 12;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `14:13` - Set the `usb_3_rate` field.
+    ///
+    /// USB3 Rate
+    #[doc(alias = "Usb3Rate")]
+    pub fn set_usb_3_rate(&mut self, value: Usb3Rate) {
+        let start = 13;
+        let end = 14;
+        let raw = value.into();
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 15` - Set the `crossbar_i_2_c_controller_enable` field.
+    ///
+    /// Crossbar I2C Controller enable
+    #[doc(alias = "CrossbarI2cControllerEnable")]
+    pub fn set_crossbar_i_2_c_controller_enable(&mut self, value: bool) {
+        let start = 15;
+        let end = 15;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `17:16` - Set the `vbus_ovp_usage` field.
+    ///
+    /// VBUS OVP Usage
+    #[doc(alias = "VbusOvpUsage")]
+    pub fn set_vbus_ovp_usage(&mut self, value: VbusOvpUsage) {
+        let start = 16;
+        let end = 17;
+        let raw = value.into();
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `21:20` - Set the `ovp_for_pp_5_v` field.
+    ///
+    /// OVP for PP5V
+    #[doc(alias = "OvpForPp5v")]
+    pub fn set_ovp_for_pp_5_v(&mut self, value: OvpForPp5V) {
+        let start = 20;
+        let end = 21;
+        let raw = value.into();
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 22` - Set the `crossbar_config_type_1_extended` field.
+    ///
+    /// Crossbar Config Type 1 Extended
+    #[doc(alias = "CrossbarConfigType1Extended")]
+    pub fn set_crossbar_config_type_1_extended(&mut self, value: bool) {
+        let start = 22;
+        let end = 22;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 23` - Set the `remove_safe_state_between_usb_3_to_dp_transition` field.
+    ///
+    /// Remove Safe-State Between USB3-to-DP Transition
+    #[doc(alias = "RemoveSafeStateBetweenUsb3ToDpTransition")]
+    pub fn set_remove_safe_state_between_usb_3_to_dp_transition(&mut self, value: bool) {
+        let start = 23;
+        let end = 23;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `26:24` - Set the `vbus_sink_uvp_trip_hv` field.
+    ///
+    /// VBUS Sink UVP Trip HV
+    #[doc(alias = "VbusSinkUvpTripHv")]
+    pub fn set_vbus_sink_uvp_trip_hv(&mut self, value: VbusSinkUvpTripHv) {
+        let start = 24;
+        let end = 26;
+        let raw = value.into();
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `28:27` - Set the `apdo_vbus_uvp_threshold` field.
+    ///
+    /// APDO VBUS UVP Threshold
+    #[doc(alias = "ApdoVbusUvpThreshold")]
+    pub fn set_apdo_vbus_uvp_threshold(&mut self, value: u8) {
+        let start = 27;
+        let end = 28;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `30:29` - Set the `apdo_ilim_over_shoot` field.
+    ///
+    /// APDO ILIM Over Shoot
+    #[doc(alias = "ApdoIlimOverShoot")]
+    pub fn set_apdo_ilim_over_shoot(&mut self, value: u8) {
+        let start = 29;
+        let end = 30;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `47:32` - Set the `apdo_vbus_uvp_trip_point_offset` field.
+    ///
+    /// APDO VBUS Uvp TripPoint Offset
+    #[doc(alias = "ApdoVbusUvpTripPointOffset")]
+    pub fn set_apdo_vbus_uvp_trip_point_offset(&mut self, value: u16) {
+        let start = 32;
+        let end = 47;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `63:48` - Set the `vbus_for_valid_pps_status` field.
+    ///
+    /// VBUS For Valid PPS Status
+    #[doc(alias = "VbusForValidPpsStatus")]
+    pub fn set_vbus_for_valid_pps_status(&mut self, value: u16) {
+        let start = 48;
+        let end = 63;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `71:64` - Set the `external_dcdc_type` field.
+    ///
+    /// External DCDC Type
+    #[doc(alias = "ExternalDcdcType")]
+    pub fn set_external_dcdc_type(&mut self, value: ExternalDcdcType) {
+        let start = 64;
+        let end = 71;
+        let raw = value.into();
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 72` - Set the `sink_mode_i_2_c_irq_config` field.
+    ///
+    /// Enables support for GPIO10 to I2C IRQ
+    #[doc(alias = "SinkModeI2cIrqConfig")]
+    pub fn set_sink_mode_i_2_c_irq_config(&mut self, value: bool) {
+        let start = 72;
+        let end = 72;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `95:80` - Set the `gt_threshold_voltage` field.
+    ///
+    /// Threshold voltage to trigger the GREATER_THAN_THRESHOLD_VOLTAGE GPIO Event (50mV per LSB)
+    #[doc(alias = "GtThresholdVoltage")]
+    pub fn set_gt_threshold_voltage(&mut self, value: u16) {
+        let start = 80;
+        let end = 95;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 124` - Set the `enable_internal_auxbiasing` field.
+    ///
+    /// Enable Internal Auxbiasing
+    #[doc(alias = "EnableInternalAuxbiasing")]
+    pub fn set_enable_internal_auxbiasing(&mut self, value: bool) {
+        let start = 124;
+        let end = 124;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 125` - Set the `enable_internal_level_shifter` field.
+    ///
+    /// EnableInternalLevelShifter
+    #[doc(alias = "EnableInternalLevelShifter")]
+    pub fn set_enable_internal_level_shifter(&mut self, value: bool) {
+        let start = 125;
+        let end = 125;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `127:126` - Set the `level_shifter_direction_cfg` field.
+    ///
+    /// Level shifter direction configuration
+    #[doc(alias = "LevelShifterDirectionCfg")]
+    pub fn set_level_shifter_direction_cfg(&mut self, value: LevelShifterDirectionCfg) {
+        let start = 126;
+        let end = 127;
+        let raw = value.into();
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `130:128` - Set the `sbu_mux_debug_setting` field.
+    ///
+    /// SBU Mux Debug Setting
+    #[doc(alias = "SbuMuxDebugSetting")]
+    pub fn set_sbu_mux_debug_setting(&mut self, value: SbuMuxDebugSetting) {
+        let start = 128;
+        let end = 130;
+        let raw = value.into();
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `133:131` - Set the `sbu_mux_default_setting` field.
+    ///
+    /// SBU Mux Default Setting
+    #[doc(alias = "SbuMuxDefaultSetting")]
+    pub fn set_sbu_mux_default_setting(&mut self, value: SbuMuxDefaultSetting) {
+        let start = 131;
+        let end = 133;
+        let raw = value.into();
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `135:134` - Set the `sbu_mux_usage` field.
+    ///
+    /// Sbu Mux Usage
+    #[doc(alias = "SbuMuxUsage")]
+    pub fn set_sbu_mux_usage(&mut self, value: SbuMuxUsage) {
+        let start = 134;
+        let end = 135;
+        let raw = value.into();
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 136` - Set the `epr_supported_as_source` field.
+    ///
+    /// EPR Supported as Source
+    #[doc(alias = "EprSupportedAsSource")]
+    pub fn set_epr_supported_as_source(&mut self, value: bool) {
+        let start = 136;
+        let end = 136;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 137` - Set the `epr_supported_as_sink` field.
+    ///
+    /// EPR Supported as Sink
+    #[doc(alias = "EprSupportedAsSink")]
+    pub fn set_epr_supported_as_sink(&mut self, value: bool) {
+        let start = 137;
+        let end = 137;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 138` - Set the `disable_sourcing_in_dbm` field.
+    ///
+    /// Disable sourcing in dead battery mode
+    #[doc(alias = "DisableSourcingInDbm")]
+    pub fn set_disable_sourcing_in_dbm(&mut self, value: bool) {
+        let start = 138;
+        let end = 138;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 139` - Set the `flip_crossbar_dbg_setting` field.
+    ///
+    /// Flip Px_DBG
+    #[doc(alias = "FlipCrossbarDbgSetting")]
+    pub fn set_flip_crossbar_dbg_setting(&mut self, value: bool) {
+        let start = 139;
+        let end = 139;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 140` - Set the `flip_crossbar_aux_setting` field.
+    ///
+    /// Flip Px_AUX
+    #[doc(alias = "FlipCrossbarAuxSetting")]
+    pub fn set_flip_crossbar_aux_setting(&mut self, value: bool) {
+        let start = 140;
+        let end = 140;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 141` - Set the `flip_crossbar_sbtx_setting` field.
+    ///
+    /// Flip PX_SBTX/RX
+    #[doc(alias = "FlipCrossbarSbtxSetting")]
+    pub fn set_flip_crossbar_sbtx_setting(&mut self, value: bool) {
+        let start = 141;
+        let end = 141;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+}
+impl Default for PortConfig {
+    fn default() -> Self {
+        <Self as ::device_driver::Fieldset>::ZERO
+    }
+}
+impl From<[u8; 18]> for PortConfig {
+    fn from(bits: [u8; 18]) -> Self {
+        Self { bits }
+    }
+}
+impl From<PortConfig> for [u8; 18] {
+    fn from(val: PortConfig) -> Self {
+        val.bits
+    }
+}
+impl core::fmt::Debug for PortConfig {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
+        let mut d = f.debug_struct("PortConfig");
+        d.field("typec_state_machine", &self.typec_state_machine());
+        d.field("crossbar_type", &self.crossbar_type());
+        d.field("pp_ext_active_low", &self.pp_ext_active_low());
+        d.field("typec_support_options", &self.typec_support_options());
+        d.field("disable_pd", &self.disable_pd());
+        d.field("usb_communication_capable", &self.usb_communication_capable());
+        d.field("debug_accessory_support", &self.debug_accessory_support());
+        d.field("usb_3_rate", &self.usb_3_rate());
+        d.field(
+            "crossbar_i_2_c_controller_enable",
+            &self.crossbar_i_2_c_controller_enable(),
+        );
+        d.field("vbus_ovp_usage", &self.vbus_ovp_usage());
+        d.field("ovp_for_pp_5_v", &self.ovp_for_pp_5_v());
+        d.field(
+            "crossbar_config_type_1_extended",
+            &self.crossbar_config_type_1_extended(),
+        );
+        d.field(
+            "remove_safe_state_between_usb_3_to_dp_transition",
+            &self.remove_safe_state_between_usb_3_to_dp_transition(),
+        );
+        d.field("vbus_sink_uvp_trip_hv", &self.vbus_sink_uvp_trip_hv());
+        d.field("apdo_vbus_uvp_threshold", &self.apdo_vbus_uvp_threshold());
+        d.field("apdo_ilim_over_shoot", &self.apdo_ilim_over_shoot());
+        d.field(
+            "apdo_vbus_uvp_trip_point_offset",
+            &self.apdo_vbus_uvp_trip_point_offset(),
+        );
+        d.field("vbus_for_valid_pps_status", &self.vbus_for_valid_pps_status());
+        d.field("external_dcdc_type", &self.external_dcdc_type());
+        d.field("sink_mode_i_2_c_irq_config", &self.sink_mode_i_2_c_irq_config());
+        d.field("gt_threshold_voltage", &self.gt_threshold_voltage());
+        d.field("enable_internal_auxbiasing", &self.enable_internal_auxbiasing());
+        d.field("enable_internal_level_shifter", &self.enable_internal_level_shifter());
+        d.field("level_shifter_direction_cfg", &self.level_shifter_direction_cfg());
+        d.field("sbu_mux_debug_setting", &self.sbu_mux_debug_setting());
+        d.field("sbu_mux_default_setting", &self.sbu_mux_default_setting());
+        d.field("sbu_mux_usage", &self.sbu_mux_usage());
+        d.field("epr_supported_as_source", &self.epr_supported_as_source());
+        d.field("epr_supported_as_sink", &self.epr_supported_as_sink());
+        d.field("disable_sourcing_in_dbm", &self.disable_sourcing_in_dbm());
+        d.field("flip_crossbar_dbg_setting", &self.flip_crossbar_dbg_setting());
+        d.field("flip_crossbar_aux_setting", &self.flip_crossbar_aux_setting());
+        d.field("flip_crossbar_sbtx_setting", &self.flip_crossbar_sbtx_setting());
+        d.finish()
+    }
+}
+#[cfg(feature = "defmt")]
+impl defmt::Format for PortConfig {
+    fn format(&self, f: defmt::Formatter) {
+        defmt::write!(f, "PortConfig {{ ");
+        defmt::write!(f, "typec_state_machine: {}, ", & self.typec_state_machine());
+        defmt::write!(f, "crossbar_type: {}, ", & self.crossbar_type());
+        defmt::write!(f, "pp_ext_active_low: {=bool}, ", & self.pp_ext_active_low());
+        defmt::write!(f, "typec_support_options: {}, ", & self.typec_support_options());
+        defmt::write!(f, "disable_pd: {=bool}, ", & self.disable_pd());
+        defmt::write!(
+            f, "usb_communication_capable: {=bool}, ", & self.usb_communication_capable()
+        );
+        defmt::write!(
+            f, "debug_accessory_support: {=bool}, ", & self.debug_accessory_support()
+        );
+        defmt::write!(f, "usb_3_rate: {}, ", & self.usb_3_rate());
+        defmt::write!(
+            f, "crossbar_i_2_c_controller_enable: {=bool}, ", & self
+            .crossbar_i_2_c_controller_enable()
+        );
+        defmt::write!(f, "vbus_ovp_usage: {}, ", & self.vbus_ovp_usage());
+        defmt::write!(f, "ovp_for_pp_5_v: {}, ", & self.ovp_for_pp_5_v());
+        defmt::write!(
+            f, "crossbar_config_type_1_extended: {=bool}, ", & self
+            .crossbar_config_type_1_extended()
+        );
+        defmt::write!(
+            f, "remove_safe_state_between_usb_3_to_dp_transition: {=bool}, ", & self
+            .remove_safe_state_between_usb_3_to_dp_transition()
+        );
+        defmt::write!(f, "vbus_sink_uvp_trip_hv: {}, ", & self.vbus_sink_uvp_trip_hv());
+        defmt::write!(
+            f, "apdo_vbus_uvp_threshold: {=u8}, ", & self.apdo_vbus_uvp_threshold()
+        );
+        defmt::write!(f, "apdo_ilim_over_shoot: {=u8}, ", & self.apdo_ilim_over_shoot());
+        defmt::write!(
+            f, "apdo_vbus_uvp_trip_point_offset: {=u16}, ", & self
+            .apdo_vbus_uvp_trip_point_offset()
+        );
+        defmt::write!(
+            f, "vbus_for_valid_pps_status: {=u16}, ", & self.vbus_for_valid_pps_status()
+        );
+        defmt::write!(f, "external_dcdc_type: {}, ", & self.external_dcdc_type());
+        defmt::write!(
+            f, "sink_mode_i_2_c_irq_config: {=bool}, ", & self
+            .sink_mode_i_2_c_irq_config()
+        );
+        defmt::write!(
+            f, "gt_threshold_voltage: {=u16}, ", & self.gt_threshold_voltage()
+        );
+        defmt::write!(
+            f, "enable_internal_auxbiasing: {=bool}, ", & self
+            .enable_internal_auxbiasing()
+        );
+        defmt::write!(
+            f, "enable_internal_level_shifter: {=bool}, ", & self
+            .enable_internal_level_shifter()
+        );
+        defmt::write!(
+            f, "level_shifter_direction_cfg: {}, ", & self.level_shifter_direction_cfg()
+        );
+        defmt::write!(f, "sbu_mux_debug_setting: {}, ", & self.sbu_mux_debug_setting());
+        defmt::write!(
+            f, "sbu_mux_default_setting: {}, ", & self.sbu_mux_default_setting()
+        );
+        defmt::write!(f, "sbu_mux_usage: {}, ", & self.sbu_mux_usage());
+        defmt::write!(
+            f, "epr_supported_as_source: {=bool}, ", & self.epr_supported_as_source()
+        );
+        defmt::write!(
+            f, "epr_supported_as_sink: {=bool}, ", & self.epr_supported_as_sink()
+        );
+        defmt::write!(
+            f, "disable_sourcing_in_dbm: {=bool}, ", & self.disable_sourcing_in_dbm()
+        );
+        defmt::write!(
+            f, "flip_crossbar_dbg_setting: {=bool}, ", & self.flip_crossbar_dbg_setting()
+        );
+        defmt::write!(
+            f, "flip_crossbar_aux_setting: {=bool}, ", & self.flip_crossbar_aux_setting()
+        );
+        defmt::write!(
+            f, "flip_crossbar_sbtx_setting: {=bool}, ", & self
+            .flip_crossbar_sbtx_setting()
+        );
+        defmt::write!(f, "}}");
+    }
+}
+impl core::ops::BitAnd for PortConfig {
+    type Output = Self;
+    fn bitand(mut self, rhs: Self) -> Self::Output {
+        self &= rhs;
+        self
+    }
+}
+impl core::ops::BitAndAssign for PortConfig {
+    fn bitand_assign(&mut self, rhs: Self) {
+        for (l, r) in self.bits.iter_mut().zip(&rhs.bits) {
+            *l &= *r;
+        }
+    }
+}
+impl core::ops::BitOr for PortConfig {
+    type Output = Self;
+    fn bitor(mut self, rhs: Self) -> Self::Output {
+        self |= rhs;
+        self
+    }
+}
+impl core::ops::BitOrAssign for PortConfig {
+    fn bitor_assign(&mut self, rhs: Self) {
+        for (l, r) in self.bits.iter_mut().zip(&rhs.bits) {
+            *l |= *r;
+        }
+    }
+}
+impl core::ops::BitXor for PortConfig {
+    type Output = Self;
+    fn bitxor(mut self, rhs: Self) -> Self::Output {
+        self ^= rhs;
+        self
+    }
+}
+impl core::ops::BitXorAssign for PortConfig {
+    fn bitxor_assign(&mut self, rhs: Self) {
+        for (l, r) in self.bits.iter_mut().zip(&rhs.bits) {
+            *l ^= *r;
+        }
+    }
+}
+impl core::ops::Not for PortConfig {
     type Output = Self;
     fn not(mut self) -> Self::Output {
         for val in self.bits.iter_mut() {
@@ -13027,6 +14295,487 @@ impl From<TypecCurrent> for u8 {
 }
 #[doc(hidden)]
 impl ::device_driver::EnumIndex for TypecCurrent {
+    #[track_caller]
+    fn index(&self) -> i32 {
+        let index = u8::from(*self);
+        index.try_into().unwrap()
+    }
+}
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum SbuMuxUsage {
+    DisplayPortAux = 0,
+    AllAux = 1,
+    Reserved(u8) = 2,
+}
+impl From<u8> for SbuMuxUsage {
+    fn from(val: u8) -> Self {
+        match val {
+            0 => Self::DisplayPortAux,
+            1 => Self::AllAux,
+            val => Self::Reserved(val),
+        }
+    }
+}
+impl From<SbuMuxUsage> for u8 {
+    fn from(val: SbuMuxUsage) -> Self {
+        match val {
+            SbuMuxUsage::DisplayPortAux => 0,
+            SbuMuxUsage::AllAux => 1,
+            SbuMuxUsage::Reserved(num) => num,
+        }
+    }
+}
+#[doc(hidden)]
+impl ::device_driver::EnumIndex for SbuMuxUsage {
+    #[track_caller]
+    fn index(&self) -> i32 {
+        let index = u8::from(*self);
+        index.try_into().unwrap()
+    }
+}
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum SbuMuxDefaultSetting {
+    DontChange = 0,
+    DisableSbuMux = 1,
+    EnableDbg = 2,
+    Reserved(u8) = 3,
+}
+impl From<u8> for SbuMuxDefaultSetting {
+    fn from(val: u8) -> Self {
+        match val {
+            0 => Self::DontChange,
+            1 => Self::DisableSbuMux,
+            2 => Self::EnableDbg,
+            val => Self::Reserved(val),
+        }
+    }
+}
+impl From<SbuMuxDefaultSetting> for u8 {
+    fn from(val: SbuMuxDefaultSetting) -> Self {
+        match val {
+            SbuMuxDefaultSetting::DontChange => 0,
+            SbuMuxDefaultSetting::DisableSbuMux => 1,
+            SbuMuxDefaultSetting::EnableDbg => 2,
+            SbuMuxDefaultSetting::Reserved(num) => num,
+        }
+    }
+}
+#[doc(hidden)]
+impl ::device_driver::EnumIndex for SbuMuxDefaultSetting {
+    #[track_caller]
+    fn index(&self) -> i32 {
+        let index = u8::from(*self);
+        index.try_into().unwrap()
+    }
+}
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum SbuMuxDebugSetting {
+    DebugSnk = 0,
+    UnorientedDebugSrc = 1,
+    OrientedDebugSrc = 2,
+    AnyDebug = 3,
+    NeverEnable = 4,
+    Reserved(u8) = 5,
+}
+impl From<u8> for SbuMuxDebugSetting {
+    fn from(val: u8) -> Self {
+        match val {
+            0 => Self::DebugSnk,
+            1 => Self::UnorientedDebugSrc,
+            2 => Self::OrientedDebugSrc,
+            3 => Self::AnyDebug,
+            4 => Self::NeverEnable,
+            val => Self::Reserved(val),
+        }
+    }
+}
+impl From<SbuMuxDebugSetting> for u8 {
+    fn from(val: SbuMuxDebugSetting) -> Self {
+        match val {
+            SbuMuxDebugSetting::DebugSnk => 0,
+            SbuMuxDebugSetting::UnorientedDebugSrc => 1,
+            SbuMuxDebugSetting::OrientedDebugSrc => 2,
+            SbuMuxDebugSetting::AnyDebug => 3,
+            SbuMuxDebugSetting::NeverEnable => 4,
+            SbuMuxDebugSetting::Reserved(num) => num,
+        }
+    }
+}
+#[doc(hidden)]
+impl ::device_driver::EnumIndex for SbuMuxDebugSetting {
+    #[track_caller]
+    fn index(&self) -> i32 {
+        let index = u8::from(*self);
+        index.try_into().unwrap()
+    }
+}
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum LevelShifterDirectionCfg {
+    Automatic = 0,
+    GpioControlled = 1,
+    #[doc(alias = "I2cControlled")]
+    I2CControlled = 2,
+    Reserved(u8) = 3,
+}
+impl From<u8> for LevelShifterDirectionCfg {
+    fn from(val: u8) -> Self {
+        match val {
+            0 => Self::Automatic,
+            1 => Self::GpioControlled,
+            2 => Self::I2CControlled,
+            val => Self::Reserved(val),
+        }
+    }
+}
+impl From<LevelShifterDirectionCfg> for u8 {
+    fn from(val: LevelShifterDirectionCfg) -> Self {
+        match val {
+            LevelShifterDirectionCfg::Automatic => 0,
+            LevelShifterDirectionCfg::GpioControlled => 1,
+            LevelShifterDirectionCfg::I2CControlled => 2,
+            LevelShifterDirectionCfg::Reserved(num) => num,
+        }
+    }
+}
+#[doc(hidden)]
+impl ::device_driver::EnumIndex for LevelShifterDirectionCfg {
+    #[track_caller]
+    fn index(&self) -> i32 {
+        let index = u8::from(*self);
+        index.try_into().unwrap()
+    }
+}
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum ExternalDcdcType {
+    MarinaBay = 0,
+    Bq25758 = 1,
+    Reserved(u8) = 2,
+}
+impl From<u8> for ExternalDcdcType {
+    fn from(val: u8) -> Self {
+        match val {
+            0 => Self::MarinaBay,
+            1 => Self::Bq25758,
+            val => Self::Reserved(val),
+        }
+    }
+}
+impl From<ExternalDcdcType> for u8 {
+    fn from(val: ExternalDcdcType) -> Self {
+        match val {
+            ExternalDcdcType::MarinaBay => 0,
+            ExternalDcdcType::Bq25758 => 1,
+            ExternalDcdcType::Reserved(num) => num,
+        }
+    }
+}
+#[doc(hidden)]
+impl ::device_driver::EnumIndex for ExternalDcdcType {
+    #[track_caller]
+    fn index(&self) -> i32 {
+        let index = u8::from(*self);
+        index.try_into().unwrap()
+    }
+}
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum VbusSinkUvpTripHv {
+    Pct5 = 0,
+    Pct10 = 1,
+    Pct15 = 2,
+    Pct20 = 3,
+    Pct25 = 4,
+    Pct30 = 5,
+    Pct40 = 6,
+    Reserved(u8) = 7,
+}
+impl From<u8> for VbusSinkUvpTripHv {
+    fn from(val: u8) -> Self {
+        match val {
+            0 => Self::Pct5,
+            1 => Self::Pct10,
+            2 => Self::Pct15,
+            3 => Self::Pct20,
+            4 => Self::Pct25,
+            5 => Self::Pct30,
+            6 => Self::Pct40,
+            val => Self::Reserved(val),
+        }
+    }
+}
+impl From<VbusSinkUvpTripHv> for u8 {
+    fn from(val: VbusSinkUvpTripHv) -> Self {
+        match val {
+            VbusSinkUvpTripHv::Pct5 => 0,
+            VbusSinkUvpTripHv::Pct10 => 1,
+            VbusSinkUvpTripHv::Pct15 => 2,
+            VbusSinkUvpTripHv::Pct20 => 3,
+            VbusSinkUvpTripHv::Pct25 => 4,
+            VbusSinkUvpTripHv::Pct30 => 5,
+            VbusSinkUvpTripHv::Pct40 => 6,
+            VbusSinkUvpTripHv::Reserved(num) => num,
+        }
+    }
+}
+#[doc(hidden)]
+impl ::device_driver::EnumIndex for VbusSinkUvpTripHv {
+    #[track_caller]
+    fn index(&self) -> i32 {
+        let index = u8::from(*self);
+        index.try_into().unwrap()
+    }
+}
+#[doc(alias = "OvpForPp5v")]
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum OvpForPp5V {
+    #[doc(alias = "V5p25")]
+    V5P25 = 0,
+    #[doc(alias = "V5p5")]
+    V5P5 = 1,
+    #[doc(alias = "V5p8")]
+    V5P8 = 2,
+    #[doc(alias = "V6p1")]
+    V6P1 = 3,
+}
+impl core::convert::TryFrom<u8> for OvpForPp5V {
+    type Error = ::device_driver::ConversionError<u8>;
+    fn try_from(val: u8) -> Result<Self, Self::Error> {
+        match val {
+            0 => Ok(Self::V5P25),
+            1 => Ok(Self::V5P5),
+            2 => Ok(Self::V5P8),
+            3 => Ok(Self::V6P1),
+            val => {
+                Err(::device_driver::ConversionError {
+                    source: val,
+                    target: "OvpForPp5V",
+                })
+            }
+        }
+    }
+}
+impl From<OvpForPp5V> for u8 {
+    fn from(val: OvpForPp5V) -> Self {
+        match val {
+            OvpForPp5V::V5P25 => 0,
+            OvpForPp5V::V5P5 => 1,
+            OvpForPp5V::V5P8 => 2,
+            OvpForPp5V::V6P1 => 3,
+        }
+    }
+}
+#[doc(hidden)]
+impl ::device_driver::EnumIndex for OvpForPp5V {
+    #[track_caller]
+    fn index(&self) -> i32 {
+        let index = u8::from(*self);
+        index.try_into().unwrap()
+    }
+}
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum VbusOvpUsage {
+    Pct100 = 0,
+    Pct105 = 1,
+    Pct111 = 2,
+    Pct114 = 3,
+}
+impl core::convert::TryFrom<u8> for VbusOvpUsage {
+    type Error = ::device_driver::ConversionError<u8>;
+    fn try_from(val: u8) -> Result<Self, Self::Error> {
+        match val {
+            0 => Ok(Self::Pct100),
+            1 => Ok(Self::Pct105),
+            2 => Ok(Self::Pct111),
+            3 => Ok(Self::Pct114),
+            val => {
+                Err(::device_driver::ConversionError {
+                    source: val,
+                    target: "VbusOvpUsage",
+                })
+            }
+        }
+    }
+}
+impl From<VbusOvpUsage> for u8 {
+    fn from(val: VbusOvpUsage) -> Self {
+        match val {
+            VbusOvpUsage::Pct100 => 0,
+            VbusOvpUsage::Pct105 => 1,
+            VbusOvpUsage::Pct111 => 2,
+            VbusOvpUsage::Pct114 => 3,
+        }
+    }
+}
+#[doc(hidden)]
+impl ::device_driver::EnumIndex for VbusOvpUsage {
+    #[track_caller]
+    fn index(&self) -> i32 {
+        let index = u8::from(*self);
+        index.try_into().unwrap()
+    }
+}
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum Usb3Rate {
+    NotSupported = 0,
+    Gen1 = 1,
+    Gen2 = 2,
+    Reserved(u8) = 3,
+}
+impl From<u8> for Usb3Rate {
+    fn from(val: u8) -> Self {
+        match val {
+            0 => Self::NotSupported,
+            1 => Self::Gen1,
+            2 => Self::Gen2,
+            val => Self::Reserved(val),
+        }
+    }
+}
+impl From<Usb3Rate> for u8 {
+    fn from(val: Usb3Rate) -> Self {
+        match val {
+            Usb3Rate::NotSupported => 0,
+            Usb3Rate::Gen1 => 1,
+            Usb3Rate::Gen2 => 2,
+            Usb3Rate::Reserved(num) => num,
+        }
+    }
+}
+#[doc(hidden)]
+impl ::device_driver::EnumIndex for Usb3Rate {
+    #[track_caller]
+    fn index(&self) -> i32 {
+        let index = u8::from(*self);
+        index.try_into().unwrap()
+    }
+}
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum TypeCSupportOptions {
+    None = 0,
+    TrySrcDrp = 1,
+    Reserved(u8) = 2,
+}
+impl From<u8> for TypeCSupportOptions {
+    fn from(val: u8) -> Self {
+        match val {
+            0 => Self::None,
+            1 => Self::TrySrcDrp,
+            val => Self::Reserved(val),
+        }
+    }
+}
+impl From<TypeCSupportOptions> for u8 {
+    fn from(val: TypeCSupportOptions) -> Self {
+        match val {
+            TypeCSupportOptions::None => 0,
+            TypeCSupportOptions::TrySrcDrp => 1,
+            TypeCSupportOptions::Reserved(num) => num,
+        }
+    }
+}
+#[doc(hidden)]
+impl ::device_driver::EnumIndex for TypeCSupportOptions {
+    #[track_caller]
+    fn index(&self) -> i32 {
+        let index = u8::from(*self);
+        index.try_into().unwrap()
+    }
+}
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum CrossbarType {
+    Type1 = 0,
+    Type2 = 1,
+}
+impl core::convert::TryFrom<u8> for CrossbarType {
+    type Error = ::device_driver::ConversionError<u8>;
+    fn try_from(val: u8) -> Result<Self, Self::Error> {
+        match val {
+            0 => Ok(Self::Type1),
+            1 => Ok(Self::Type2),
+            val => {
+                Err(::device_driver::ConversionError {
+                    source: val,
+                    target: "CrossbarType",
+                })
+            }
+        }
+    }
+}
+impl From<CrossbarType> for u8 {
+    fn from(val: CrossbarType) -> Self {
+        match val {
+            CrossbarType::Type1 => 0,
+            CrossbarType::Type2 => 1,
+        }
+    }
+}
+#[doc(hidden)]
+impl ::device_driver::EnumIndex for CrossbarType {
+    #[track_caller]
+    fn index(&self) -> i32 {
+        let index = u8::from(*self);
+        index.try_into().unwrap()
+    }
+}
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum TypeCStateMachine {
+    Sink = 0,
+    Source = 1,
+    Drp = 2,
+    Disabled = 3,
+}
+impl core::convert::TryFrom<u8> for TypeCStateMachine {
+    type Error = ::device_driver::ConversionError<u8>;
+    fn try_from(val: u8) -> Result<Self, Self::Error> {
+        match val {
+            0 => Ok(Self::Sink),
+            1 => Ok(Self::Source),
+            2 => Ok(Self::Drp),
+            3 => Ok(Self::Disabled),
+            val => {
+                Err(::device_driver::ConversionError {
+                    source: val,
+                    target: "TypeCStateMachine",
+                })
+            }
+        }
+    }
+}
+impl From<TypeCStateMachine> for u8 {
+    fn from(val: TypeCStateMachine) -> Self {
+        match val {
+            TypeCStateMachine::Sink => 0,
+            TypeCStateMachine::Source => 1,
+            TypeCStateMachine::Drp => 2,
+            TypeCStateMachine::Disabled => 3,
+        }
+    }
+}
+#[doc(hidden)]
+impl ::device_driver::EnumIndex for TypeCStateMachine {
     #[track_caller]
     fn index(&self) -> i32 {
         let index = u8::from(*self);
