@@ -214,6 +214,52 @@ device Registers {
             },
         },
     },
+    /// Discovered SVIDs
+    register DiscoveredSvids {
+        address: 0x21,
+        reset: 0x0,
+        access: RO,
+        fields: fieldset _ {
+            size-bytes: 33,
+
+            /// Number of SVIDs discovered on SOP
+            field NumberSopSvids 3:0,
+            /// Number of SVIDs discovered on SOP'
+            field NumberSopPrimeSvids 7:4,
+            /// First SVID supported by SOP port partner
+            field SvidSop0 23:8,
+            /// Second SVID supported by SOP port partner
+            field SvidSop1 39:24,
+            /// Third SVID supported by SOP port partner
+            field SvidSop2 55:40,
+            /// Fourth SVID supported by SOP port partner
+            field SvidSop3 71:56,
+            /// Fifth SVID supported by SOP port partner
+            field SvidSop4 87:72,
+            /// Sixth SVID supported by SOP port partner
+            field SvidSop5 103:88,
+            /// Seventh SVID supported by SOP port partner
+            field SvidSop6 119:104,
+            /// Eighth SVID supported by SOP port partner
+            field SvidSop7 135:120,
+            /// First SVID supported by SOP' cable plug
+            field SvidSopPrime0 151:136,
+            /// Second SVID supported by SOP' cable plug
+            field SvidSopPrime1 167:152,
+            /// Third SVID supported by SOP' cable plug
+            field SvidSopPrime2 183:168,
+            /// Fourth SVID supported by SOP' cable plug
+            field SvidSopPrime3 199:184,
+            /// Fifth SVID supported by SOP' cable plug
+            field SvidSopPrime4 215:200,
+            /// Sixth SVID supported by SOP' cable plug
+            field SvidSopPrime5 231:216,
+            /// Seventh SVID supported by SOP' cable plug
+            field SvidSopPrime6 247:232,
+            /// Eighth SVID supported by SOP' cable plug
+            field SvidSopPrime7 263:248,
+        },
+    },
     /// Interrupt clear for I2C1
     register IntClearBus1 {
         address: 0x18,

@@ -189,6 +189,35 @@ impl<I> Registers<I> {
             || SxAppConfig::from([0, 0]),
         )
     }
+    /// Discovered SVIDs
+    ///
+    /// Register operation:
+    /// - Address: `33`
+    /// - Reset value: `0x0`
+    #[doc(alias = "DiscoveredSvids")]
+    pub fn discovered_svids(
+        &mut self,
+    ) -> ::device_driver::RegisterOperation<
+        '_,
+        Self,
+        DiscoveredSvids,
+        u8,
+        ::device_driver::RO,
+        (),
+    >
+    where
+        I: ::device_driver::RegisterInterfaceBase<AddressType = u8>,
+    {
+        let address = self.base_address + 33;
+        ::device_driver::RegisterOperation::new(
+            self,
+            address as u8,
+            || DiscoveredSvids::from([
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0,
+            ]),
+        )
+    }
     /// Interrupt clear for I2C1
     ///
     /// Register operation:
@@ -11460,6 +11489,695 @@ impl core::ops::BitXorAssign for Status {
     }
 }
 impl core::ops::Not for Status {
+    type Output = Self;
+    fn not(mut self) -> Self::Output {
+        for val in self.bits.iter_mut() {
+            *val = !*val;
+        }
+        self
+    }
+}
+#[derive(Copy, Clone, Eq, PartialEq)]
+#[repr(transparent)]
+pub struct DiscoveredSvids {
+    #[doc(hidden)]
+    /// The internal bits
+    bits: [u8; 33],
+}
+unsafe impl ::device_driver::Fieldset for DiscoveredSvids {
+    const METADATA: ::device_driver::FieldsetMetadata = ::device_driver::FieldsetMetadata::new()
+        .with_byte_order(::device_driver::ByteOrder::LE);
+    const ZERO: Self = Self { bits: [0; 33] };
+}
+impl DiscoveredSvids {
+    /// `3:0` - Read the `number_sop_svids` field.
+    ///
+    /// Number of SVIDs discovered on SOP
+    #[doc(alias = "NumberSopSvids")]
+    #[must_use]
+    pub fn number_sop_svids(&self) -> u8 {
+        let start = 0;
+        let end = 3;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `7:4` - Read the `number_sop_prime_svids` field.
+    ///
+    /// Number of SVIDs discovered on SOP'
+    #[doc(alias = "NumberSopPrimeSvids")]
+    #[must_use]
+    pub fn number_sop_prime_svids(&self) -> u8 {
+        let start = 4;
+        let end = 7;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `23:8` - Read the `svid_sop_0` field.
+    ///
+    /// First SVID supported by SOP port partner
+    #[doc(alias = "SvidSop0")]
+    #[must_use]
+    pub fn svid_sop_0(&self) -> u16 {
+        let start = 8;
+        let end = 23;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `39:24` - Read the `svid_sop_1` field.
+    ///
+    /// Second SVID supported by SOP port partner
+    #[doc(alias = "SvidSop1")]
+    #[must_use]
+    pub fn svid_sop_1(&self) -> u16 {
+        let start = 24;
+        let end = 39;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `55:40` - Read the `svid_sop_2` field.
+    ///
+    /// Third SVID supported by SOP port partner
+    #[doc(alias = "SvidSop2")]
+    #[must_use]
+    pub fn svid_sop_2(&self) -> u16 {
+        let start = 40;
+        let end = 55;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `71:56` - Read the `svid_sop_3` field.
+    ///
+    /// Fourth SVID supported by SOP port partner
+    #[doc(alias = "SvidSop3")]
+    #[must_use]
+    pub fn svid_sop_3(&self) -> u16 {
+        let start = 56;
+        let end = 71;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `87:72` - Read the `svid_sop_4` field.
+    ///
+    /// Fifth SVID supported by SOP port partner
+    #[doc(alias = "SvidSop4")]
+    #[must_use]
+    pub fn svid_sop_4(&self) -> u16 {
+        let start = 72;
+        let end = 87;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `103:88` - Read the `svid_sop_5` field.
+    ///
+    /// Sixth SVID supported by SOP port partner
+    #[doc(alias = "SvidSop5")]
+    #[must_use]
+    pub fn svid_sop_5(&self) -> u16 {
+        let start = 88;
+        let end = 103;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `119:104` - Read the `svid_sop_6` field.
+    ///
+    /// Seventh SVID supported by SOP port partner
+    #[doc(alias = "SvidSop6")]
+    #[must_use]
+    pub fn svid_sop_6(&self) -> u16 {
+        let start = 104;
+        let end = 119;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `135:120` - Read the `svid_sop_7` field.
+    ///
+    /// Eighth SVID supported by SOP port partner
+    #[doc(alias = "SvidSop7")]
+    #[must_use]
+    pub fn svid_sop_7(&self) -> u16 {
+        let start = 120;
+        let end = 135;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `151:136` - Read the `svid_sop_prime_0` field.
+    ///
+    /// First SVID supported by SOP' cable plug
+    #[doc(alias = "SvidSopPrime0")]
+    #[must_use]
+    pub fn svid_sop_prime_0(&self) -> u16 {
+        let start = 136;
+        let end = 151;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `167:152` - Read the `svid_sop_prime_1` field.
+    ///
+    /// Second SVID supported by SOP' cable plug
+    #[doc(alias = "SvidSopPrime1")]
+    #[must_use]
+    pub fn svid_sop_prime_1(&self) -> u16 {
+        let start = 152;
+        let end = 167;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `183:168` - Read the `svid_sop_prime_2` field.
+    ///
+    /// Third SVID supported by SOP' cable plug
+    #[doc(alias = "SvidSopPrime2")]
+    #[must_use]
+    pub fn svid_sop_prime_2(&self) -> u16 {
+        let start = 168;
+        let end = 183;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `199:184` - Read the `svid_sop_prime_3` field.
+    ///
+    /// Fourth SVID supported by SOP' cable plug
+    #[doc(alias = "SvidSopPrime3")]
+    #[must_use]
+    pub fn svid_sop_prime_3(&self) -> u16 {
+        let start = 184;
+        let end = 199;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `215:200` - Read the `svid_sop_prime_4` field.
+    ///
+    /// Fifth SVID supported by SOP' cable plug
+    #[doc(alias = "SvidSopPrime4")]
+    #[must_use]
+    pub fn svid_sop_prime_4(&self) -> u16 {
+        let start = 200;
+        let end = 215;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `231:216` - Read the `svid_sop_prime_5` field.
+    ///
+    /// Sixth SVID supported by SOP' cable plug
+    #[doc(alias = "SvidSopPrime5")]
+    #[must_use]
+    pub fn svid_sop_prime_5(&self) -> u16 {
+        let start = 216;
+        let end = 231;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `247:232` - Read the `svid_sop_prime_6` field.
+    ///
+    /// Seventh SVID supported by SOP' cable plug
+    #[doc(alias = "SvidSopPrime6")]
+    #[must_use]
+    pub fn svid_sop_prime_6(&self) -> u16 {
+        let start = 232;
+        let end = 247;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `263:248` - Read the `svid_sop_prime_7` field.
+    ///
+    /// Eighth SVID supported by SOP' cable plug
+    #[doc(alias = "SvidSopPrime7")]
+    #[must_use]
+    pub fn svid_sop_prime_7(&self) -> u16 {
+        let start = 248;
+        let end = 263;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u16,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `3:0` - Set the `number_sop_svids` field.
+    ///
+    /// Number of SVIDs discovered on SOP
+    #[doc(alias = "NumberSopSvids")]
+    pub fn set_number_sop_svids(&mut self, value: u8) {
+        let start = 0;
+        let end = 3;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `7:4` - Set the `number_sop_prime_svids` field.
+    ///
+    /// Number of SVIDs discovered on SOP'
+    #[doc(alias = "NumberSopPrimeSvids")]
+    pub fn set_number_sop_prime_svids(&mut self, value: u8) {
+        let start = 4;
+        let end = 7;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `23:8` - Set the `svid_sop_0` field.
+    ///
+    /// First SVID supported by SOP port partner
+    #[doc(alias = "SvidSop0")]
+    pub fn set_svid_sop_0(&mut self, value: u16) {
+        let start = 8;
+        let end = 23;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `39:24` - Set the `svid_sop_1` field.
+    ///
+    /// Second SVID supported by SOP port partner
+    #[doc(alias = "SvidSop1")]
+    pub fn set_svid_sop_1(&mut self, value: u16) {
+        let start = 24;
+        let end = 39;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `55:40` - Set the `svid_sop_2` field.
+    ///
+    /// Third SVID supported by SOP port partner
+    #[doc(alias = "SvidSop2")]
+    pub fn set_svid_sop_2(&mut self, value: u16) {
+        let start = 40;
+        let end = 55;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `71:56` - Set the `svid_sop_3` field.
+    ///
+    /// Fourth SVID supported by SOP port partner
+    #[doc(alias = "SvidSop3")]
+    pub fn set_svid_sop_3(&mut self, value: u16) {
+        let start = 56;
+        let end = 71;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `87:72` - Set the `svid_sop_4` field.
+    ///
+    /// Fifth SVID supported by SOP port partner
+    #[doc(alias = "SvidSop4")]
+    pub fn set_svid_sop_4(&mut self, value: u16) {
+        let start = 72;
+        let end = 87;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `103:88` - Set the `svid_sop_5` field.
+    ///
+    /// Sixth SVID supported by SOP port partner
+    #[doc(alias = "SvidSop5")]
+    pub fn set_svid_sop_5(&mut self, value: u16) {
+        let start = 88;
+        let end = 103;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `119:104` - Set the `svid_sop_6` field.
+    ///
+    /// Seventh SVID supported by SOP port partner
+    #[doc(alias = "SvidSop6")]
+    pub fn set_svid_sop_6(&mut self, value: u16) {
+        let start = 104;
+        let end = 119;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `135:120` - Set the `svid_sop_7` field.
+    ///
+    /// Eighth SVID supported by SOP port partner
+    #[doc(alias = "SvidSop7")]
+    pub fn set_svid_sop_7(&mut self, value: u16) {
+        let start = 120;
+        let end = 135;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `151:136` - Set the `svid_sop_prime_0` field.
+    ///
+    /// First SVID supported by SOP' cable plug
+    #[doc(alias = "SvidSopPrime0")]
+    pub fn set_svid_sop_prime_0(&mut self, value: u16) {
+        let start = 136;
+        let end = 151;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `167:152` - Set the `svid_sop_prime_1` field.
+    ///
+    /// Second SVID supported by SOP' cable plug
+    #[doc(alias = "SvidSopPrime1")]
+    pub fn set_svid_sop_prime_1(&mut self, value: u16) {
+        let start = 152;
+        let end = 167;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `183:168` - Set the `svid_sop_prime_2` field.
+    ///
+    /// Third SVID supported by SOP' cable plug
+    #[doc(alias = "SvidSopPrime2")]
+    pub fn set_svid_sop_prime_2(&mut self, value: u16) {
+        let start = 168;
+        let end = 183;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `199:184` - Set the `svid_sop_prime_3` field.
+    ///
+    /// Fourth SVID supported by SOP' cable plug
+    #[doc(alias = "SvidSopPrime3")]
+    pub fn set_svid_sop_prime_3(&mut self, value: u16) {
+        let start = 184;
+        let end = 199;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `215:200` - Set the `svid_sop_prime_4` field.
+    ///
+    /// Fifth SVID supported by SOP' cable plug
+    #[doc(alias = "SvidSopPrime4")]
+    pub fn set_svid_sop_prime_4(&mut self, value: u16) {
+        let start = 200;
+        let end = 215;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `231:216` - Set the `svid_sop_prime_5` field.
+    ///
+    /// Sixth SVID supported by SOP' cable plug
+    #[doc(alias = "SvidSopPrime5")]
+    pub fn set_svid_sop_prime_5(&mut self, value: u16) {
+        let start = 216;
+        let end = 231;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `247:232` - Set the `svid_sop_prime_6` field.
+    ///
+    /// Seventh SVID supported by SOP' cable plug
+    #[doc(alias = "SvidSopPrime6")]
+    pub fn set_svid_sop_prime_6(&mut self, value: u16) {
+        let start = 232;
+        let end = 247;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `263:248` - Set the `svid_sop_prime_7` field.
+    ///
+    /// Eighth SVID supported by SOP' cable plug
+    #[doc(alias = "SvidSopPrime7")]
+    pub fn set_svid_sop_prime_7(&mut self, value: u16) {
+        let start = 248;
+        let end = 263;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u16,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+}
+impl Default for DiscoveredSvids {
+    fn default() -> Self {
+        <Self as ::device_driver::Fieldset>::ZERO
+    }
+}
+impl From<[u8; 33]> for DiscoveredSvids {
+    fn from(bits: [u8; 33]) -> Self {
+        Self { bits }
+    }
+}
+impl From<DiscoveredSvids> for [u8; 33] {
+    fn from(val: DiscoveredSvids) -> Self {
+        val.bits
+    }
+}
+impl core::fmt::Debug for DiscoveredSvids {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
+        let mut d = f.debug_struct("DiscoveredSvids");
+        d.field("number_sop_svids", &self.number_sop_svids());
+        d.field("number_sop_prime_svids", &self.number_sop_prime_svids());
+        d.field("svid_sop_0", &self.svid_sop_0());
+        d.field("svid_sop_1", &self.svid_sop_1());
+        d.field("svid_sop_2", &self.svid_sop_2());
+        d.field("svid_sop_3", &self.svid_sop_3());
+        d.field("svid_sop_4", &self.svid_sop_4());
+        d.field("svid_sop_5", &self.svid_sop_5());
+        d.field("svid_sop_6", &self.svid_sop_6());
+        d.field("svid_sop_7", &self.svid_sop_7());
+        d.field("svid_sop_prime_0", &self.svid_sop_prime_0());
+        d.field("svid_sop_prime_1", &self.svid_sop_prime_1());
+        d.field("svid_sop_prime_2", &self.svid_sop_prime_2());
+        d.field("svid_sop_prime_3", &self.svid_sop_prime_3());
+        d.field("svid_sop_prime_4", &self.svid_sop_prime_4());
+        d.field("svid_sop_prime_5", &self.svid_sop_prime_5());
+        d.field("svid_sop_prime_6", &self.svid_sop_prime_6());
+        d.field("svid_sop_prime_7", &self.svid_sop_prime_7());
+        d.finish()
+    }
+}
+#[cfg(feature = "defmt")]
+impl defmt::Format for DiscoveredSvids {
+    fn format(&self, f: defmt::Formatter) {
+        defmt::write!(f, "DiscoveredSvids {{ ");
+        defmt::write!(f, "number_sop_svids: {=u8}, ", & self.number_sop_svids());
+        defmt::write!(
+            f, "number_sop_prime_svids: {=u8}, ", & self.number_sop_prime_svids()
+        );
+        defmt::write!(f, "svid_sop_0: {=u16}, ", & self.svid_sop_0());
+        defmt::write!(f, "svid_sop_1: {=u16}, ", & self.svid_sop_1());
+        defmt::write!(f, "svid_sop_2: {=u16}, ", & self.svid_sop_2());
+        defmt::write!(f, "svid_sop_3: {=u16}, ", & self.svid_sop_3());
+        defmt::write!(f, "svid_sop_4: {=u16}, ", & self.svid_sop_4());
+        defmt::write!(f, "svid_sop_5: {=u16}, ", & self.svid_sop_5());
+        defmt::write!(f, "svid_sop_6: {=u16}, ", & self.svid_sop_6());
+        defmt::write!(f, "svid_sop_7: {=u16}, ", & self.svid_sop_7());
+        defmt::write!(f, "svid_sop_prime_0: {=u16}, ", & self.svid_sop_prime_0());
+        defmt::write!(f, "svid_sop_prime_1: {=u16}, ", & self.svid_sop_prime_1());
+        defmt::write!(f, "svid_sop_prime_2: {=u16}, ", & self.svid_sop_prime_2());
+        defmt::write!(f, "svid_sop_prime_3: {=u16}, ", & self.svid_sop_prime_3());
+        defmt::write!(f, "svid_sop_prime_4: {=u16}, ", & self.svid_sop_prime_4());
+        defmt::write!(f, "svid_sop_prime_5: {=u16}, ", & self.svid_sop_prime_5());
+        defmt::write!(f, "svid_sop_prime_6: {=u16}, ", & self.svid_sop_prime_6());
+        defmt::write!(f, "svid_sop_prime_7: {=u16}, ", & self.svid_sop_prime_7());
+        defmt::write!(f, "}}");
+    }
+}
+impl core::ops::BitAnd for DiscoveredSvids {
+    type Output = Self;
+    fn bitand(mut self, rhs: Self) -> Self::Output {
+        self &= rhs;
+        self
+    }
+}
+impl core::ops::BitAndAssign for DiscoveredSvids {
+    fn bitand_assign(&mut self, rhs: Self) {
+        for (l, r) in self.bits.iter_mut().zip(&rhs.bits) {
+            *l &= *r;
+        }
+    }
+}
+impl core::ops::BitOr for DiscoveredSvids {
+    type Output = Self;
+    fn bitor(mut self, rhs: Self) -> Self::Output {
+        self |= rhs;
+        self
+    }
+}
+impl core::ops::BitOrAssign for DiscoveredSvids {
+    fn bitor_assign(&mut self, rhs: Self) {
+        for (l, r) in self.bits.iter_mut().zip(&rhs.bits) {
+            *l |= *r;
+        }
+    }
+}
+impl core::ops::BitXor for DiscoveredSvids {
+    type Output = Self;
+    fn bitxor(mut self, rhs: Self) -> Self::Output {
+        self ^= rhs;
+        self
+    }
+}
+impl core::ops::BitXorAssign for DiscoveredSvids {
+    fn bitxor_assign(&mut self, rhs: Self) {
+        for (l, r) in self.bits.iter_mut().zip(&rhs.bits) {
+            *l ^= *r;
+        }
+    }
+}
+impl core::ops::Not for DiscoveredSvids {
     type Output = Self;
     fn not(mut self) -> Self::Output {
         for val in self.bits.iter_mut() {

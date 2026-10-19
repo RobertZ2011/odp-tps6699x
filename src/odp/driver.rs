@@ -657,12 +657,12 @@ impl<M: RawMutex, B: I2c> Pd for Tps6699x<'_, M, B> {
             .map_err(|e| self.log_error(e))?;
         debug!("{:?} discovered SVIDs: {:?}", port, svids);
         let mut sop = Vec::new();
-        for svid in svids.svid_sop().take(sop.capacity()) {
+        for svid in svids.svid_sop_iter().take(sop.capacity()) {
             let _ = sop.push(svid);
         }
 
         let mut sop_prime = Vec::new();
-        for svid in svids.svid_sop_prime().take(sop_prime.capacity()) {
+        for svid in svids.svid_sop_prime_iter().take(sop_prime.capacity()) {
             let _ = sop_prime.push(svid);
         }
 
