@@ -1376,6 +1376,36 @@ device Registers {
             field Vdo 71:40,
         },
     },
+    /// Received User SVID Other VDM
+    register RxOtherVdm {
+        address: 0x61,
+        reset: 0x0,
+        access: RO,
+        fields: fieldset _ {
+            size-bytes: 29,
+
+            /// Number of valid VDOs
+            field NumOfValidVdos 2:0,
+            /// Frame Type of the message in the register
+            field SopType 4:3,
+            /// Sequence Number
+            field SequenceNumber 7:5,
+            /// Rx Vdm data object 1
+            field Vdo1 39:8,
+            /// Rx Vdm data object 2
+            field Vdo2 71:40,
+            /// Rx Vdm data object 3
+            field Vdo3 103:72,
+            /// Rx Vdm data object 4
+            field Vdo4 135:104,
+            /// Rx Vdm data object 5
+            field Vdo5 167:136,
+            /// Rx Vdm data object 6
+            field Vdo6 199:168,
+            /// Rx Vdm data object 7
+            field Vdo7 231:200,
+        },
+    },
     /// Received ADO
     register RxAdo {
         address: 0x74,

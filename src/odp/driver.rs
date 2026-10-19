@@ -468,7 +468,10 @@ impl<M: RawMutex, B: I2c> Pd for Tps6699x<'_, M, B> {
     async fn get_other_vdm(&mut self, port: LocalPortId) -> Result<OtherVdm, PdError> {
         self.guard_no_fw_update_active()?;
         match self.tps6699x.get_rx_other_vdm(port).await {
-            Ok(vdm) => Ok((*vdm.as_bytes()).into()),
+            Ok(vdm) => {
+                let buf: [u8; crate::registers::rx_other_vdm::LEN] = vdm.into();
+                Ok(buf.into())
+            }
             Err(e) => Err(self.log_error(e)),
         }
     }

@@ -622,11 +622,13 @@ impl<B: I2c> Tps6699x<B> {
         &mut self,
         port: LocalPortId,
     ) -> Result<registers::rx_other_vdm::RxOtherVdm, Error<B::Error>> {
-        let mut buf = [0u8; registers::rx_other_vdm::LEN];
-        self.borrow_port(port)?
-            .read_register(registers::rx_other_vdm::ADDR, &mut buf, &FieldsetMetadata::DEFAULT)
-            .await?;
-        Ok(buf.into())
+        Ok(self
+            .borrow_port(port)?
+            .into_registers()
+            .rx_other_vdm()
+            .read_async()
+            .await?
+            .into())
     }
 
     /// Get RX source/sink capabilities

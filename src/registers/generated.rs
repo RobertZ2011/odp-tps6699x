@@ -776,6 +776,35 @@ impl<I> Registers<I> {
             || RxAttnVdm::from([0, 0, 0, 0, 0, 0, 0, 0, 0]),
         )
     }
+    /// Received User SVID Other VDM
+    ///
+    /// Register operation:
+    /// - Address: `97`
+    /// - Reset value: `0x0`
+    #[doc(alias = "RxOtherVdm")]
+    pub fn rx_other_vdm(
+        &mut self,
+    ) -> ::device_driver::RegisterOperation<
+        '_,
+        Self,
+        RxOtherVdm,
+        u8,
+        ::device_driver::RO,
+        (),
+    >
+    where
+        I: ::device_driver::RegisterInterfaceBase<AddressType = u8>,
+    {
+        let address = self.base_address + 97;
+        ::device_driver::RegisterOperation::new(
+            self,
+            address as u8,
+            || RxOtherVdm::from([
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+            ]),
+        )
+    }
     /// Received ADO
     ///
     /// Register operation:
@@ -924,6 +953,429 @@ impl core::ops::BitXorAssign for RxAdo {
     }
 }
 impl core::ops::Not for RxAdo {
+    type Output = Self;
+    fn not(mut self) -> Self::Output {
+        for val in self.bits.iter_mut() {
+            *val = !*val;
+        }
+        self
+    }
+}
+#[derive(Copy, Clone, Eq, PartialEq)]
+#[repr(transparent)]
+pub struct RxOtherVdm {
+    #[doc(hidden)]
+    /// The internal bits
+    bits: [u8; 29],
+}
+unsafe impl ::device_driver::Fieldset for RxOtherVdm {
+    const METADATA: ::device_driver::FieldsetMetadata = ::device_driver::FieldsetMetadata::new()
+        .with_byte_order(::device_driver::ByteOrder::LE);
+    const ZERO: Self = Self { bits: [0; 29] };
+}
+impl RxOtherVdm {
+    /// `2:0` - Read the `num_of_valid_vdos` field.
+    ///
+    /// Number of valid VDOs
+    #[doc(alias = "NumOfValidVdos")]
+    #[must_use]
+    pub fn num_of_valid_vdos(&self) -> u8 {
+        let start = 0;
+        let end = 2;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `4:3` - Read the `sop_type` field.
+    ///
+    /// Frame Type of the message in the register
+    #[doc(alias = "SopType")]
+    #[must_use]
+    pub fn sop_type(&self) -> u8 {
+        let start = 3;
+        let end = 4;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `7:5` - Read the `sequence_number` field.
+    ///
+    /// Sequence Number
+    #[doc(alias = "SequenceNumber")]
+    #[must_use]
+    pub fn sequence_number(&self) -> u8 {
+        let start = 5;
+        let end = 7;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `39:8` - Read the `vdo_1` field.
+    ///
+    /// Rx Vdm data object 1
+    #[doc(alias = "Vdo1")]
+    #[must_use]
+    pub fn vdo_1(&self) -> u32 {
+        let start = 8;
+        let end = 39;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `71:40` - Read the `vdo_2` field.
+    ///
+    /// Rx Vdm data object 2
+    #[doc(alias = "Vdo2")]
+    #[must_use]
+    pub fn vdo_2(&self) -> u32 {
+        let start = 40;
+        let end = 71;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `103:72` - Read the `vdo_3` field.
+    ///
+    /// Rx Vdm data object 3
+    #[doc(alias = "Vdo3")]
+    #[must_use]
+    pub fn vdo_3(&self) -> u32 {
+        let start = 72;
+        let end = 103;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `135:104` - Read the `vdo_4` field.
+    ///
+    /// Rx Vdm data object 4
+    #[doc(alias = "Vdo4")]
+    #[must_use]
+    pub fn vdo_4(&self) -> u32 {
+        let start = 104;
+        let end = 135;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `167:136` - Read the `vdo_5` field.
+    ///
+    /// Rx Vdm data object 5
+    #[doc(alias = "Vdo5")]
+    #[must_use]
+    pub fn vdo_5(&self) -> u32 {
+        let start = 136;
+        let end = 167;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `199:168` - Read the `vdo_6` field.
+    ///
+    /// Rx Vdm data object 6
+    #[doc(alias = "Vdo6")]
+    #[must_use]
+    pub fn vdo_6(&self) -> u32 {
+        let start = 168;
+        let end = 199;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `231:200` - Read the `vdo_7` field.
+    ///
+    /// Rx Vdm data object 7
+    #[doc(alias = "Vdo7")]
+    #[must_use]
+    pub fn vdo_7(&self) -> u32 {
+        let start = 200;
+        let end = 231;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `2:0` - Set the `num_of_valid_vdos` field.
+    ///
+    /// Number of valid VDOs
+    #[doc(alias = "NumOfValidVdos")]
+    pub fn set_num_of_valid_vdos(&mut self, value: u8) {
+        let start = 0;
+        let end = 2;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `4:3` - Set the `sop_type` field.
+    ///
+    /// Frame Type of the message in the register
+    #[doc(alias = "SopType")]
+    pub fn set_sop_type(&mut self, value: u8) {
+        let start = 3;
+        let end = 4;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `7:5` - Set the `sequence_number` field.
+    ///
+    /// Sequence Number
+    #[doc(alias = "SequenceNumber")]
+    pub fn set_sequence_number(&mut self, value: u8) {
+        let start = 5;
+        let end = 7;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `39:8` - Set the `vdo_1` field.
+    ///
+    /// Rx Vdm data object 1
+    #[doc(alias = "Vdo1")]
+    pub fn set_vdo_1(&mut self, value: u32) {
+        let start = 8;
+        let end = 39;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `71:40` - Set the `vdo_2` field.
+    ///
+    /// Rx Vdm data object 2
+    #[doc(alias = "Vdo2")]
+    pub fn set_vdo_2(&mut self, value: u32) {
+        let start = 40;
+        let end = 71;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `103:72` - Set the `vdo_3` field.
+    ///
+    /// Rx Vdm data object 3
+    #[doc(alias = "Vdo3")]
+    pub fn set_vdo_3(&mut self, value: u32) {
+        let start = 72;
+        let end = 103;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `135:104` - Set the `vdo_4` field.
+    ///
+    /// Rx Vdm data object 4
+    #[doc(alias = "Vdo4")]
+    pub fn set_vdo_4(&mut self, value: u32) {
+        let start = 104;
+        let end = 135;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `167:136` - Set the `vdo_5` field.
+    ///
+    /// Rx Vdm data object 5
+    #[doc(alias = "Vdo5")]
+    pub fn set_vdo_5(&mut self, value: u32) {
+        let start = 136;
+        let end = 167;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `199:168` - Set the `vdo_6` field.
+    ///
+    /// Rx Vdm data object 6
+    #[doc(alias = "Vdo6")]
+    pub fn set_vdo_6(&mut self, value: u32) {
+        let start = 168;
+        let end = 199;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `231:200` - Set the `vdo_7` field.
+    ///
+    /// Rx Vdm data object 7
+    #[doc(alias = "Vdo7")]
+    pub fn set_vdo_7(&mut self, value: u32) {
+        let start = 200;
+        let end = 231;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+}
+impl Default for RxOtherVdm {
+    fn default() -> Self {
+        <Self as ::device_driver::Fieldset>::ZERO
+    }
+}
+impl From<[u8; 29]> for RxOtherVdm {
+    fn from(bits: [u8; 29]) -> Self {
+        Self { bits }
+    }
+}
+impl From<RxOtherVdm> for [u8; 29] {
+    fn from(val: RxOtherVdm) -> Self {
+        val.bits
+    }
+}
+impl core::fmt::Debug for RxOtherVdm {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
+        let mut d = f.debug_struct("RxOtherVdm");
+        d.field("num_of_valid_vdos", &self.num_of_valid_vdos());
+        d.field("sop_type", &self.sop_type());
+        d.field("sequence_number", &self.sequence_number());
+        d.field("vdo_1", &self.vdo_1());
+        d.field("vdo_2", &self.vdo_2());
+        d.field("vdo_3", &self.vdo_3());
+        d.field("vdo_4", &self.vdo_4());
+        d.field("vdo_5", &self.vdo_5());
+        d.field("vdo_6", &self.vdo_6());
+        d.field("vdo_7", &self.vdo_7());
+        d.finish()
+    }
+}
+#[cfg(feature = "defmt")]
+impl defmt::Format for RxOtherVdm {
+    fn format(&self, f: defmt::Formatter) {
+        defmt::write!(f, "RxOtherVdm {{ ");
+        defmt::write!(f, "num_of_valid_vdos: {=u8}, ", & self.num_of_valid_vdos());
+        defmt::write!(f, "sop_type: {=u8}, ", & self.sop_type());
+        defmt::write!(f, "sequence_number: {=u8}, ", & self.sequence_number());
+        defmt::write!(f, "vdo_1: {=u32}, ", & self.vdo_1());
+        defmt::write!(f, "vdo_2: {=u32}, ", & self.vdo_2());
+        defmt::write!(f, "vdo_3: {=u32}, ", & self.vdo_3());
+        defmt::write!(f, "vdo_4: {=u32}, ", & self.vdo_4());
+        defmt::write!(f, "vdo_5: {=u32}, ", & self.vdo_5());
+        defmt::write!(f, "vdo_6: {=u32}, ", & self.vdo_6());
+        defmt::write!(f, "vdo_7: {=u32}, ", & self.vdo_7());
+        defmt::write!(f, "}}");
+    }
+}
+impl core::ops::BitAnd for RxOtherVdm {
+    type Output = Self;
+    fn bitand(mut self, rhs: Self) -> Self::Output {
+        self &= rhs;
+        self
+    }
+}
+impl core::ops::BitAndAssign for RxOtherVdm {
+    fn bitand_assign(&mut self, rhs: Self) {
+        for (l, r) in self.bits.iter_mut().zip(&rhs.bits) {
+            *l &= *r;
+        }
+    }
+}
+impl core::ops::BitOr for RxOtherVdm {
+    type Output = Self;
+    fn bitor(mut self, rhs: Self) -> Self::Output {
+        self |= rhs;
+        self
+    }
+}
+impl core::ops::BitOrAssign for RxOtherVdm {
+    fn bitor_assign(&mut self, rhs: Self) {
+        for (l, r) in self.bits.iter_mut().zip(&rhs.bits) {
+            *l |= *r;
+        }
+    }
+}
+impl core::ops::BitXor for RxOtherVdm {
+    type Output = Self;
+    fn bitxor(mut self, rhs: Self) -> Self::Output {
+        self ^= rhs;
+        self
+    }
+}
+impl core::ops::BitXorAssign for RxOtherVdm {
+    fn bitxor_assign(&mut self, rhs: Self) {
+        for (l, r) in self.bits.iter_mut().zip(&rhs.bits) {
+            *l ^= *r;
+        }
+    }
+}
+impl core::ops::Not for RxOtherVdm {
     type Output = Self;
     fn not(mut self) -> Self::Output {
         for val in self.bits.iter_mut() {
