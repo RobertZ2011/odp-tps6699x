@@ -536,7 +536,6 @@ impl<M: RawMutex, B: I2c> Pd for Tps6699x<'_, M, B> {
                         let mut dfp_vdo = DfpVdo(identity.dfp_1_vdo());
                         dfp_vdo.set_host_capability(tx_identity_value);
                         identity.set_dfp_1_vdo(dfp_vdo.0);
-                        *identity
                     })
                     .await
                     .map_err(|e| self.log_error(e))?;
@@ -552,7 +551,6 @@ impl<M: RawMutex, B: I2c> Pd for Tps6699x<'_, M, B> {
                 self.tps6699x
                     .modify_dp_config(port, |dp_config| {
                         dp_config.set_usb_data_path(usb_data_path);
-                        *dp_config
                     })
                     .await
                     .map_err(|e| self.log_error(e))?;
@@ -571,7 +569,6 @@ impl<M: RawMutex, B: I2c> Pd for Tps6699x<'_, M, B> {
                         .await
                         .modify_tbt_config(port, |tbt_config| {
                             tbt_config.set_usb_data_path(usb_data_path);
-                            *tbt_config
                         })
                         .await
                 }

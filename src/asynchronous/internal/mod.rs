@@ -205,19 +205,25 @@ impl<B: I2c> Tps6699x<B> {
     pub async fn modify_interrupt_mask(
         &mut self,
         port: LocalPortId,
-        f: impl FnOnce(&mut registers::IntEventBus1) -> registers::IntEventBus1,
+        f: impl FnOnce(&mut registers::IntEventBus1),
     ) -> Result<registers::IntEventBus1, Error<B::Error>> {
         let port = self.borrow_port(port)?;
         let mut registers = port.into_registers();
         let mut modified = registers::IntEventBus1::ZERO;
-        registers.int_mask_bus_1().modify_async(|r| modified = f(r)).await?;
+        registers
+            .int_mask_bus_1()
+            .modify_async(|r| {
+                f(r);
+                modified = *r;
+            })
+            .await?;
         Ok(modified)
     }
 
     /// Modify interrupt mask on all ports
     pub async fn modify_interrupt_mask_all(
         &mut self,
-        f: impl Fn(&mut registers::IntEventBus1) -> registers::IntEventBus1,
+        f: impl Fn(&mut registers::IntEventBus1),
     ) -> Result<(), Error<B::Error>> {
         for port in 0..self.num_ports() {
             let port = LocalPortId(port as u8);
@@ -286,12 +292,10 @@ impl<B: I2c> Tps6699x<B> {
     pub async fn modify_autonegotiate_sink(
         &mut self,
         port: LocalPortId,
-        f: impl FnOnce(
-            &mut registers::autonegotiate_sink::AutonegotiateSink,
-        ) -> registers::autonegotiate_sink::AutonegotiateSink,
+        f: impl FnOnce(&mut registers::autonegotiate_sink::AutonegotiateSink),
     ) -> Result<registers::autonegotiate_sink::AutonegotiateSink, Error<B::Error>> {
         let mut reg = self.get_autonegotiate_sink(port).await?;
-        reg = f(&mut reg);
+        f(&mut reg);
         self.set_autonegotiate_sink(port, reg).await?;
         Ok(reg)
     }
@@ -488,12 +492,18 @@ impl<B: I2c> Tps6699x<B> {
     pub async fn modify_dp_config(
         &mut self,
         port: LocalPortId,
-        f: impl FnOnce(&mut registers::DpConfig) -> registers::DpConfig,
+        f: impl FnOnce(&mut registers::DpConfig),
     ) -> Result<registers::DpConfig, Error<B::Error>> {
         let port = self.borrow_port(port)?;
         let mut registers = port.into_registers();
         let mut modified = registers::DpConfig::ZERO;
-        registers.dp_config().modify_async(|r| modified = f(r)).await?;
+        registers
+            .dp_config()
+            .modify_async(|r| {
+                f(r);
+                modified = *r;
+            })
+            .await?;
         Ok(modified)
     }
 
@@ -519,12 +529,18 @@ impl<B: I2c> Tps6699x<B> {
     pub async fn modify_tbt_config(
         &mut self,
         port: LocalPortId,
-        f: impl FnOnce(&mut registers::TbtConfig) -> registers::TbtConfig,
+        f: impl FnOnce(&mut registers::TbtConfig),
     ) -> Result<registers::TbtConfig, Error<B::Error>> {
         let port = self.borrow_port(port)?;
         let mut registers = port.into_registers();
         let mut modified = registers::TbtConfig::ZERO;
-        registers.tbt_config().modify_async(|r| modified = f(r)).await?;
+        registers
+            .tbt_config()
+            .modify_async(|r| {
+                f(r);
+                modified = *r;
+            })
+            .await?;
         Ok(modified)
     }
 
@@ -720,12 +736,18 @@ impl<B: I2c> Tps6699x<B> {
     pub async fn modify_tx_identity(
         &mut self,
         port: LocalPortId,
-        f: impl FnOnce(&mut registers::TxIdentity) -> registers::TxIdentity,
+        f: impl FnOnce(&mut registers::TxIdentity),
     ) -> Result<registers::TxIdentity, Error<B::Error>> {
         let port = self.borrow_port(port)?;
         let mut registers = port.into_registers();
         let mut modified = registers::TxIdentity::ZERO;
-        registers.tx_identity().modify_async(|r| modified = f(r)).await?;
+        registers
+            .tx_identity()
+            .modify_async(|r| {
+                f(r);
+                modified = *r;
+            })
+            .await?;
         Ok(modified)
     }
 
@@ -1129,7 +1151,6 @@ mod test {
         let result = tps6699x
             .modify_interrupt_mask(port, |r| {
                 r.set_plug_event(true);
-                *r
             })
             .await
             .unwrap();
@@ -1168,7 +1189,6 @@ mod test {
         tps6699x
             .modify_interrupt_mask_all(|r| {
                 r.set_plug_event(true);
-                *r
             })
             .await
             .unwrap();
@@ -1472,7 +1492,6 @@ mod test {
         let result = tps6699x
             .modify_dp_config(port, |r| {
                 r.set_enable_dp_svid(true);
-                *r
             })
             .await
             .unwrap();
@@ -1546,7 +1565,6 @@ mod test {
         let result = tps6699x
             .modify_tbt_config(port, |r| {
                 r.set_tbt_vid_en(true);
-                *r
             })
             .await
             .unwrap();
@@ -1727,7 +1745,6 @@ mod test {
         let result = tps6699x
             .modify_tx_identity(port, |r| {
                 r.set_modal_operation_supported(true);
-                *r
             })
             .await
             .unwrap();
