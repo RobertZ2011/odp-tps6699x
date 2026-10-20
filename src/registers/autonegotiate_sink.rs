@@ -10,9 +10,6 @@ pub use crate::registers::{
     NoCapabilityMismatch, PpsRequestInterval,
 };
 
-/// The address of the `Autonegotiate Sink` register.
-pub const ADDR: u8 = 0x37;
-
 /// The length of the `Autonegotiate Sink` register, in bytes.
 pub const LEN: usize = 24;
 
