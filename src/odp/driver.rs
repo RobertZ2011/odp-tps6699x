@@ -58,7 +58,7 @@ pub(super) struct FwUpdateState<'a, M: RawMutex, B: I2c> {
 #[derive(Debug, Copy, Clone, Default)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum UsbControlMethod {
-    /// Set USB capabilities through [`crate::registers::tx_identity`].
+    /// Set USB capabilities through [`crate::registers::TxIdentity`].
     #[default]
     TxIdentity,
 
@@ -468,7 +468,10 @@ impl<M: RawMutex, B: I2c> Pd for Tps6699x<'_, M, B> {
     async fn get_other_vdm(&mut self, port: LocalPortId) -> Result<OtherVdm, PdError> {
         self.guard_no_fw_update_active()?;
         match self.tps6699x.get_rx_other_vdm(port).await {
-            Ok(vdm) => Ok((*vdm.as_bytes()).into()),
+            Ok(vdm) => {
+                let buf: [u8; crate::registers::rx_other_vdm::LEN] = vdm.into();
+                Ok(buf.into())
+            }
             Err(e) => Err(self.log_error(e)),
         }
     }
@@ -530,10 +533,9 @@ impl<M: RawMutex, B: I2c> Pd for Tps6699x<'_, M, B> {
 
                 self.tps6699x
                     .modify_tx_identity(port, |identity| {
-                        let mut dfp_vdo = DfpVdo(identity.dfp1_vdo());
+                        let mut dfp_vdo = DfpVdo(identity.dfp_1_vdo());
                         dfp_vdo.set_host_capability(tx_identity_value);
-                        identity.set_dfp1_vdo(dfp_vdo.0);
-                        identity.clone()
+                        identity.set_dfp_1_vdo(dfp_vdo.0);
                     })
                     .await
                     .map_err(|e| self.log_error(e))?;
@@ -549,7 +551,6 @@ impl<M: RawMutex, B: I2c> Pd for Tps6699x<'_, M, B> {
                 self.tps6699x
                     .modify_dp_config(port, |dp_config| {
                         dp_config.set_usb_data_path(usb_data_path);
-                        *dp_config
                     })
                     .await
                     .map_err(|e| self.log_error(e))?;
@@ -568,7 +569,6 @@ impl<M: RawMutex, B: I2c> Pd for Tps6699x<'_, M, B> {
                         .await
                         .modify_tbt_config(port, |tbt_config| {
                             tbt_config.set_usb_data_path(usb_data_path);
-                            *tbt_config
                         })
                         .await
                 }
@@ -583,9 +583,7 @@ impl<M: RawMutex, B: I2c> Pd for Tps6699x<'_, M, B> {
         self.guard_no_fw_update_active()?;
         let dp_status = self.tps6699x.get_dp_status(port).await.map_err(|e| self.log_error(e))?;
         debug!("Port{} DP status: {:#?}", port.0, dp_status);
-
-        let alt_mode_entered = dp_status.dp_mode_active() != 0;
-
+        let alt_mode_entered = dp_status.dp_mode_active();
         let dp_config = PdDpAltConfig(dp_status.dp_configure_message());
         let cfg_raw: PdDpPinConfig = dp_config.config_pin().into();
         let pin_config: DpPinConfig = cfg_raw.into();
@@ -659,12 +657,12 @@ impl<M: RawMutex, B: I2c> Pd for Tps6699x<'_, M, B> {
             .map_err(|e| self.log_error(e))?;
         debug!("{:?} discovered SVIDs: {:?}", port, svids);
         let mut sop = Vec::new();
-        for svid in svids.svid_sop().take(sop.capacity()) {
+        for svid in svids.svid_sop_iter().take(sop.capacity()) {
             let _ = sop.push(svid);
         }
 
         let mut sop_prime = Vec::new();
-        for svid in svids.svid_sop_prime().take(sop_prime.capacity()) {
+        for svid in svids.svid_sop_prime_iter().take(sop_prime.capacity()) {
             let _ = sop_prime.push(svid);
         }
 
@@ -779,7 +777,7 @@ impl<M: RawMutex, B: I2c> tcpm_interface::controller::pd::StateMachine for Tps66
         let mut config_reg =
             { self.tps6699x.lock_inner().await.get_port_config(port).await }.map_err(|e| self.log_error(e))?;
 
-        config_reg.set_disable_pd(!config.enabled);
+        config_reg.disable_pd = !config.enabled;
 
         { self.tps6699x.lock_inner().await.set_port_config(port, config_reg).await }.map_err(|e| self.log_error(e))
     }
@@ -803,7 +801,7 @@ impl<M: RawMutex, B: I2c> tcpm_interface::controller::type_c::StateMachine for T
             TypeCStateMachineState::Disabled => TypeCStateMachine::Disabled,
         };
 
-        config_reg.set_typec_state_machine(typec_state);
+        config_reg.typec_state_machine = typec_state;
         { self.tps6699x.lock_inner().await.set_port_config(port, config_reg).await }.map_err(|e| self.log_error(e))
     }
 }

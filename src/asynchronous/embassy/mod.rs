@@ -165,7 +165,7 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
     pub async fn modify_interrupt_mask(
         &mut self,
         port: LocalPortId,
-        f: impl FnOnce(&mut registers::IntEventBus1) -> registers::IntEventBus1,
+        f: impl FnOnce(&mut registers::IntEventBus1),
     ) -> Result<registers::IntEventBus1, Error<B::Error>> {
         self.lock_inner().await.modify_interrupt_mask(port, f).await
     }
@@ -173,7 +173,7 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
     /// Wrapper for `modify_interrupt_mask_all`
     pub async fn modify_interrupt_mask_all(
         &mut self,
-        f: impl Fn(&mut registers::IntEventBus1) -> registers::IntEventBus1,
+        f: impl Fn(&mut registers::IntEventBus1),
     ) -> Result<(), Error<B::Error>> {
         self.lock_inner().await.modify_interrupt_mask_all(f).await
     }
@@ -220,9 +220,7 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
     pub async fn modify_autonegotiate_sink(
         &mut self,
         port: LocalPortId,
-        f: impl FnOnce(
-            &mut registers::autonegotiate_sink::AutonegotiateSink,
-        ) -> registers::autonegotiate_sink::AutonegotiateSink,
+        f: impl FnOnce(&mut registers::autonegotiate_sink::AutonegotiateSink),
     ) -> Result<registers::autonegotiate_sink::AutonegotiateSink, Error<B::Error>> {
         self.lock_inner().await.modify_autonegotiate_sink(port, f).await
     }
@@ -530,16 +528,13 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
     }
 
     /// Get boot flags
-    pub async fn get_boot_flags(&mut self) -> Result<registers::boot_flags::BootFlags, Error<B::Error>> {
+    pub async fn get_boot_flags(&mut self) -> Result<registers::BootFlags, Error<B::Error>> {
         let mut inner = self.lock_inner().await;
         inner.get_boot_flags().await
     }
 
     /// Get DP status
-    pub async fn get_dp_status(
-        &mut self,
-        port: LocalPortId,
-    ) -> Result<registers::dp_status::DpStatus, Error<B::Error>> {
+    pub async fn get_dp_status(&mut self, port: LocalPortId) -> Result<registers::DpStatus, Error<B::Error>> {
         let mut inner = self.lock_inner().await;
         inner.get_dp_status(port).await
     }
@@ -661,14 +656,12 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
     ) -> Result<(), Error<B::Error>> {
         self.modify_autonegotiate_sink(port, |settings| {
             if let Some(voltage) = voltage_mv {
-                settings.set_auto_compute_sink_max_voltage(AutoComputeSinkMaxVoltage::ProvidedByHost);
-                settings.set_auto_neg_max_voltage(voltage);
+                settings.auto_compute_sink_max_voltage = AutoComputeSinkMaxVoltage::ProvidedByHost;
+                settings.auto_neg_max_voltage_mv = voltage;
             } else {
                 // Auto neg max voltage is ignored if this value is set
-                settings.set_auto_compute_sink_max_voltage(AutoComputeSinkMaxVoltage::ComputedByPdController);
+                settings.auto_compute_sink_max_voltage = AutoComputeSinkMaxVoltage::ComputedByPdController;
             }
-
-            settings.clone()
         })
         .await?;
 
@@ -717,10 +710,7 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
     }
 
     /// Get Tx Identity
-    pub async fn get_tx_identity(
-        &mut self,
-        port: LocalPortId,
-    ) -> Result<registers::tx_identity::TxIdentity, Error<B::Error>> {
+    pub async fn get_tx_identity(&mut self, port: LocalPortId) -> Result<registers::TxIdentity, Error<B::Error>> {
         self.lock_inner().await.get_tx_identity(port).await
     }
 
@@ -728,7 +718,7 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
     pub async fn set_tx_identity(
         &mut self,
         port: LocalPortId,
-        value: registers::tx_identity::TxIdentity,
+        value: registers::TxIdentity,
     ) -> Result<(), Error<B::Error>> {
         self.lock_inner().await.set_tx_identity(port, value).await
     }
@@ -737,8 +727,8 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
     pub async fn modify_tx_identity(
         &mut self,
         port: LocalPortId,
-        f: impl FnOnce(&mut registers::tx_identity::TxIdentity) -> registers::tx_identity::TxIdentity,
-    ) -> Result<registers::tx_identity::TxIdentity, Error<B::Error>> {
+        f: impl FnOnce(&mut registers::TxIdentity),
+    ) -> Result<registers::TxIdentity, Error<B::Error>> {
         self.lock_inner().await.modify_tx_identity(port, f).await
     }
 
@@ -778,7 +768,7 @@ impl<'a, M: RawMutex, B: I2c> Tps6699x<'a, M, B> {
     pub async fn modify_dp_config(
         &mut self,
         port: LocalPortId,
-        f: impl FnOnce(&mut registers::DpConfig) -> registers::DpConfig,
+        f: impl FnOnce(&mut registers::DpConfig),
     ) -> Result<registers::DpConfig, Error<B::Error>> {
         let mut inner = self.lock_inner().await;
         inner.modify_dp_config(port, f).await

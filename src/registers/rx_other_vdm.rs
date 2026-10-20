@@ -3,8 +3,6 @@
 //! This register receives the user svid other vdm.
 //!
 
-use bitfield::bitfield;
-
 /// The address of the `Rx Other Vdm` register.
 pub const ADDR: u8 = 0x61;
 
@@ -14,83 +12,71 @@ pub const LEN: usize = 29;
 /// The maximum number of valid VDOs that can be received in the `Rx Other Vdm` register.
 pub const MAX_VDO_COUNT: usize = 7;
 
-bitfield! {
-    /// Raw bytes for the Received User SVID Other VDM register.
-    ///
-    /// Each field corresponds to a bit or group of bits in the register.
-    #[derive(Clone, Copy)]
-    #[cfg_attr(feature = "defmt", derive(defmt::Format))]
-    struct RxOtherVdmRaw([u8]);
-    impl Debug;
-
-    /// Rx Vdm data object 7
-    pub u32, vdo7, set_vdo7: 231, 200;
-    /// Rx Vdm data object 6
-    pub u32, vdo6, set_vdo6: 199, 168;
-    /// Rx Vdm data object 5
-    pub u32, vdo5, set_vdo5: 167, 136;
-    /// Rx Vdm data object 4
-    pub u32, vdo4, set_vdo4: 135, 104;
-    /// Rx Vdm data object 3
-    pub u32, vdo3, set_vdo3: 103, 72;
-    /// Rx Vdm data object 2
-    pub u32, vdo2, set_vdo2: 71, 40;
-    /// Rx Vdm data object 1
-    pub u32, vdo1, set_vdo1: 39, 8;
-    /// Sequence Number
-    pub u8, sequence_number, set_sequence_number: 7,5;
-    /// Frame Type of the message in the register
-    pub u8, sop_type, set_sop_type: 4, 3;
-    /// Number of valid VDOs
-    pub u8, num_of_valid_vdos, set_num_of_valid_vdos: 2, 0;
+/// The Received User SVID Other VDM register (`0x61`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub struct RxOtherVdm {
+    /// Number of valid VDOs.
+    pub num_of_valid_vdos: u8,
+    /// Frame Type of the message in the register.
+    pub sop_type: u8,
+    /// Sequence Number.
+    pub sequence_number: u8,
+    /// Rx VDM data objects (up to 7).
+    pub vdm_data: [u32; MAX_VDO_COUNT],
 }
 
-/// The port configuration register.
-#[derive(Debug, Clone, Copy)]
-#[cfg_attr(feature = "defmt", derive(defmt::Format))]
-pub struct RxOtherVdm(RxOtherVdmRaw<[u8; LEN]>);
-
 impl RxOtherVdm {
-    /// The default bytes for the rx other vdm register.
-    const DEFAULT: [u8; LEN] = [0u8; LEN];
-
-    /// Get the raw byte representation of the port configuration register.
-    pub fn as_bytes(&self) -> &[u8; LEN] {
-        &self.0.0
-    }
-
     pub fn is_valid_other_vdm(&self) -> bool {
-        self.0.num_of_valid_vdos() > 0 && (self.0.num_of_valid_vdos() as usize) <= MAX_VDO_COUNT
+        self.num_of_valid_vdos > 0 && (self.num_of_valid_vdos as usize) <= MAX_VDO_COUNT
     }
+}
 
-    pub fn vdm_data(&self) -> [u32; MAX_VDO_COUNT] {
-        [
-            self.0.vdo1(),
-            self.0.vdo2(),
-            self.0.vdo3(),
-            self.0.vdo4(),
-            self.0.vdo5(),
-            self.0.vdo6(),
-            self.0.vdo7(),
-        ]
+impl From<crate::registers::RxOtherVdm> for RxOtherVdm {
+    fn from(raw: crate::registers::RxOtherVdm) -> Self {
+        Self {
+            num_of_valid_vdos: raw.num_of_valid_vdos(),
+            sop_type: raw.sop_type(),
+            sequence_number: raw.sequence_number(),
+            vdm_data: [
+                raw.vdo_1(),
+                raw.vdo_2(),
+                raw.vdo_3(),
+                raw.vdo_4(),
+                raw.vdo_5(),
+                raw.vdo_6(),
+                raw.vdo_7(),
+            ],
+        }
+    }
+}
+
+impl From<RxOtherVdm> for crate::registers::RxOtherVdm {
+    fn from(vdm: RxOtherVdm) -> Self {
+        let mut raw = Self::default();
+        raw.set_num_of_valid_vdos(vdm.num_of_valid_vdos);
+        raw.set_sop_type(vdm.sop_type);
+        raw.set_sequence_number(vdm.sequence_number);
+        raw.set_vdo_1(vdm.vdm_data[0]);
+        raw.set_vdo_2(vdm.vdm_data[1]);
+        raw.set_vdo_3(vdm.vdm_data[2]);
+        raw.set_vdo_4(vdm.vdm_data[3]);
+        raw.set_vdo_5(vdm.vdm_data[4]);
+        raw.set_vdo_6(vdm.vdm_data[5]);
+        raw.set_vdo_7(vdm.vdm_data[6]);
+        raw
     }
 }
 
 impl From<[u8; LEN]> for RxOtherVdm {
     fn from(value: [u8; LEN]) -> Self {
-        RxOtherVdm(RxOtherVdmRaw(value))
+        crate::registers::RxOtherVdm::from(value).into()
     }
 }
 
 impl From<RxOtherVdm> for [u8; LEN] {
     fn from(value: RxOtherVdm) -> Self {
-        value.0.0
-    }
-}
-
-impl Default for RxOtherVdm {
-    fn default() -> Self {
-        Self::DEFAULT.into()
+        crate::registers::RxOtherVdm::from(value).into()
     }
 }
 
@@ -100,18 +86,14 @@ mod tests {
 
     #[test]
     fn test_rx_other_vdm_nonzero() {
-        // Construct with setters on the raw bitfield
-        let mut raw = RxOtherVdmRaw([0u8; LEN]);
-        raw.set_num_of_valid_vdos(7);
-        raw.set_sop_type(2);
-        raw.set_sequence_number(6);
-        raw.set_vdo1(0xDEADBEEF);
-        raw.set_vdo2(0x11223344);
-        raw.set_vdo3(0x55667788);
-        raw.set_vdo4(0x9ABCDEF0);
-        raw.set_vdo5(0x13579BDF);
-        raw.set_vdo6(0x2468ACE0);
-        raw.set_vdo7(0xFEDCBA98);
+        let vdm = RxOtherVdm {
+            num_of_valid_vdos: 7,
+            sop_type: 2,
+            sequence_number: 6,
+            vdm_data: [
+                0xDEADBEEF, 0x11223344, 0x55667788, 0x9ABCDEF0, 0x13579BDF, 0x2468ACE0, 0xFEDCBA98,
+            ],
+        };
 
         // Convert to bytes and assert against expected
         // Byte 0: num_of_valid_vdos(2:0)=7, sop_type(4:3)=2, sequence_number(7:5)=6
@@ -119,18 +101,11 @@ mod tests {
             0xD7, 0xEF, 0xBE, 0xAD, 0xDE, 0x44, 0x33, 0x22, 0x11, 0x88, 0x77, 0x66, 0x55, 0xF0, 0xDE, 0xBC, 0x9A, 0xDF,
             0x9B, 0x57, 0x13, 0xE0, 0xAC, 0x68, 0x24, 0x98, 0xBA, 0xDC, 0xFE,
         ];
-        assert_eq!(raw.0, EXPECTED);
+        assert_eq!(<[u8; LEN]>::from(vdm), EXPECTED);
 
-        // Reconstruct from expected bytes and verify getters
-        let vdm = RxOtherVdm::from(EXPECTED);
-        assert!(vdm.is_valid_other_vdm());
-        let data = vdm.vdm_data();
-        assert_eq!(data[0], 0xDEADBEEF);
-        assert_eq!(data[1], 0x11223344);
-        assert_eq!(data[2], 0x55667788);
-        assert_eq!(data[3], 0x9ABCDEF0);
-        assert_eq!(data[4], 0x13579BDF);
-        assert_eq!(data[5], 0x2468ACE0);
-        assert_eq!(data[6], 0xFEDCBA98);
+        // Reconstruct from expected bytes and verify fields
+        let vdm2 = RxOtherVdm::from(EXPECTED);
+        assert!(vdm2.is_valid_other_vdm());
+        assert_eq!(vdm2, vdm);
     }
 }

@@ -214,6 +214,52 @@ device Registers {
             },
         },
     },
+    /// Discovered SVIDs
+    register DiscoveredSvids {
+        address: 0x21,
+        reset: 0x0,
+        access: RO,
+        fields: fieldset _ {
+            size-bytes: 33,
+
+            /// Number of SVIDs discovered on SOP
+            field NumberSopSvids 3:0,
+            /// Number of SVIDs discovered on SOP'
+            field NumberSopPrimeSvids 7:4,
+            /// First SVID supported by SOP port partner
+            field SvidSop0 23:8,
+            /// Second SVID supported by SOP port partner
+            field SvidSop1 39:24,
+            /// Third SVID supported by SOP port partner
+            field SvidSop2 55:40,
+            /// Fourth SVID supported by SOP port partner
+            field SvidSop3 71:56,
+            /// Fifth SVID supported by SOP port partner
+            field SvidSop4 87:72,
+            /// Sixth SVID supported by SOP port partner
+            field SvidSop5 103:88,
+            /// Seventh SVID supported by SOP port partner
+            field SvidSop6 119:104,
+            /// Eighth SVID supported by SOP port partner
+            field SvidSop7 135:120,
+            /// First SVID supported by SOP' cable plug
+            field SvidSopPrime0 151:136,
+            /// Second SVID supported by SOP' cable plug
+            field SvidSopPrime1 167:152,
+            /// Third SVID supported by SOP' cable plug
+            field SvidSopPrime2 183:168,
+            /// Fourth SVID supported by SOP' cable plug
+            field SvidSopPrime3 199:184,
+            /// Fifth SVID supported by SOP' cable plug
+            field SvidSopPrime4 215:200,
+            /// Sixth SVID supported by SOP' cable plug
+            field SvidSopPrime5 231:216,
+            /// Seventh SVID supported by SOP' cable plug
+            field SvidSopPrime6 247:232,
+            /// Eighth SVID supported by SOP' cable plug
+            field SvidSopPrime7 263:248,
+        },
+    },
     /// Interrupt clear for I2C1
     register IntClearBus1 {
         address: 0x18,
@@ -491,6 +537,142 @@ device Registers {
             field SourcePolicyMode 104:103,
         },
     },
+    /// Port configuration
+    register PortConfig {
+        address: 0x28,
+        reset: 0x0,
+        fields: fieldset _ {
+            size-bytes: 18,
+
+            /// Type-C State machine
+            field TypecStateMachine 1:0 -> _ as enum TypeCStateMachine {
+                Sink: 0,
+                Source: 1,
+                Drp: 2,
+                Disabled: 3,
+            },
+            /// Crossbar Type
+            field CrossbarType 2:2 -> _ as enum CrossbarType {
+                Type1: 0,
+                Type2: 1,
+            },
+            /// PP_EXT ActiveLow
+            field PpExtActiveLow 7,
+            /// TypeC Support Options
+            field TypecSupportOptions 9:8 -> _ as enum TypeCSupportOptions {
+                None: 0,
+                TrySrcDrp: 1,
+                Reserved: catch-all _,
+            },
+            /// Disable PD
+            field DisablePd 10,
+            /// USB Communication Capable
+            field UsbCommunicationCapable 11,
+            /// DebugAccessory Support
+            field DebugAccessorySupport 12,
+            /// USB3 Rate
+            field Usb3Rate 14:13 -> _ as enum Usb3Rate {
+                NotSupported: 0,
+                Gen1: 1,
+                Gen2: 2,
+                Reserved: catch-all _,
+            },
+            /// Crossbar I2C Controller enable
+            field CrossbarI2cControllerEnable 15,
+            /// VBUS OVP Usage
+            field VbusOvpUsage 17:16 -> _ as enum VbusOvpUsage {
+                Pct100: 0,
+                Pct105: 1,
+                Pct111: 2,
+                Pct114: 3,
+            },
+            /// OVP for PP5V
+            field OvpForPp5v 21:20 -> _ as enum OvpForPp5v {
+                V5p25: 0,
+                V5p5: 1,
+                V5p8: 2,
+                V6p1: 3,
+            },
+            /// Crossbar Config Type 1 Extended
+            field CrossbarConfigType1Extended 22,
+            /// Remove Safe-State Between USB3-to-DP Transition
+            field RemoveSafeStateBetweenUsb3ToDpTransition 23,
+            /// VBUS Sink UVP Trip HV
+            field VbusSinkUvpTripHv 26:24 -> _ as enum VbusSinkUvpTripHv {
+                Pct5: 0,
+                Pct10: 1,
+                Pct15: 2,
+                Pct20: 3,
+                Pct25: 4,
+                Pct30: 5,
+                Pct40: 6,
+                Reserved: catch-all _,
+            },
+            /// APDO VBUS UVP Threshold
+            field ApdoVbusUvpThreshold 28:27,
+            /// APDO ILIM Over Shoot
+            field ApdoIlimOverShoot 30:29,
+            /// APDO VBUS Uvp TripPoint Offset
+            field ApdoVbusUvpTripPointOffset 47:32,
+            /// VBUS For Valid PPS Status
+            field VbusForValidPpsStatus 63:48,
+            /// External DCDC Type
+            field ExternalDcdcType 71:64 -> _ as enum ExternalDcdcType {
+                MarinaBay: 0,
+                Bq25758: 1,
+                Reserved: catch-all _,
+            },
+            /// Enables support for GPIO10 to I2C IRQ
+            field SinkModeI2cIrqConfig 72,
+            /// Threshold voltage to trigger the GREATER_THAN_THRESHOLD_VOLTAGE GPIO Event (50mV per LSB)
+            field GtThresholdVoltage 95:80,
+            /// Enable Internal Auxbiasing
+            field EnableInternalAuxbiasing 124,
+            /// EnableInternalLevelShifter
+            field EnableInternalLevelShifter 125,
+            /// Level shifter direction configuration
+            field LevelShifterDirectionCfg 127:126 -> _ as enum LevelShifterDirectionCfg {
+                Automatic: 0,
+                GpioControlled: 1,
+                I2cControlled: 2,
+                Reserved: catch-all _,
+            },
+            /// SBU Mux Debug Setting
+            field SbuMuxDebugSetting 130:128 -> _ as enum SbuMuxDebugSetting {
+                DebugSnk: 0,
+                UnorientedDebugSrc: 1,
+                OrientedDebugSrc: 2,
+                AnyDebug: 3,
+                NeverEnable: 4,
+                Reserved: catch-all _,
+            },
+            /// SBU Mux Default Setting
+            field SbuMuxDefaultSetting 133:131 -> _ as enum SbuMuxDefaultSetting {
+                DontChange: 0,
+                DisableSbuMux: 1,
+                EnableDbg: 2,
+                Reserved: catch-all _,
+            },
+            /// Sbu Mux Usage
+            field SbuMuxUsage 135:134 -> _ as enum SbuMuxUsage {
+                DisplayPortAux: 0,
+                AllAux: 1,
+                Reserved: catch-all _,
+            },
+            /// EPR Supported as Source
+            field EprSupportedAsSource 136,
+            /// EPR Supported as Sink
+            field EprSupportedAsSink 137,
+            /// Disable sourcing in dead battery mode
+            field DisableSourcingInDbm 138,
+            /// Flip Px_DBG
+            field FlipCrossbarDbgSetting 139,
+            /// Flip Px_AUX
+            field FlipCrossbarAuxSetting 140,
+            /// Flip PX_SBTX/RX
+            field FlipCrossbarSbtxSetting 141,
+        },
+    },
     /// Port control
     register PortControl {
         address: 0x29,
@@ -558,6 +740,58 @@ device Registers {
             },
         },
     },
+    /// Boot flags
+    register BootFlags {
+        address: 0x2D,
+        reset: 0x0,
+        access: RO,
+        fields: fieldset _ {
+            size-bytes: 44,
+
+            /// Current boot stage
+            field BootStage 3:0,
+            /// Number of ports
+            field TotalNumPps 65:64,
+            /// 1 if external power path is present
+            field IsExtPpPresent 66,
+            /// Dead battery flag
+            field DeadBatteryFlag 128,
+            /// Dead battery, port B is power provider
+            field DbPortBPowerProvider 129,
+            /// Dead battery, port A is power provider
+            field DbPortAPowerProvider 130,
+            /// Port A sink switch is enabled
+            field PortASinkSwitch 131,
+            /// Port B sink switch is enabled
+            field PortBSinkSwitch 132,
+            /// Port A I2C1 Target Address
+            field PortA_I2c1TrgtAddr 167:160,
+            /// Port B I2C1 Target Address
+            field PortB_I2c1TrgtAddr 175:168,
+            /// Port A I2C2 Target Address
+            field PortA_I2c2TrgtAddr 183:176,
+            /// Port B I2C2 Target Address
+            field PortB_I2c2TrgtAddr 191:184,
+            /// Port A I2C4 Target Address
+            field PortA_I2c4TrgtAddr 199:192,
+            /// Port B I2C4 Target Address
+            field PortB_I2c4TrgtAddr 207:200,
+            /// Active Bank the device booted from
+            field ActiveBank 225:224,
+            /// Asserted 1 if Bank 0 has valid Application Code
+            field Bank0Valid 226,
+            /// Asserted 1 if Bank 1 has valid Application Code
+            field Bank1Valid 227,
+            /// Application Firmware Version in Bank 0
+            field Bank0FwVersion 287:256,
+            /// Application Firmware Version in Bank 1
+            field Bank1FwVersion 319:288,
+            /// Raw ADCIN Value
+            field AdcInValue 335:320,
+            /// ADCIN Index
+            field AdcInIndex 351:336,
+        },
+    },
     /// Active PDO contract
     register ActivePdoContract {
         address: 0x34,
@@ -588,6 +822,93 @@ device Registers {
             field SinkEprModeDo 95:64,
             /// Accepted active RDO contract
             field AcceptedActiveRdo 127:96,
+        },
+    },
+    /// Autonegotiate Sink
+    register AutonegotiateSink {
+        address: 0x37,
+        reset: [0xBE, 0x40, 0x1F, 0x0F, 0x90, 0x91, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+        fields: fieldset _ {
+            size-bytes: 24,
+
+            /// Configuration for tie-breaker in PDO selection
+            field AutoNegRdoPriority 0:0 -> _ as enum AutoNegRdoPriority {
+                HigherVoltage: 0,
+                LowerVoltage: 1,
+            },
+            /// Value used for the NoUSBSusp Flag in the RDO
+            field NoUsbSuspend 1,
+            /// How to compute the minimum power that the sink requires
+            field AutoComputeSinkMinPower 2:2 -> _ as enum AutoComputeSinkMinPower {
+                ProvidedByHost: 0,
+                ComputedByPdController: 1,
+            },
+            /// Configuration for capability mismatch in RDO
+            field NoCapabilityMismatch 3:3 -> _ as enum NoCapabilityMismatch {
+                Enabled: 0,
+                Disabled: 1,
+            },
+            /// How to compute the minimum voltage that the sink requires
+            field AutoComputeSinkMinVoltage 4:4 -> _ as enum AutoComputeSinkMinVoltage {
+                ProvidedByHost: 0,
+                ComputedByPdController: 1,
+            },
+            /// How to compute the maximum voltage that the sink requires
+            field AutoComputeSinkMaxVoltage 5:5 -> _ as enum AutoComputeSinkMaxVoltage {
+                ProvidedByHost: 0,
+                ComputedByPdController: 1,
+            },
+            /// Sink path and capability mismatch setting
+            field AutoDisableSinkUponCapabilityMismatch 6,
+            /// Disable the sinking path during contract negotiation, and enable it back after receiving PS-RDY from SRC
+            field AutoDisableInputForSinkStandby 7,
+            /// Disable the sinking path during contract negotiation, and enable it back after receiving PS-RDY from SRC when in DBM
+            field AutoDisableInputForSinkStandbyInDbm 8,
+            /// Automatically re-enable the sink path for Sink Standby when PS-RDY is received
+            field AutoEnableStandbySrdy 9,
+            /// Keep the sink path disabled until final PD contract is set
+            field AutoEnableInputAfterSnkReadyInDbm 10,
+            /// Maximum current to request (10 mA per LSB)
+            field AutoNegMaxCurrent 21:12,
+            /// Minimum operating power required by the sink (250 mW per LSB)
+            field AutoNegSinkMinRequiredPower 31:22,
+            /// Maximum voltage to request (50 mV per LSB)
+            field AutoNegMaxVoltage 41:32,
+            /// Minimum voltage to request (50 mV per LSB)
+            field AutoNegMinVoltage 51:42,
+            /// Capabilities mismatch power threshold (250 mW per LSB)
+            field AutoNegCapabilitiesMismatchPower 61:52,
+            /// Enable Sink PPS mode
+            field PpsEnableSinkMode 64,
+            /// Sink PPS request interval
+            field PpsRequestInterval 66:65 -> _ as enum PpsRequestInterval {
+                EightSeconds: 0,
+                FourSeconds: 1,
+                TwoSeconds: 2,
+                OneSecond: 3,
+            },
+            /// Selection for CV or CC mode
+            field PpsSourceOperatingMode 67,
+            /// Select only a source with full voltage range
+            field PpsRequiredFullVoltageRange 68,
+            /// Sink path handling during supply type transition
+            field PpsDisableSinkUponNonApdoContract 69,
+            /// Enable Sink Path above PPS Sink Voltage threshold
+            field EnableSinkPathAbovePpsSinkVoltageThreshold 83,
+            /// Disable Sink Path if not in PPS contract
+            field DisableSinkIfNotInPpsContract 84,
+            /// Operation current in Sink PPS mode
+            field PpsSinkVoltageThreshold 95:85,
+            /// Operation current in Sink PPS mode (50 mA per LSB)
+            field PpsOperatingCurrent 102:96,
+            /// Desired output voltage (20 mV per LSB)
+            field PpsOutputVoltage 115:105,
+            /// Enable Sink EPR AVS mode
+            field EprAvsEnableSinkMode 128,
+            /// AVS operating current
+            field EprAvsOperatingCurrent 166:160,
+            /// AVS operating voltage
+            field EprAvsOutputVoltage 180:169,
         },
     },
     /// PD status
@@ -716,6 +1037,107 @@ device Registers {
                 ExitUsb4FollowingDrSwap: 4,
                 Reserved: catch-all _,
             },
+        },
+    },
+    /// Tx Identity
+    register TxIdentity {
+        address: 0x47,
+        reset: [0x06, 0x51, 0x04, 0x00, 0xD5, 0x51, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+        fields: fieldset _ {
+            size-bytes: 25,
+
+            /// Number of valid VDOs in this register
+            field NumberValidVdos 2:0,
+            /// Vendor ID as defined in USB PD specification.
+            /// This value is also used to populate VID in TX_MIDB_SOP, TX_SCEDB, and TX_SKEDB registers.
+            field VendorId 23:8,
+            /// Product Type DFP as defined in USB PD specification
+            field ProductTypeDfp 33:31 -> _ as enum ProductTypeDfp {
+                UndefinedDfp: 0,
+                PdUsbHub: 1,
+                PdUsbHost: 2,
+                PowerBrick: 3,
+                Amc: 4,
+                Reserved: catch-all _,
+            },
+            /// Assert this bit if Alternate Modes are supported
+            field ModalOperationSupported 34,
+            /// Product Type UFP as defined in USB PD specification
+            field ProductTypeUfp 37:35 -> _ as enum ProductTypeUfp {
+                UndefinedUfp: 0,
+                PdUsbHub: 1,
+                PdUsbPeripheral: 2,
+                Psd: 3,
+                Reserved: catch-all _,
+            },
+            /// Assert if USB communications capable as a device
+            field UsbCommunicationCapableAsDevice 38,
+            /// Assert if USB communications capable as a host
+            field UsbCommunicationCapableAsHost 39,
+            /// 32-bit XID assigned by USB-IF.
+            /// This value is also used to populate XID in TX_SCEDB and TX_SKEDB registers.
+            field CertificationTestId 71:40,
+            /// FW version for the PD controller (read-only)
+            field BcdDevice 87:72,
+            /// Product ID used to populate PID in other registers.
+            /// This value is also used to populate PID in TX_MIDB_SOP, TX_SCEDB, and TX_SKEDB registers.
+            field UsbProductId 103:88,
+            /// UFP1 VDO
+            field Ufp1Vdo 135:104,
+            /// DFP1 VDO
+            field Dfp1Vdo 199:168,
+        },
+    },
+    /// Received SOP Identity Data Object
+    register ReceivedSopIdentityData {
+        address: 0x48,
+        reset: 0x0,
+        access: RO,
+        fields: fieldset _ {
+            size-bytes: 25,
+
+            /// Number of valid VDOs in this register (max of 6)
+            field NumberValidVdos 2:0,
+            /// Type of response received
+            field ResponseType 7:6,
+            /// VDO 1
+            field Vdo1 39:8,
+            /// VDO 2
+            field Vdo2 71:40,
+            /// VDO 3
+            field Vdo3 103:72,
+            /// VDO 4
+            field Vdo4 135:104,
+            /// VDO 5
+            field Vdo5 167:136,
+            /// VDO 6
+            field Vdo6 199:168,
+        },
+    },
+    /// Received SOP Prime Identity Data Object
+    register ReceivedSopPrimeIdentityData {
+        address: 0x49,
+        reset: 0x0,
+        access: RO,
+        fields: fieldset _ {
+            size-bytes: 25,
+
+            /// Number of valid VDOs in this register (max of 6)
+            field NumberValidVdos 2:0,
+            /// Type of response received
+            field ResponseType 7:6,
+            /// VDO 1
+            field Vdo1 39:8,
+            /// VDO 2
+            field Vdo2 71:40,
+            /// VDO 3
+            field Vdo3 103:72,
+            /// VDO 4
+            field Vdo4 135:104,
+            /// VDO 5
+            field Vdo5 167:136,
+            /// VDO 6
+            field Vdo6 199:168,
         },
     },
     /// Display Port Configuration
@@ -872,6 +1294,46 @@ device Registers {
             field Mode4 12,
         },
     },
+    /// DP status
+    register DpStatus {
+        address: 0x58,
+        reset: 0x0,
+        access: RO,
+        fields: fieldset _ {
+            size-bytes: 38,
+
+            /// DP Detected
+            field DpDetected 0,
+            /// DP Mode Active
+            field DpModeActive 1,
+            /// DP Status TX
+            field DpStatusTx 39:8,
+            /// DP Status RX
+            field DpStatusRx 71:40,
+            /// DP Configure Message
+            field DpConfigureMessage 103:72,
+            /// DP Mode Data
+            field DpModeData 135:104,
+            /// DP Status to Plug
+            field DpStatusToPlug 167:136,
+            /// DP Status ACK from Plug
+            field DpStatusAckFromPlug 199:168,
+            /// DP Config to Plug
+            field DpConfigToPlug 231:200,
+            /// DP Config from Plug
+            field DpConfigFromPlug 263:232,
+            /// DP Mode Data SOPPrime
+            field DpModeDataSopprime 295:264,
+            /// DP Signalling Rate
+            field DpSignallingRate 299:296,
+            /// Cable UHBR13.5 Support
+            field CableUhbr13_5Support 300,
+            /// Cable Active Component
+            field CableActiveComponent 302:301,
+            /// DP UFP VDO Version
+            field DpUfpVdoVersion 303,
+        },
+    },
     /// Intel VID status
     register IntelVidStatus {
         address: 0x59,
@@ -912,6 +1374,36 @@ device Registers {
             field VdmHeader 39:8,
             /// VDM data object, Rx Vdm data object 2
             field Vdo 71:40,
+        },
+    },
+    /// Received User SVID Other VDM
+    register RxOtherVdm {
+        address: 0x61,
+        reset: 0x0,
+        access: RO,
+        fields: fieldset _ {
+            size-bytes: 29,
+
+            /// Number of valid VDOs
+            field NumOfValidVdos 2:0,
+            /// Frame Type of the message in the register
+            field SopType 4:3,
+            /// Sequence Number
+            field SequenceNumber 7:5,
+            /// Rx Vdm data object 1
+            field Vdo1 39:8,
+            /// Rx Vdm data object 2
+            field Vdo2 71:40,
+            /// Rx Vdm data object 3
+            field Vdo3 103:72,
+            /// Rx Vdm data object 4
+            field Vdo4 135:104,
+            /// Rx Vdm data object 5
+            field Vdo5 167:136,
+            /// Rx Vdm data object 6
+            field Vdo6 199:168,
+            /// Rx Vdm data object 7
+            field Vdo7 231:200,
         },
     },
     /// Received ADO

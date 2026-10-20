@@ -300,7 +300,6 @@ async fn main(spawner: Spawner) {
             mask.set_usb_status_updated(true);
             mask.set_power_path_switch_changed(true);
             mask.set_sink_ready(true);
-            *mask
         })
         .await
         .unwrap();

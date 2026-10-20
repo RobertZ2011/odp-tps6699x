@@ -5,15 +5,12 @@ use embedded_usb_pd::type_c::ConnectionState;
 use embedded_usb_pd::{PdError, type_c};
 
 pub mod autonegotiate_sink;
-pub mod boot_flags;
 pub mod discovered_svids;
-pub mod dp_status;
 pub mod port_config;
 pub mod received_sop_identity_data;
 pub mod received_sop_prime_identity_data;
 pub mod rx_caps;
 pub mod rx_other_vdm;
-pub mod tx_identity;
 
 // Generated register definitions from device.ddsl
 // Skip format checking for generated code
