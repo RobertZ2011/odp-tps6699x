@@ -1,5 +1,5 @@
 //! Asynchronous, low-level TPS6699x driver. This module provides a low-level interface
-use device_driver::{AsyncRegisterInterface, Fieldset, FieldsetMetadata};
+use device_driver::{AsyncRegisterInterface, Fieldset};
 use embedded_hal_async::i2c::I2c;
 use embedded_usb_pd::pdinfo::AltMode;
 use embedded_usb_pd::pdo::{self, sink, source};
@@ -659,15 +659,13 @@ impl<B: I2c> Tps6699x<B> {
         out_spr_pdos: &mut [T],
         out_epr_pdos: &mut [T],
     ) -> Result<(usize, usize), DeviceError<B::Error, RxCapsError>> {
-        // The whole register is always read; the controller reports its own length and the
-        // interface derives the transfer size from the buffer.
-        let mut buf = [0u8; registers::rx_caps::LEN];
+        let mut raw = registers::RxSrcCaps::ZERO;
         self.borrow_port(port)
             .map_err(DeviceError::from)?
-            .read_register(register, &mut buf, &FieldsetMetadata::DEFAULT)
+            .read_register(register, raw.as_slice_mut(), &registers::RxSrcCaps::METADATA)
             .await?;
 
-        let rx_caps = registers::rx_caps::RxCaps::<T>::try_from(buf).map_err(DeviceError::Other)?;
+        let rx_caps = registers::rx_caps::RxCaps::<T>::try_from(raw).map_err(DeviceError::Other)?;
         let num_sprs = out_spr_pdos.len().min(rx_caps.num_valid_pdos() as usize);
         for (i, pdo) in out_spr_pdos.iter_mut().enumerate().take(num_sprs) {
             // SPR PDOs start at index 0
@@ -787,7 +785,7 @@ mod test {
     extern crate std;
     use std::vec::Vec;
 
-    use device_driver::AsyncRegisterInterface;
+    use device_driver::{AsyncRegisterInterface, FieldsetMetadata};
     use embedded_hal_async::i2c::ErrorType;
     use embedded_hal_mock::eh1::i2c::{Mock, Transaction};
     use embedded_usb_pd::pdo::MV50_UNIT;
@@ -1113,7 +1111,7 @@ mod test {
         // Fake EPR, used to test overread
         buf[38..42].copy_from_slice(&TEST_SRC_EPR_PDO_FIXED_28V1A5_RAW.to_le_bytes());
 
-        // Expect a read of 14 bytes (header + 3 PDOs)
+        // Expect the full register, including the length byte.
         tps6699x.bus.update_expectations(
             &[Transaction::write_read(PORT0_ADDR0, std::vec![rx_caps::RX_SRC_ADDR], {
                 Vec::from(buf)
@@ -1137,6 +1135,56 @@ mod test {
 
         assert_eq!(out_epr_pdos[0], TEST_SRC_EPR_PDO_FIXED_28V5A);
         assert_eq!(out_epr_pdos[1], Pdo::default());
+    }
+
+    #[tokio::test]
+    async fn test_read_generated_rx_caps_registers() {
+        let mut source_bytes = [0u8; rx_caps::LEN];
+        source_bytes[0] = 0x61; // 1 SPR PDO, 4 EPR PDOs, last received is EPR.
+        source_bytes[1..5].copy_from_slice(&TEST_SRC_PDO_FIXED_5V3A_RAW.to_le_bytes());
+        source_bytes[41..45].copy_from_slice(&TEST_SRC_EPR_PDO_FIXED_28V5A_RAW.to_le_bytes());
+        let mut sink_bytes = [0u8; rx_caps::LEN];
+        sink_bytes[0] = 0x09; // 1 SPR PDO, 1 EPR PDO.
+        sink_bytes[1..5].copy_from_slice(&TEST_SRC_PDO_FIXED_5V1A5_RAW.to_le_bytes());
+        sink_bytes[29..33].copy_from_slice(&TEST_SRC_EPR_PDO_FIXED_28V3A_RAW.to_le_bytes());
+
+        let mock = Mock::new(&[
+            create_register_read(PORT1_ADDR0, 0x30, source_bytes),
+            create_register_read(PORT1_ADDR0, 0x31, sink_bytes),
+            create_register_read(PORT1_ADDR0, 0x31, sink_bytes),
+        ]);
+        let mut tps6699x = Tps6699x::new_tps66994(mock, ADDR0);
+        let mut registers = tps6699x.borrow_port(PORT1).unwrap().into_registers();
+
+        let source = registers.rx_src_caps().read_async().await.unwrap();
+        let sink = registers.rx_snk_caps().read_async().await.unwrap();
+        assert_eq!(<[u8; rx_caps::LEN]>::from(source), source_bytes);
+        assert_eq!(<[u8; rx_caps::LEN]>::from(sink), sink_bytes);
+        assert_eq!(source.epr_pdo_3(), TEST_SRC_EPR_PDO_FIXED_28V5A_RAW);
+
+        let mut spr = [sink::Pdo::default(); 2];
+        let mut epr = [sink::Pdo::default(); 2];
+        let counts = tps6699x.get_rx_snk_caps(PORT1, &mut spr, &mut epr).await.unwrap();
+        assert_eq!(counts, (1, 1));
+        assert_eq!(
+            spr[0],
+            sink::Pdo::Fixed(sink::FixedData {
+                voltage_mv: 5000,
+                operational_current_ma: 1500,
+                ..Default::default()
+            })
+        );
+        assert_eq!(
+            epr[0],
+            sink::Pdo::Fixed(sink::FixedData {
+                voltage_mv: 28000,
+                operational_current_ma: 3000,
+                ..Default::default()
+            })
+        );
+        assert_eq!(spr[1], sink::Pdo::default());
+        assert_eq!(epr[1], sink::Pdo::default());
+        tps6699x.bus.done();
     }
 
     async fn run_modify_interrupt_mask(tps6699x: &mut Tps6699x<Mock>, port: LocalPortId, expected_addr: u8) {

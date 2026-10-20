@@ -429,6 +429,64 @@ impl<I> Registers<I> {
             ]),
         )
     }
+    /// Received source capabilities
+    ///
+    /// Register operation:
+    /// - Address: `48`
+    /// - Reset value: `0x0`
+    #[doc(alias = "RxSrcCaps")]
+    pub fn rx_src_caps(
+        &mut self,
+    ) -> ::device_driver::RegisterOperation<
+        '_,
+        Self,
+        RxSrcCaps,
+        u8,
+        ::device_driver::RO,
+        (),
+    >
+    where
+        I: ::device_driver::RegisterInterfaceBase<AddressType = u8>,
+    {
+        let address = self.base_address + 48;
+        ::device_driver::RegisterOperation::new(
+            self,
+            address as u8,
+            || RxSrcCaps::from([
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            ]),
+        )
+    }
+    /// Received sink capabilities
+    ///
+    /// Register operation:
+    /// - Address: `49`
+    /// - Reset value: `0x0`
+    #[doc(alias = "RxSnkCaps")]
+    pub fn rx_snk_caps(
+        &mut self,
+    ) -> ::device_driver::RegisterOperation<
+        '_,
+        Self,
+        RxSrcCaps,
+        u8,
+        ::device_driver::RO,
+        (),
+    >
+    where
+        I: ::device_driver::RegisterInterfaceBase<AddressType = u8>,
+    {
+        let address = self.base_address + 49;
+        ::device_driver::RegisterOperation::new(
+            self,
+            address as u8,
+            || RxSrcCaps::from([
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            ]),
+        )
+    }
     /// Active PDO contract
     ///
     /// Register operation:
@@ -7324,6 +7382,561 @@ impl core::ops::BitXorAssign for ActivePdoContract {
     }
 }
 impl core::ops::Not for ActivePdoContract {
+    type Output = Self;
+    fn not(mut self) -> Self::Output {
+        for val in self.bits.iter_mut() {
+            *val = !*val;
+        }
+        self
+    }
+}
+#[derive(Copy, Clone, Eq, PartialEq)]
+#[repr(transparent)]
+pub struct RxSrcCaps {
+    #[doc(hidden)]
+    /// The internal bits
+    bits: [u8; 45],
+}
+unsafe impl ::device_driver::Fieldset for RxSrcCaps {
+    const METADATA: ::device_driver::FieldsetMetadata = ::device_driver::FieldsetMetadata::new()
+        .with_byte_order(::device_driver::ByteOrder::LE);
+    const ZERO: Self = Self { bits: [0; 45] };
+}
+impl RxSrcCaps {
+    /// `2:0` - Read the `num_valid_pdos` field.
+    ///
+    /// Number of valid standard PDOs
+    #[doc(alias = "NumValidPdos")]
+    #[must_use]
+    pub fn num_valid_pdos(&self) -> u8 {
+        let start = 0;
+        let end = 2;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `5:3` - Read the `num_valid_epr_pdos` field.
+    ///
+    /// Number of valid EPR PDOs
+    #[doc(alias = "NumValidEprPdos")]
+    #[must_use]
+    pub fn num_valid_epr_pdos(&self) -> u8 {
+        let start = 3;
+        let end = 5;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `bit 6` - Read the `last_src_cap_is_epr` field.
+    ///
+    /// Last source capabilities received is EPR
+    #[doc(alias = "LastSrcCapIsEpr")]
+    #[must_use]
+    pub fn last_src_cap_is_epr(&self) -> bool {
+        let start = 6;
+        let end = 6;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u8,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw > 0
+    }
+    /// `39:8` - Read the `pdo_0` field.
+    ///
+    /// Standard PDO 0
+    #[doc(alias = "Pdo0")]
+    #[must_use]
+    pub fn pdo_0(&self) -> u32 {
+        let start = 8;
+        let end = 39;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `71:40` - Read the `pdo_1` field.
+    ///
+    /// Standard PDO 1
+    #[doc(alias = "Pdo1")]
+    #[must_use]
+    pub fn pdo_1(&self) -> u32 {
+        let start = 40;
+        let end = 71;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `103:72` - Read the `pdo_2` field.
+    ///
+    /// Standard PDO 2
+    #[doc(alias = "Pdo2")]
+    #[must_use]
+    pub fn pdo_2(&self) -> u32 {
+        let start = 72;
+        let end = 103;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `135:104` - Read the `pdo_3` field.
+    ///
+    /// Standard PDO 3
+    #[doc(alias = "Pdo3")]
+    #[must_use]
+    pub fn pdo_3(&self) -> u32 {
+        let start = 104;
+        let end = 135;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `167:136` - Read the `pdo_4` field.
+    ///
+    /// Standard PDO 4
+    #[doc(alias = "Pdo4")]
+    #[must_use]
+    pub fn pdo_4(&self) -> u32 {
+        let start = 136;
+        let end = 167;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `199:168` - Read the `pdo_5` field.
+    ///
+    /// Standard PDO 5
+    #[doc(alias = "Pdo5")]
+    #[must_use]
+    pub fn pdo_5(&self) -> u32 {
+        let start = 168;
+        let end = 199;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `231:200` - Read the `pdo_6` field.
+    ///
+    /// Standard PDO 6
+    #[doc(alias = "Pdo6")]
+    #[must_use]
+    pub fn pdo_6(&self) -> u32 {
+        let start = 200;
+        let end = 231;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `263:232` - Read the `epr_pdo_0` field.
+    ///
+    /// EPR PDO 0
+    #[doc(alias = "EprPdo0")]
+    #[must_use]
+    pub fn epr_pdo_0(&self) -> u32 {
+        let start = 232;
+        let end = 263;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `295:264` - Read the `epr_pdo_1` field.
+    ///
+    /// EPR PDO 1
+    #[doc(alias = "EprPdo1")]
+    #[must_use]
+    pub fn epr_pdo_1(&self) -> u32 {
+        let start = 264;
+        let end = 295;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `327:296` - Read the `epr_pdo_2` field.
+    ///
+    /// EPR PDO 2
+    #[doc(alias = "EprPdo2")]
+    #[must_use]
+    pub fn epr_pdo_2(&self) -> u32 {
+        let start = 296;
+        let end = 327;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `359:328` - Read the `epr_pdo_3` field.
+    ///
+    /// EPR PDO 3
+    #[doc(alias = "EprPdo3")]
+    #[must_use]
+    pub fn epr_pdo_3(&self) -> u32 {
+        let start = 328;
+        let end = 359;
+        let raw = unsafe {
+            ::device_driver::ops::load::<
+                u32,
+                ::device_driver::ops::LE,
+            >(&self.bits, start, end)
+        };
+        raw
+    }
+    /// `2:0` - Set the `num_valid_pdos` field.
+    ///
+    /// Number of valid standard PDOs
+    #[doc(alias = "NumValidPdos")]
+    pub fn set_num_valid_pdos(&mut self, value: u8) {
+        let start = 0;
+        let end = 2;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `5:3` - Set the `num_valid_epr_pdos` field.
+    ///
+    /// Number of valid EPR PDOs
+    #[doc(alias = "NumValidEprPdos")]
+    pub fn set_num_valid_epr_pdos(&mut self, value: u8) {
+        let start = 3;
+        let end = 5;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `bit 6` - Set the `last_src_cap_is_epr` field.
+    ///
+    /// Last source capabilities received is EPR
+    #[doc(alias = "LastSrcCapIsEpr")]
+    pub fn set_last_src_cap_is_epr(&mut self, value: bool) {
+        let start = 6;
+        let end = 6;
+        let raw = value as _;
+        unsafe {
+            ::device_driver::ops::store::<
+                u8,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `39:8` - Set the `pdo_0` field.
+    ///
+    /// Standard PDO 0
+    #[doc(alias = "Pdo0")]
+    pub fn set_pdo_0(&mut self, value: u32) {
+        let start = 8;
+        let end = 39;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `71:40` - Set the `pdo_1` field.
+    ///
+    /// Standard PDO 1
+    #[doc(alias = "Pdo1")]
+    pub fn set_pdo_1(&mut self, value: u32) {
+        let start = 40;
+        let end = 71;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `103:72` - Set the `pdo_2` field.
+    ///
+    /// Standard PDO 2
+    #[doc(alias = "Pdo2")]
+    pub fn set_pdo_2(&mut self, value: u32) {
+        let start = 72;
+        let end = 103;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `135:104` - Set the `pdo_3` field.
+    ///
+    /// Standard PDO 3
+    #[doc(alias = "Pdo3")]
+    pub fn set_pdo_3(&mut self, value: u32) {
+        let start = 104;
+        let end = 135;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `167:136` - Set the `pdo_4` field.
+    ///
+    /// Standard PDO 4
+    #[doc(alias = "Pdo4")]
+    pub fn set_pdo_4(&mut self, value: u32) {
+        let start = 136;
+        let end = 167;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `199:168` - Set the `pdo_5` field.
+    ///
+    /// Standard PDO 5
+    #[doc(alias = "Pdo5")]
+    pub fn set_pdo_5(&mut self, value: u32) {
+        let start = 168;
+        let end = 199;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `231:200` - Set the `pdo_6` field.
+    ///
+    /// Standard PDO 6
+    #[doc(alias = "Pdo6")]
+    pub fn set_pdo_6(&mut self, value: u32) {
+        let start = 200;
+        let end = 231;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `263:232` - Set the `epr_pdo_0` field.
+    ///
+    /// EPR PDO 0
+    #[doc(alias = "EprPdo0")]
+    pub fn set_epr_pdo_0(&mut self, value: u32) {
+        let start = 232;
+        let end = 263;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `295:264` - Set the `epr_pdo_1` field.
+    ///
+    /// EPR PDO 1
+    #[doc(alias = "EprPdo1")]
+    pub fn set_epr_pdo_1(&mut self, value: u32) {
+        let start = 264;
+        let end = 295;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `327:296` - Set the `epr_pdo_2` field.
+    ///
+    /// EPR PDO 2
+    #[doc(alias = "EprPdo2")]
+    pub fn set_epr_pdo_2(&mut self, value: u32) {
+        let start = 296;
+        let end = 327;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+    /// `359:328` - Set the `epr_pdo_3` field.
+    ///
+    /// EPR PDO 3
+    #[doc(alias = "EprPdo3")]
+    pub fn set_epr_pdo_3(&mut self, value: u32) {
+        let start = 328;
+        let end = 359;
+        let raw = value;
+        unsafe {
+            ::device_driver::ops::store::<
+                u32,
+                ::device_driver::ops::LE,
+            >(raw, start, end, &mut self.bits)
+        };
+    }
+}
+impl Default for RxSrcCaps {
+    fn default() -> Self {
+        <Self as ::device_driver::Fieldset>::ZERO
+    }
+}
+impl From<[u8; 45]> for RxSrcCaps {
+    fn from(bits: [u8; 45]) -> Self {
+        Self { bits }
+    }
+}
+impl From<RxSrcCaps> for [u8; 45] {
+    fn from(val: RxSrcCaps) -> Self {
+        val.bits
+    }
+}
+impl core::fmt::Debug for RxSrcCaps {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
+        let mut d = f.debug_struct("RxSrcCaps");
+        d.field("num_valid_pdos", &self.num_valid_pdos());
+        d.field("num_valid_epr_pdos", &self.num_valid_epr_pdos());
+        d.field("last_src_cap_is_epr", &self.last_src_cap_is_epr());
+        d.field("pdo_0", &self.pdo_0());
+        d.field("pdo_1", &self.pdo_1());
+        d.field("pdo_2", &self.pdo_2());
+        d.field("pdo_3", &self.pdo_3());
+        d.field("pdo_4", &self.pdo_4());
+        d.field("pdo_5", &self.pdo_5());
+        d.field("pdo_6", &self.pdo_6());
+        d.field("epr_pdo_0", &self.epr_pdo_0());
+        d.field("epr_pdo_1", &self.epr_pdo_1());
+        d.field("epr_pdo_2", &self.epr_pdo_2());
+        d.field("epr_pdo_3", &self.epr_pdo_3());
+        d.finish()
+    }
+}
+#[cfg(feature = "defmt")]
+impl defmt::Format for RxSrcCaps {
+    fn format(&self, f: defmt::Formatter) {
+        defmt::write!(f, "RxSrcCaps {{ ");
+        defmt::write!(f, "num_valid_pdos: {=u8}, ", & self.num_valid_pdos());
+        defmt::write!(f, "num_valid_epr_pdos: {=u8}, ", & self.num_valid_epr_pdos());
+        defmt::write!(f, "last_src_cap_is_epr: {=bool}, ", & self.last_src_cap_is_epr());
+        defmt::write!(f, "pdo_0: {=u32}, ", & self.pdo_0());
+        defmt::write!(f, "pdo_1: {=u32}, ", & self.pdo_1());
+        defmt::write!(f, "pdo_2: {=u32}, ", & self.pdo_2());
+        defmt::write!(f, "pdo_3: {=u32}, ", & self.pdo_3());
+        defmt::write!(f, "pdo_4: {=u32}, ", & self.pdo_4());
+        defmt::write!(f, "pdo_5: {=u32}, ", & self.pdo_5());
+        defmt::write!(f, "pdo_6: {=u32}, ", & self.pdo_6());
+        defmt::write!(f, "epr_pdo_0: {=u32}, ", & self.epr_pdo_0());
+        defmt::write!(f, "epr_pdo_1: {=u32}, ", & self.epr_pdo_1());
+        defmt::write!(f, "epr_pdo_2: {=u32}, ", & self.epr_pdo_2());
+        defmt::write!(f, "epr_pdo_3: {=u32}, ", & self.epr_pdo_3());
+        defmt::write!(f, "}}");
+    }
+}
+impl core::ops::BitAnd for RxSrcCaps {
+    type Output = Self;
+    fn bitand(mut self, rhs: Self) -> Self::Output {
+        self &= rhs;
+        self
+    }
+}
+impl core::ops::BitAndAssign for RxSrcCaps {
+    fn bitand_assign(&mut self, rhs: Self) {
+        for (l, r) in self.bits.iter_mut().zip(&rhs.bits) {
+            *l &= *r;
+        }
+    }
+}
+impl core::ops::BitOr for RxSrcCaps {
+    type Output = Self;
+    fn bitor(mut self, rhs: Self) -> Self::Output {
+        self |= rhs;
+        self
+    }
+}
+impl core::ops::BitOrAssign for RxSrcCaps {
+    fn bitor_assign(&mut self, rhs: Self) {
+        for (l, r) in self.bits.iter_mut().zip(&rhs.bits) {
+            *l |= *r;
+        }
+    }
+}
+impl core::ops::BitXor for RxSrcCaps {
+    type Output = Self;
+    fn bitxor(mut self, rhs: Self) -> Self::Output {
+        self ^= rhs;
+        self
+    }
+}
+impl core::ops::BitXorAssign for RxSrcCaps {
+    fn bitxor_assign(&mut self, rhs: Self) {
+        for (l, r) in self.bits.iter_mut().zip(&rhs.bits) {
+            *l ^= *r;
+        }
+    }
+}
+impl core::ops::Not for RxSrcCaps {
     type Output = Self;
     fn not(mut self) -> Self::Output {
         for val in self.bits.iter_mut() {

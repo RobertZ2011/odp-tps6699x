@@ -1,5 +1,6 @@
-use bitfield::bitfield;
 use embedded_usb_pd::pdo::{Common, ExpectedPdo, RoleCommon, sink, source};
+
+use super::RxSrcCaps as RxCapsRaw;
 
 /// Rx source caps register address
 pub const RX_SRC_ADDR: u8 = 0x30;
@@ -14,7 +15,7 @@ pub const LEN: usize = 45;
 pub const TOTAL_PDOS: usize = NUM_SPR_PDOS + NUM_EPR_PDOS;
 
 /// Total length in bytes of the register header
-/// [`RxSrcCapsRaw::num_valid_pdos`], [`RxSrcCapsRaw::num_valid_epr_pdos`] and [`RxSrcCapsRaw::last_src_cap_is_epr`]
+/// [`RxCapsRaw::num_valid_pdos`], [`RxCapsRaw::num_valid_epr_pdos`] and [`RxCapsRaw::last_src_cap_is_epr`]
 pub const HEADER_LEN: usize = 1;
 
 /// Starting index of SPR PDOs in the register
@@ -27,46 +28,7 @@ pub const EPR_PDO_START_INDEX: usize = SPR_PDO_START_INDEX + NUM_SPR_PDOS;
 /// Number of EPR PDOs
 pub const NUM_EPR_PDOS: usize = 4;
 
-bitfield! {
-    /// Received source/sink capabilities register
-    #[derive(Clone, Copy)]
-    #[cfg_attr(feature = "defmt", derive(defmt::Format))]
-    struct RxCapsRaw([u8]);
-    impl Debug;
-
-    /// Number of Valid PDOs
-    pub u8, num_valid_pdos, set_num_valid_pdos: 2, 0;
-    /// Number of Valid EPR PDOs
-    pub u8, num_valid_epr_pdos, set_num_valid_epr_pdos: 5, 3;
-    /// Last Src Cap Received is EPR
-    pub bool, last_src_cap_is_epr, set_last_src_cap_is_epr: 6;
-
-    /// Standard PDO 0
-    pub u32, pdo0, set_pdo0: 39, 8;
-    /// Standard PDO 1
-    pub u32, pdo1, set_pdo1: 71, 40;
-    /// Standard PDO 2
-    pub u32, pdo2, set_pdo2: 103, 72;
-    /// Standard PDO 3
-    pub u32, pdo3, set_pdo3: 135, 104;
-    /// Standard PDO 4
-    pub u32, pdo4, set_pdo4: 167, 136;
-    /// Standard PDO 5
-    pub u32, pdo5, set_pdo5: 199, 168;
-    /// Standard PDO 6
-    pub u32, pdo6, set_pdo6: 231, 200;
-
-    /// EPR PDO 0
-    pub u32, epr_pdo0, set_epr_pdo0: 263, 232;
-    /// EPR PDO 1
-    pub u32, epr_pdo1, set_epr_pdo1: 295, 264;
-    /// EPR PDO 2
-    pub u32, epr_pdo2, set_epr_pdo2: 327, 296;
-    /// EPR PDO 3
-    pub u32, epr_pdo3, set_epr_pdo3: 359, 328;
-}
-
-/// High-level wrapper around [`RxSrcCapsRaw`].
+/// High-level wrapper around the generated source/sink capabilities fieldset.
 #[derive(Clone, Copy, Debug)]
 pub struct RxCaps<T: Common> {
     /// Number of valid standard PDOs
@@ -142,11 +104,10 @@ pub enum RxCapsError {
     InvalidPdoIndex(InvalidPdoIndex),
 }
 
-impl<T: RoleCommon> TryFrom<[u8; LEN]> for RxCaps<T> {
+impl<T: RoleCommon> TryFrom<RxCapsRaw> for RxCaps<T> {
     type Error = RxCapsError;
 
-    fn try_from(raw: [u8; LEN]) -> Result<Self, Self::Error> {
-        let raw = RxCapsRaw(raw);
+    fn try_from(raw: RxCapsRaw) -> Result<Self, Self::Error> {
         let num_valid_pdos = raw.num_valid_pdos() as usize;
         let num_valid_epr_pdos = raw.num_valid_epr_pdos() as usize;
 
@@ -155,13 +116,13 @@ impl<T: RoleCommon> TryFrom<[u8; LEN]> for RxCaps<T> {
         // Decode only valid SPR PDOs
         for (i, pdo) in pdos.iter_mut().enumerate().take(num_valid_pdos) {
             *pdo = T::try_from(match i {
-                0 => raw.pdo0(),
-                1 => raw.pdo1(),
-                2 => raw.pdo2(),
-                3 => raw.pdo3(),
-                4 => raw.pdo4(),
-                5 => raw.pdo5(),
-                6 => raw.pdo6(),
+                0 => raw.pdo_0(),
+                1 => raw.pdo_1(),
+                2 => raw.pdo_2(),
+                3 => raw.pdo_3(),
+                4 => raw.pdo_4(),
+                5 => raw.pdo_5(),
+                6 => raw.pdo_6(),
                 _ => {
                     return Err(RxCapsError::InvalidPdoIndex(InvalidPdoIndex {
                         requested: i,
@@ -180,10 +141,10 @@ impl<T: RoleCommon> TryFrom<[u8; LEN]> for RxCaps<T> {
             .take(num_valid_epr_pdos)
         {
             *pdo = T::try_from(match i {
-                0 => raw.epr_pdo0(),
-                1 => raw.epr_pdo1(),
-                2 => raw.epr_pdo2(),
-                3 => raw.epr_pdo3(),
+                0 => raw.epr_pdo_0(),
+                1 => raw.epr_pdo_1(),
+                2 => raw.epr_pdo_2(),
+                3 => raw.epr_pdo_3(),
                 _ => {
                     return Err(RxCapsError::InvalidPdoIndex(InvalidPdoIndex {
                         requested: i,
@@ -200,6 +161,14 @@ impl<T: RoleCommon> TryFrom<[u8; LEN]> for RxCaps<T> {
             last_src_cap_is_epr: raw.last_src_cap_is_epr(),
             pdos,
         })
+    }
+}
+
+impl<T: RoleCommon> TryFrom<[u8; LEN]> for RxCaps<T> {
+    type Error = RxCapsError;
+
+    fn try_from(raw: [u8; LEN]) -> Result<Self, Self::Error> {
+        RxCapsRaw::from(raw).try_into()
     }
 }
 
@@ -263,5 +232,84 @@ mod test {
             *rx_src_caps.get(EPR_PDO_START_INDEX + 2).unwrap(),
             TEST_SRC_EPR_PDO_FIXED_28V1A5
         );
+    }
+
+    #[test]
+    fn test_try_from_generated_full_caps() {
+        let mut raw = RxCapsRaw::default();
+        raw.set_num_valid_pdos(NUM_SPR_PDOS as u8);
+        raw.set_num_valid_epr_pdos(NUM_EPR_PDOS as u8);
+        raw.set_last_src_cap_is_epr(true);
+        raw.set_pdo_0(TEST_SRC_PDO_FIXED_5V3A_RAW);
+        raw.set_pdo_1(TEST_SRC_PDO_FIXED_5V1A5_RAW);
+        raw.set_pdo_2(TEST_SRC_PDO_FIXED_5V900MA_RAW);
+        raw.set_pdo_3(TEST_SRC_PDO_FIXED_9V1500MA_RAW);
+        raw.set_pdo_4(TEST_SRC_PDO_FIXED_9V3000MA_RAW);
+        raw.set_pdo_5(TEST_SRC_PDO_FIXED_5V3A_RAW);
+        raw.set_pdo_6(TEST_SRC_PDO_FIXED_9V3000MA_RAW);
+        raw.set_epr_pdo_0(TEST_SRC_EPR_PDO_FIXED_28V5A_RAW);
+        raw.set_epr_pdo_1(TEST_SRC_EPR_PDO_FIXED_28V3A_RAW);
+        raw.set_epr_pdo_2(TEST_SRC_EPR_PDO_FIXED_28V1A5_RAW);
+        raw.set_epr_pdo_3(TEST_SRC_EPR_PDO_FIXED_28V5A_RAW);
+
+        let caps = RxSrcCaps::try_from(raw).unwrap();
+        assert_eq!(caps.num_valid_pdos(), 7);
+        assert_eq!(caps.num_valid_epr_pdos(), 4);
+        assert!(caps.last_src_cap_is_epr());
+        assert_eq!(
+            caps.pdos,
+            [
+                TEST_SRC_PDO_FIXED_5V3A,
+                TEST_SRC_PDO_FIXED_5V1A5,
+                TEST_SRC_PDO_FIXED_5V900MA,
+                TEST_SRC_PDO_FIXED_9V1500MA,
+                TEST_SRC_PDO_FIXED_9V3000MA,
+                TEST_SRC_PDO_FIXED_5V3A,
+                TEST_SRC_PDO_FIXED_9V3000MA,
+                TEST_SRC_EPR_PDO_FIXED_28V5A,
+                TEST_SRC_EPR_PDO_FIXED_28V3A,
+                TEST_SRC_EPR_PDO_FIXED_28V1A5,
+                TEST_SRC_EPR_PDO_FIXED_28V5A,
+            ]
+        );
+    }
+
+    #[test]
+    fn test_try_from_generated_sink_caps() {
+        let mut raw = RxCapsRaw::default();
+        raw.set_num_valid_pdos(1);
+        raw.set_num_valid_epr_pdos(1);
+        raw.set_pdo_0(TEST_SRC_PDO_FIXED_5V3A_RAW);
+        raw.set_epr_pdo_0(TEST_SRC_EPR_PDO_FIXED_28V5A_RAW);
+
+        let caps = RxSnkCaps::try_from(raw).unwrap();
+        assert_eq!(caps.num_valid_pdos(), 1);
+        assert_eq!(caps.num_valid_epr_pdos(), 1);
+        assert!(!caps.last_src_cap_is_epr());
+        assert_eq!(
+            *caps.get(0).unwrap(),
+            sink::Pdo::Fixed(sink::FixedData {
+                voltage_mv: 5000,
+                operational_current_ma: 3000,
+                ..Default::default()
+            })
+        );
+        assert_eq!(
+            *caps.get(EPR_PDO_START_INDEX).unwrap(),
+            sink::Pdo::Fixed(sink::FixedData {
+                voltage_mv: 28000,
+                operational_current_ma: 5000,
+                ..Default::default()
+            })
+        );
+    }
+
+    #[test]
+    fn test_try_from_generated_invalid_pdo() {
+        let mut raw = RxCapsRaw::default();
+        raw.set_num_valid_epr_pdos(1);
+        raw.set_epr_pdo_0(TEST_SRC_APDO_INVALID_RAW);
+
+        assert!(matches!(RxSrcCaps::try_from(raw), Err(RxCapsError::ExpectedPdo(_))));
     }
 }

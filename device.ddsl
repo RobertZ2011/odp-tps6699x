@@ -792,6 +792,51 @@ device Registers {
             field AdcInIndex 351:336,
         },
     },
+    /// Received source capabilities
+    register RxSrcCaps {
+        address: 0x30,
+        reset: 0x0,
+        access: RO,
+        fields: fieldset _ {
+            size-bytes: 45,
+
+            /// Number of valid standard PDOs
+            field NumValidPdos 2:0,
+            /// Number of valid EPR PDOs
+            field NumValidEprPdos 5:3,
+            /// Last source capabilities received is EPR
+            field LastSrcCapIsEpr 6,
+            /// Standard PDO 0
+            field Pdo0 39:8,
+            /// Standard PDO 1
+            field Pdo1 71:40,
+            /// Standard PDO 2
+            field Pdo2 103:72,
+            /// Standard PDO 3
+            field Pdo3 135:104,
+            /// Standard PDO 4
+            field Pdo4 167:136,
+            /// Standard PDO 5
+            field Pdo5 199:168,
+            /// Standard PDO 6
+            field Pdo6 231:200,
+            /// EPR PDO 0
+            field EprPdo0 263:232,
+            /// EPR PDO 1
+            field EprPdo1 295:264,
+            /// EPR PDO 2
+            field EprPdo2 327:296,
+            /// EPR PDO 3
+            field EprPdo3 359:328,
+        },
+    },
+    /// Received sink capabilities
+    register RxSnkCaps {
+        address: 0x31,
+        reset: 0x0,
+        access: RO,
+        fields: RxSrcCaps,
+    },
     /// Active PDO contract
     register ActivePdoContract {
         address: 0x34,
