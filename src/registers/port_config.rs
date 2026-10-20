@@ -13,9 +13,6 @@ pub use crate::registers::{
     VbusSinkUvpTripHv,
 };
 
-/// The address of the `Port Configuration` register.
-pub const ADDR: u8 = 0x28;
-
 /// The length of the `Port Configuration` register, in bytes.
 pub const LEN: usize = 18;
 

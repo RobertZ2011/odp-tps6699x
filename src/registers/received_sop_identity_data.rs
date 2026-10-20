@@ -11,9 +11,6 @@ use embedded_usb_pd::vdm::structured::header::CommandType;
 
 use crate::debug;
 
-/// The address of the `Received SOP Identity Data Object` register.
-pub const ADDR: u8 = 0x48;
-
 /// The length of the `Received SOP Identity Data Object` register, in bytes.
 pub const LEN: usize = 200 / 8;
 

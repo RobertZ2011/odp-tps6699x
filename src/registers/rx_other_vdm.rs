@@ -3,9 +3,6 @@
 //! This register receives the user svid other vdm.
 //!
 
-/// The address of the `Rx Other Vdm` register.
-pub const ADDR: u8 = 0x61;
-
 /// The length of the `Rx Other Vdm` register, in bytes.
 pub const LEN: usize = 29;
 

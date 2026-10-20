@@ -14,17 +14,11 @@ pub const LEN: usize = 45;
 /// Total number of PDOs supported
 pub const TOTAL_PDOS: usize = NUM_SPR_PDOS + NUM_EPR_PDOS;
 
-/// Total length in bytes of the register header
-/// [`RxCapsRaw::num_valid_pdos`], [`RxCapsRaw::num_valid_epr_pdos`] and [`RxCapsRaw::last_src_cap_is_epr`]
-pub const HEADER_LEN: usize = 1;
-
-/// Starting index of SPR PDOs in the register
-pub const SPR_PDO_START_INDEX: usize = 0;
 /// Number of SPR PDOs
 pub const NUM_SPR_PDOS: usize = 7;
 
 /// Starting index of EPR PDOs in the register
-pub const EPR_PDO_START_INDEX: usize = SPR_PDO_START_INDEX + NUM_SPR_PDOS;
+pub const EPR_PDO_START_INDEX: usize = NUM_SPR_PDOS;
 /// Number of EPR PDOs
 pub const NUM_EPR_PDOS: usize = 4;
 

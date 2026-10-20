@@ -4,9 +4,6 @@
 
 use embedded_usb_pd::vdm::structured::Svid;
 
-/// The address of the `Discovered SVIDs` register.
-pub const ADDR: u8 = 0x21;
-
 /// The length of the `Discovered SVIDs` register, in bytes.
 pub const LEN: usize = 264 / 8;
 
@@ -26,13 +23,6 @@ pub struct DiscoveredSvids {
 }
 
 impl DiscoveredSvids {
-    pub const DEFAULT: Self = Self {
-        number_sop_svids: 0,
-        number_sop_prime_svids: 0,
-        svid_sop: [Svid(0); 8],
-        svid_sop_prime: [Svid(0); 8],
-    };
-
     /// Returns an iterator over the valid SVIDs discovered on the SOP port partner.
     ///
     /// This will return at most 8 SVIDs, even if [`Self::number_sop_svids`] is
